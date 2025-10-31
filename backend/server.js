@@ -1,49 +1,41 @@
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const connectDB = require('./config/db.js');
+const logger = require('./utils/logger');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
+const doctorRoutes = require('./routes/doctor');
+const patientRoutes = require('./routes/patient');
+const appointmentRoutes = require('./routes/appointment');
+const inventoryRoutes = require('./routes/inventory');
+const wardRoutes = require('./routes/ward');
+const prescriptionRoutes = require('./routes/prescription');
+const iotRoutes = require('./routes/iot');
 
-console.log('🔄 Loading environment variables...');
 require('dotenv').config();
 
-console.log('✅ Environment loaded');
-console.log('📍 MongoDB URI:', process.env.MONGO_URI);
-console.log('📍 Port:', process.env.PORT);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
-const app = express();
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+console.log('MongoDB URI:', process.env.MONGO_URI);
+console.log('Port:', process.env.PORT);
+
 const PORT = process.env.PORT || 5000;
 
-console.log('🔄 Importing modules...');
-
-let connectDB, logger;
-
-try {
-  connectDB = require('./config/db');
-  console.log('✅ Database config loaded');
-} catch (error) {
-  console.error('❌ Error loading database config:', error.message);
-  process.exit(1);
-}
-
-try {
-  logger = require('./utils/logger');
-  console.log('✅ Logger loaded');
-} catch (error) {
-  console.error('❌ Error loading logger:', error.message);
-  console.log('Creating basic logger...');
-  logger = {
-    info: console.log,
-    error: console.error,
-    warn: console.warn,
-    stream: { write: (msg) => console.log(msg.trim()) }
-  };
-}
-
-// Security middleware
-console.log('🔄 Setting up middleware...');
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -55,7 +47,6 @@ app.use(helmet({
 
 app.use(mongoSanitize());
 
-// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -65,110 +56,27 @@ const limiter = rateLimit({
 });
 
 app.use('/api/', limiter);
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-// Body parser
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(cookieParser());
-
-// Logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+async function db() {
+  await connectDB().then(() => {
+    console.log("db is connected.");
+  })
+    .catch((err) => {
+      console.log(err);
+    })
 }
+db();
 
-console.log('✅ Middleware configured');
+app.listen(PORT, () => {
+  console.log('\n' + '='.repeat(50));
+  console.log('🚀 SERVER STARTED SUCCESSFULLY!');
+  console.log('='.repeat(50));
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📍 Backend: http://localhost:${PORT}`);
+  console.log(`📍 API: http://localhost:${PORT}/api`);
+  console.log(`📍 Health: http://localhost:${PORT}/health`);
+  console.log('='.repeat(50) + '\n');
+});
 
-// Import routes
-console.log('🔄 Loading routes...');
-
-let authRoutes, userRoutes, doctorRoutes, patientRoutes, appointmentRoutes, 
-    inventoryRoutes, wardRoutes, prescriptionRoutes, iotRoutes;
-
-try {
-  authRoutes = require('./routes/auth');
-  console.log('✅ Auth routes loaded');
-} catch (error) {
-  console.error('❌ Error loading auth routes:', error.message);
-}
-
-try {
-  userRoutes = require('./routes/user');
-  console.log('✅ User routes loaded');
-} catch (error) {
-  console.error('❌ Error loading user routes:', error.message);
-}
-
-try {
-  doctorRoutes = require('./routes/doctor');
-  console.log('✅ Doctor routes loaded');
-} catch (error) {
-  console.error('❌ Error loading doctor routes:', error.message);
-}
-
-try {
-  patientRoutes = require('./routes/patient');
-  console.log('✅ Patient routes loaded');
-} catch (error) {
-  console.error('❌ Error loading patient routes:', error.message);
-}
-
-try {
-  appointmentRoutes = require('./routes/appointment');
-  console.log('✅ Appointment routes loaded');
-} catch (error) {
-  console.error('❌ Error loading appointment routes:', error.message);
-}
-
-try {
-  inventoryRoutes = require('./routes/inventory');
-  console.log('✅ Inventory routes loaded');
-} catch (error) {
-  console.error('❌ Error loading inventory routes:', error.message);
-}
-
-try {
-  wardRoutes = require('./routes/ward');
-  console.log('✅ Ward routes loaded');
-} catch (error) {
-  console.error('❌ Error loading ward routes:', error.message);
-}
-
-try {
-  prescriptionRoutes = require('./routes/prescription');
-  console.log('✅ Prescription routes loaded');
-} catch (error) {
-  console.error('❌ Error loading prescription routes:', error.message);
-}
-
-try {
-  iotRoutes = require('./routes/iot');
-  console.log('✅ IoT routes loaded');
-} catch (error) {
-  console.error('❌ Error loading IoT routes:', error.message);
-}
-
-// API routes
-if (authRoutes) app.use('/api/auth', authRoutes);
-if (userRoutes) app.use('/api/users', userRoutes);
-if (doctorRoutes) app.use('/api/doctors', doctorRoutes);
-if (patientRoutes) app.use('/api/patients', patientRoutes);
-if (appointmentRoutes) app.use('/api/appointments', appointmentRoutes);
-if (inventoryRoutes) app.use('/api/inventory', inventoryRoutes);
-if (wardRoutes) app.use('/api/wards', wardRoutes);
-if (prescriptionRoutes) app.use('/api/prescriptions', prescriptionRoutes);
-if (iotRoutes) app.use('/api/iot', iotRoutes);
-
-console.log('✅ Routes registered');
-
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -178,7 +86,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root endpoint
 app.get('/', (req, res) => {
   res.json({
     message: '🏥 Hospital Management System API',
@@ -186,6 +93,16 @@ app.get('/', (req, res) => {
     status: 'Running',
   });
 });
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/wards', wardRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/iot', iotRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
@@ -222,60 +139,3 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect to database and start server
-const startServer = async () => {
-  try {
-    console.log('🔄 Connecting to MongoDB...');
-    await connectDB();
-    console.log('✅ MongoDB connected');
-    
-    // Start MQTT service (optional)
-    try {
-      const mqttService = require('./services/mqttService');
-      mqttService.connect();
-      console.log('✅ MQTT service initialized');
-    } catch (error) {
-      console.warn('⚠️  MQTT service not available - IoT features disabled');
-    }
-    
-    // Start server
-    console.log('🔄 Starting HTTP server...');
-    const server = app.listen(PORT, () => {
-      console.log('\n' + '='.repeat(50));
-      console.log('🚀 SERVER STARTED SUCCESSFULLY!');
-      console.log('='.repeat(50));
-      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`📍 Backend: http://localhost:${PORT}`);
-      console.log(`📍 API: http://localhost:${PORT}/api`);
-      console.log(`📍 Health: http://localhost:${PORT}/health`);
-      console.log('='.repeat(50) + '\n');
-    });
-
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM signal received: closing HTTP server');
-      server.close(() => {
-        console.log('HTTP server closed');
-        process.exit(0);
-      });
-    });
-
-    process.on('unhandledRejection', (err) => {
-      console.error('UNHANDLED REJECTION! 💥');
-      console.error(err);
-      server.close(() => {
-        process.exit(1);
-      });
-    });
-
-  } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
-    console.error('Stack trace:', error.stack);
-    process.exit(1);
-  }
-};
-
-console.log('🔄 Calling startServer()...');
-startServer();
-
-module.exports = app;

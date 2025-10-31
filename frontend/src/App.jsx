@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -18,19 +18,10 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           <Route
-            path="/dashboard"
+            path="/dashboard/*"
             element={
               <ProtectedRoute>
                 <DashboardRouter />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
               </ProtectedRoute>
             }
           />
@@ -56,7 +47,7 @@ const DashboardRouter = () => {
     case 'patient':
       return <PatientDashboard />;
     default:
-      return <Navigate to="/login" />;
+      return <Navigate to="/login" replace />;
   }
 };
 

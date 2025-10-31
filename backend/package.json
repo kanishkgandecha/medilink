@@ -16,6 +16,7 @@
       "ai",
       "iot"
     ],
+    "type": "commonjs",
     "author": "Your Name",
     "license": "MIT",
     "dependencies": {
