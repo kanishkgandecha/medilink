@@ -8,11 +8,19 @@ const Loader = ({ size = 'medium', text = 'Loading...' }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-500">
+      {/* Gradient spinner */}
       <div
-        className={`animate-spin rounded-full border-b-2 border-blue-600 ${sizeClasses[size]}`}
-      ></div>
-      {text && <p className="mt-4 text-gray-600">{text}</p>}
+        className={`relative ${sizeClasses[size]} animate-spin rounded-full`}
+      >
+        <div className="absolute inset-0 border-4 border-transparent border-t-gradient-to-r from-teal-500 to-cyan-500 rounded-full"></div>
+      </div>
+
+      {text && (
+        <p className="mt-5 text-slate-600 dark:text-gray-300 font-medium animate-pulse">
+          {text}
+        </p>
+      )}
     </div>
   );
 };
