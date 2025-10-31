@@ -47,11 +47,11 @@ const Login = () => {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+    const result = await axios.post("http://localhost:5000/")
     // Simulated login - replace with actual login logic
     setTimeout(() => {
       if (form.email && form.password) {
