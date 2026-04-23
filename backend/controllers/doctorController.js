@@ -22,43 +22,66 @@ exports.getAvailableDoctorUsers = asyncHandler(async (req, res) => {
 });
 
 exports.createDoctor = asyncHandler(async (req, res) => {
-  const { userId, specialization, qualification, experience, licenseNumber, 
+  const { userId, name, email, phone, gender, dateOfBirth,
+          specialization, qualification, experience, licenseNumber,
           department, consultationFee, availability } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user || user.role !== 'Doctor') {
-    return res.status(400).json({ 
-      success: false,
-      message: 'Invalid user or not a doctor' 
+  let targetUser;
+
+  if (userId) {
+    // Legacy: link an existing User account to a Doctor profile
+    targetUser = await User.findById(userId);
+    if (!targetUser || targetUser.role !== 'Doctor') {
+      return res.status(400).json({ success: false, message: 'Invalid user or not a Doctor role' });
+    }
+  } else {
+    // New: create User + Doctor profile atomically
+    if (!name || !email || !phone) {
+      return res.status(400).json({ success: false, message: 'Name, email and phone are required' });
+    }
+    const duplicate = await User.findOne({
+      $or: [{ email: email.toLowerCase() }, { phone }]
+    });
+    if (duplicate) {
+      const field = duplicate.email === email.toLowerCase() ? 'Email' : 'Phone';
+      return res.status(409).json({ success: false, message: `${field} already registered` });
+    }
+    // password = phone — bcrypt pre-save hook hashes it automatically
+    targetUser = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password: phone,
+      role: 'Doctor',
+      phone,
+      ...(gender && { gender }),
+      ...(dateOfBirth && { dateOfBirth })
     });
   }
 
-  // Check if doctor profile already exists
-  const existingDoctor = await Doctor.findOne({ userId });
+  const existingDoctor = await Doctor.findOne({ userId: targetUser._id });
   if (existingDoctor) {
-    return res.status(400).json({ 
-      success: false,
-      message: 'Doctor profile already exists for this user' 
-    });
+    return res.status(400).json({ success: false, message: 'Doctor profile already exists for this user' });
   }
+
+  const finalLicense = licenseNumber || `LIC${Date.now().toString().slice(-8)}`;
 
   const doctor = await Doctor.create({
-    userId, 
-    specialization, 
-    qualification, 
-    experience, 
-    licenseNumber,
-    department, 
-    consultationFee, 
+    userId: targetUser._id,
+    specialization,
+    qualification: qualification || 'MBBS',
+    experience: parseInt(experience) || 0,
+    licenseNumber: finalLicense,
+    department: department || specialization,
+    consultationFee: parseFloat(consultationFee) || 0,
     availability: availability || []
   });
 
-  await doctor.populate('userId', 'name email phone');
+  await doctor.populate('userId', 'name email phone gender dateOfBirth');
 
-  res.status(201).json({ 
+  res.status(201).json({
     success: true,
-    message: 'Doctor profile created successfully',
-    data: doctor 
+    message: 'Doctor created successfully. Default password is the phone number.',
+    data: doctor
   });
 });
 
@@ -90,13 +113,14 @@ exports.getDoctors = asyncHandler(async (req, res) => {
 
   const skip = (page - 1) * limit;
 
-  const doctors = await Doctor.find(query)
+  const doctors = (await Doctor.find(query)
     .populate('userId', 'name email phone address dateOfBirth gender')
     .limit(parseInt(limit))
     .skip(skip)
-    .sort({ createdAt: -1 });
-  
-  const total = await Doctor.countDocuments(query);
+    .sort({ createdAt: -1 }))
+    .filter(d => d.userId !== null); // exclude orphaned records
+
+  const total = await Doctor.countDocuments({ ...query, userId: { $ne: null } });
 
   res.status(200).json({ 
     success: true, 
@@ -160,11 +184,14 @@ exports.deleteDoctor = asyncHandler(async (req, res) => {
     });
   }
 
+  if (doctor.userId) {
+    await User.deleteOne({ _id: doctor.userId });
+  }
   await doctor.deleteOne();
-  
-  res.status(200).json({ 
-    success: true, 
-    message: 'Doctor deleted successfully' 
+
+  res.status(200).json({
+    success: true,
+    message: 'Doctor deleted successfully'
   });
 });
 
@@ -241,8 +268,11 @@ exports.getDoctorAppointments = asyncHandler(async (req, res) => {
 
   const Appointment = require('../models/Appointment');
   const appointments = await Appointment.find({ doctor: req.params.id })
-    .populate('patient', 'patientId')
-    .populate('patient.userId', 'name phone')
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name phone' }
+    })
     .sort({ appointmentDate: -1 });
 
   res.status(200).json({ 

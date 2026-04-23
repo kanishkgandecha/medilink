@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Bed, Users, Activity, AlertTriangle, Plus, Edit, Trash2, UserPlus, UserMinus } from 'lucide-react'
+import { Bed, Users, Activity, AlertTriangle, Plus, Edit, Trash2, UserPlus, UserMinus, BarChart3 } from 'lucide-react'
+import StatCard from '../components/common/StatCard'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import Modal from '../components/common/Modal'
 import api from '../services/api'
 import { toast } from 'react-toastify'
 
 const Wards = () => {
   const { darkMode } = useTheme()
+  const { user } = useAuth()
+  const canManage = ['Admin', 'Doctor', 'Nurse', 'Ward Manager'].includes(user?.role) ||
+                    ['Admin', 'Doctor', 'Nurse', 'Ward Manager'].includes(user?.subRole)
   const [wards, setWards] = useState([])
   const [patients, setPatients] = useState([])
   const [selectedWard, setSelectedWard] = useState(null)
@@ -178,82 +183,28 @@ const Wards = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Ward & Bed Management
           </h1>
-          <p className="text-gray-500 mt-1">Monitor ward status and bed occupancy in real-time</p>
+          <p className="text-gray-400 text-sm mt-1">Monitor ward status and bed occupancy in real-time</p>
         </div>
-        <div className="flex space-x-3">
+        {canManage && (
           <button
-            onClick={() => {
-              resetWardForm()
-              setShowAddWardModal(true)
-            }}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+            onClick={() => { resetWardForm(); setShowAddWardModal(true) }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98]"
           >
-            <Plus className="w-5 h-5" />
-            <span>Add Ward</span>
+            <Plus className="w-4 h-4" />
+            Add Ward
           </button>
-        </div>
+        )}
       </div>
 
       {/* Ward Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Total Beds</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {totalBeds}
-              </h3>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Bed className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Occupied Beds</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {occupiedBeds}
-              </h3>
-            </div>
-            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <Users className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Available Beds</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {availableBeds}
-              </h3>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Activity className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Occupancy Rate</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {occupancyRate}%
-              </h3>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Total Beds" value={totalBeds} icon={Bed} color="from-blue-600 to-cyan-500" />
+        <StatCard title="Occupied Beds" value={occupiedBeds} icon={Users} color="from-red-500 to-rose-500" />
+        <StatCard title="Available Beds" value={availableBeds} icon={Activity} color="from-emerald-600 to-teal-500" />
+        <StatCard title="Occupancy Rate" value={`${occupancyRate}%`} icon={BarChart3} color="from-violet-600 to-purple-500" />
       </div>
 
       {/* Ward Cards */}
@@ -317,42 +268,44 @@ const Wards = () => {
               </div>
             </div>
 
-            <div className="flex space-x-2 mt-4">
-              <button
-                onClick={() => {
-                  setSelectedWard(ward)
-                  setShowAllocateModal(true)
-                }}
-                disabled={ward.availableBeds === 0}
-                className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Allocate</span>
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedWard(ward)
-                  setShowReleaseModal(true)
-                }}
-                disabled={ward.availableBeds === ward.totalBeds}
-                className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                <UserMinus className="w-4 h-4" />
-                <span>Release</span>
-              </button>
-              <button
-                onClick={() => openEditWard(ward)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
-              >
-                <Edit className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleDeleteWard(ward._id)}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {canManage && (
+              <div className="flex space-x-2 mt-4">
+                <button
+                  onClick={() => {
+                    setSelectedWard(ward)
+                    setShowAllocateModal(true)
+                  }}
+                  disabled={ward.availableBeds === 0}
+                  className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Allocate</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedWard(ward)
+                    setShowReleaseModal(true)
+                  }}
+                  disabled={ward.availableBeds === ward.totalBeds}
+                  className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <UserMinus className="w-4 h-4" />
+                  <span>Release</span>
+                </button>
+                <button
+                  onClick={() => openEditWard(ward)}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteWard(ward._id)}
+                  className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -562,21 +515,16 @@ const Wards = () => {
             />
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
-              onClick={() => {
-                setShowAddWardModal(false)
-                resetWardForm()
-              }}
-              className={`px-6 py-2 rounded-lg border ${
-                darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
-              } transition`}
+              onClick={() => { setShowAddWardModal(false); resetWardForm() }}
+              className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
             >
               Cancel
             </button>
             <button
               onClick={handleCreateWard}
-              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+              className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
             >
               {selectedWard ? 'Update' : 'Create'} Ward
             </button>
@@ -640,18 +588,16 @@ const Wards = () => {
             />
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowAllocateModal(false)}
-              className={`px-6 py-2 rounded-lg border ${
-                darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
-              } transition`}
+              className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
             >
               Cancel
             </button>
             <button
               onClick={handleAllocateBed}
-              className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition"
+              className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-sm hover:shadow-md hover:shadow-emerald-500/25 active:scale-[0.97] transition-all duration-200"
             >
               Allocate Bed
             </button>
@@ -693,18 +639,16 @@ const Wards = () => {
             </p>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowReleaseModal(false)}
-              className={`px-6 py-2 rounded-lg border ${
-                darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
-              } transition`}
+              className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
             >
               Cancel
             </button>
             <button
               onClick={handleReleaseBed}
-              className="px-6 py-2 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 transition"
+              className="px-5 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:from-orange-600 hover:to-red-700 shadow-sm hover:shadow-md hover:shadow-orange-500/25 active:scale-[0.97] transition-all duration-200"
             >
               Release Bed
             </button>

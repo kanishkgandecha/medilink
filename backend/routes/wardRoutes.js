@@ -29,7 +29,7 @@ router.route('/:id')
   .put(authorize('Admin'), updateWard)
   .delete(authorize('Admin'), deleteWard);
 
-router.post('/:id/allocate', authorize('Admin', 'Nurse', 'Receptionist'), allocateBed);
-router.post('/:id/release', authorize('Admin', 'Nurse', 'Receptionist'), releaseBed);
+router.post('/:id/allocate', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), allocateBed);
+router.post('/:id/release', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), releaseBed);
 
 module.exports = router;

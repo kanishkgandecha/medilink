@@ -5,6 +5,11 @@ export const getAllPatients = async (params) => {
   return await api.get('/patients', { params })
 }
 
+// Search patients by name / phone / ID (autocomplete)
+export const searchPatients = async (q) => {
+  return await api.get('/patients/search', { params: { q } })
+}
+
 // Get all registered users with role "Patient" (users without patient profile)
 export const getAvailablePatientUsers = async () => {
   return await api.get('/patients/available-users')
@@ -15,42 +20,36 @@ export const getPatientById = async (id) => {
   return await api.get(`/patients/${id}`)
 }
 
-// Create patient profile for existing user
+// Create patient — supports both legacy (userId) and atomic (name/email/phone) flows
 export const createPatient = async (data) => {
-  try {
-    console.log('📤 Creating patient profile...', data)
-    
-    const patientPayload = {
-      userId: data.userId,
-      bloodGroup: data.bloodGroup,
-      emergencyContact: {
-        name: data.emergencyContactName || '',
-        phone: data.emergencyContact || '',
-        relation: data.emergencyContactRelation || ''
-      },
-      allergies: data.allergies || [],
-      insuranceInfo: data.insuranceInfo || {}
-    }
-
-    const patientResponse = await api.post('/patients', patientPayload)
-    console.log('✅ Patient profile created successfully')
-    
-    return patientResponse
-  } catch (error) {
-    console.error('❌ Error creating patient:', error.response?.data || error.message)
-    
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message)
-    }
-    throw error
+  const payload = {
+    bloodGroup: data.bloodGroup,
+    emergencyContact: {
+      name: data.emergencyContactName || '',
+      phone: data.emergencyContact || '',
+      relation: data.emergencyContactRelation || ''
+    },
+    allergies: data.allergies || [],
+    insuranceInfo: data.insuranceInfo || {}
   }
+
+  if (data.userId) {
+    payload.userId = data.userId
+  } else {
+    // Atomic user + patient creation
+    payload.name = data.name
+    payload.email = data.email
+    payload.phone = data.phone
+    if (data.gender) payload.gender = data.gender
+    if (data.dateOfBirth) payload.dateOfBirth = data.dateOfBirth
+  }
+
+  return await api.post('/patients', payload)
 }
 
 // Update patient
 export const updatePatient = async (id, data) => {
   try {
-    console.log('📤 Updating patient...', { id, data })
-    
     const payload = {
       bloodGroup: data.bloodGroup,
       emergencyContact: {
@@ -63,11 +62,8 @@ export const updatePatient = async (id, data) => {
     }
     
     const response = await api.put(`/patients/${id}`, payload)
-    console.log('✅ Patient updated successfully')
-    
     return response
   } catch (error) {
-    console.error('❌ Error updating patient:', error.response?.data || error.message)
     throw error
   }
 }

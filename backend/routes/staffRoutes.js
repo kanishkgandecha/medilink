@@ -25,10 +25,9 @@ router.get('/department/:department', getStaffByDepartment);
 router.route('/')
   .get(getStaff)
   .post([
-    body('userId').notEmpty().withMessage('User ID is required'),
-    body('designation').notEmpty().withMessage('Designation is required'),
     body('department').notEmpty().withMessage('Department is required'),
-    body('joiningDate').notEmpty().withMessage('Joining date is required'),
+    body('email').optional().isEmail().withMessage('Valid email is required'),
+    body('phone').optional().notEmpty().withMessage('Phone is required'),
     validate
   ], createStaff);
 

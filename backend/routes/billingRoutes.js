@@ -8,25 +8,26 @@ const {
   getBills,
   getBill,
   recordPayment,
+  patientPayBill,
   processInsuranceClaim,
   updateInsuranceClaim,
   getBillingStats,
   deleteBill,
-  getPatientUsers  // NEW: Add this
+  getPatientUsers
 } = require('../controllers/billingController');
 
 router.use(protect);
 
-// NEW: Get all users with role "Patient" for billing dropdown
-router.get('/patient-users', authorize('Admin', 'Receptionist'), getPatientUsers);
+// Patient dropdown for billing forms (Admin/Receptionist/Pharmacist)
+router.get('/patient-users', authorize('Admin', 'Receptionist', 'Pharmacist'), getPatientUsers);
 
-// Stats route (must be before /:id)
-router.get('/stats', authorize('Admin', 'Receptionist'), getBillingStats);
+// Stats (Pharmacist sees pharmacy-only stats via controller-level filtering)
+router.get('/stats', authorize('Admin', 'Receptionist', 'Pharmacist'), getBillingStats);
 
 // Main billing routes
 router.route('/')
-  .get(authorize('Admin', 'Receptionist'), getBills)
-  .post(authorize('Admin', 'Receptionist'), [
+  .get(authorize('Admin', 'Receptionist', 'Pharmacist', 'Patient'), getBills)
+  .post(authorize('Admin', 'Receptionist', 'Pharmacist'), [
     body('patient').notEmpty().withMessage('Patient ID is required'),
     body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
     body('items.*.description').notEmpty().withMessage('Item description is required'),
@@ -39,7 +40,13 @@ router.route('/:id')
   .get(getBill)
   .delete(authorize('Admin'), deleteBill);
 
-// Payment routes
+// Patient self-pay (pays full outstanding balance)
+router.post('/:id/pay', authorize('Patient'), [
+  body('paymentMethod').notEmpty().withMessage('Payment method is required'),
+  validate
+], patientPayBill);
+
+// Admin/Receptionist payment recording (supports partial payments)
 router.post('/:id/payment', authorize('Admin', 'Receptionist'), [
   body('amount').isFloat({ min: 0.01 }).withMessage('Valid payment amount is required'),
   body('paymentMethod').notEmpty().withMessage('Payment method is required'),

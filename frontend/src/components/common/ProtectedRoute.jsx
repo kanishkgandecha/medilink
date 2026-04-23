@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Sidebar from './Sidebar'
 import Header from './Header'
@@ -7,26 +7,41 @@ import Loader from './Loader'
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
-    return <Loader fullScreen text="Authenticating..." />
+    return <Loader fullScreen text="Authenticating…" />
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (
+    allowedRoles &&
+    !allowedRoles.includes(user.role) &&
+    !(user.subRole && allowedRoles.includes(user.subRole))
+  ) {
     return <Navigate to="/dashboard" replace />
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar — always rendered; width changes based on sidebarOpen */}
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+
+      {/* Main column */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header />
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
+
+        {/* Scrollable content area with per-page enter animation */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin">
+          <div
+            key={location.pathname}
+            className="p-6 min-h-full animate-enter"
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>

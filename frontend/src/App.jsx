@@ -16,13 +16,16 @@ import Doctors from './pages/Doctors'
 import Appointments from './pages/Appointments'
 import Wards from './pages/Wards'
 import Pharmacy from './pages/Pharmacy'
+import Prescriptions from './pages/Prescriptions'
 import Billing from './pages/Billing'
 import Staff from './pages/Staff'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import TestReports from './pages/TestReports'
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute'
+import FloatingChatbot from './components/common/FloatingChatbot'
 import { useAuth } from './context/AuthContext'
 import { useTheme } from './context/ThemeContext'
 
@@ -54,20 +57,25 @@ function App() {
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/patients" element={<ProtectedRoute><Patients /></ProtectedRoute>} />
+        <Route path="/patients" element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Receptionist','Patient','Lab Technician','Ward Manager']}><Patients /></ProtectedRoute>} />
         <Route path="/doctors" element={<ProtectedRoute><Doctors /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
-        <Route path="/wards" element={<ProtectedRoute><Wards /></ProtectedRoute>} />
-        <Route path="/pharmacy" element={<ProtectedRoute><Pharmacy /></ProtectedRoute>} />
-        <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-        <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
-        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+        <Route path="/wards" element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Ward Manager']}><Wards /></ProtectedRoute>} />
+        <Route path="/pharmacy" element={<ProtectedRoute allowedRoles={['Admin','Pharmacist']}><Pharmacy /></ProtectedRoute>} />
+        <Route path="/prescriptions" element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Patient','Pharmacist']}><Prescriptions /></ProtectedRoute>} />
+        <Route path="/tasks" element={<Navigate to="/wards" />} />
+        <Route path="/billing" element={<ProtectedRoute allowedRoles={['Admin','Receptionist','Patient','Pharmacist']}><Billing /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute allowedRoles={['Admin']}><Staff /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute allowedRoles={['Admin']}><Reports /></ProtectedRoute>} />
+        <Route path="/test-reports" element={<ProtectedRoute allowedRoles={['Patient','Doctor','Nurse','Admin','Lab Technician']}><TestReports /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
         {/* Default Route */}
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+
+      {user && <FloatingChatbot />}
     </div>
   )
 }

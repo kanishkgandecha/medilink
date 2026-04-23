@@ -27,21 +27,15 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token')
       if (token) {
         const response = await authService.verifyToken()
-        console.log('✅ Token verification response:', response)
-        
-        // Handle different response structures
         const userData = response.user || response.data || response
-        
         if (userData && userData.role) {
           setUser(userData)
         } else {
-          console.warn('⚠️ Invalid user data structure:', response)
           localStorage.removeItem('token')
           setUser(null)
         }
       }
-    } catch (error) {
-      console.error('❌ Auth verification failed:', error)
+    } catch {
       localStorage.removeItem('token')
       setUser(null)
     } finally {
@@ -51,30 +45,21 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      console.log('🔐 Attempting login...')
       const response = await authService.login(credentials)
-      console.log('✅ Login response:', response)
-      
-      // Handle token
       if (response.token) {
         localStorage.setItem('token', response.token)
       } else {
         throw new Error('No token received from server')
       }
-      
-      // Handle user data - try different response structures
       const userData = response.user || response.data || response
-      
       if (!userData || !userData.role) {
         throw new Error('Invalid user data received from server')
       }
-      
       setUser(userData)
       toast.success(`Welcome back, ${userData.name || 'User'}!`)
       navigate('/dashboard')
       return response
     } catch (error) {
-      console.error('❌ Login error:', error)
       const errorMessage = error.response?.data?.message || error.message || 'Login failed'
       toast.error(errorMessage)
       throw error
@@ -83,20 +68,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      console.log('📝 Attempting registration...')
-      console.log('📤 Registration data:', { ...userData, password: '[HIDDEN]' })
-      
       const response = await authService.register(userData)
-      console.log('✅ Registration response:', response)
-      
-      // Check if registration was successful
       if (response.success === false) {
         throw new Error(response.message || 'Registration failed')
       }
-      
       toast.success('Registration successful! Please login.')
-      
-      // Optional: Auto-login if token is provided
       if (response.token) {
         localStorage.setItem('token', response.token)
         const user = response.user || response.data
@@ -106,18 +82,9 @@ export const AuthProvider = ({ children }) => {
           return response
         }
       }
-      
-      // Otherwise navigate to login
       navigate('/login')
       return response
     } catch (error) {
-      console.error('❌ Registration error:', error)
-      console.error('Error details:', {
-        response: error.response?.data,
-        message: error.message,
-        status: error.response?.status
-      })
-      
       const errorMessage = error.response?.data?.message || error.message || 'Registration failed'
       toast.error(errorMessage)
       throw error

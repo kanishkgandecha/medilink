@@ -22,8 +22,8 @@ router.get('/availability/:doctorId', getDoctorAvailability);
 // Main appointment routes
 router.route('/')
   .get(getAppointments)
-  .post(authorize('Admin', 'Receptionist', 'Doctor'), [
-    body('patient').notEmpty().withMessage('Patient ID is required'),
+  .post(authorize('Admin', 'Receptionist', 'Doctor', 'Patient'), [
+    body('patient').optional().isMongoId().withMessage('Invalid patient ID'),
     body('doctor').notEmpty().withMessage('Doctor ID is required'),
     body('appointmentDate').isISO8601().withMessage('Valid date is required'),
     body('timeSlot.startTime').notEmpty().withMessage('Start time is required'),

@@ -1,12 +1,15 @@
 const mongoose = require('mongoose');
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
+const Prescription = require('../models/Prescription');
+const Medicine = require('../models/Medicine');
+const Billing = require('../models/Billing');
 
 // @desc    Create new prescription
 // @route   POST /api/prescriptions
 // @access  Private (Doctor)
 const createPrescription = async (req, res) => {
-  const { patient, doctor, appointment, medicines, diagnosis, symptoms, labTests, validUntil, refillsAllowed, notes } = req.body;
+  const { patient, appointment, medicines, diagnosis, symptoms, labTests, validUntil, refillsAllowed, notes } = req.body;
 
   // Validate patient exists
   const patientExists = await Patient.findById(patient);
@@ -17,14 +20,15 @@ const createPrescription = async (req, res) => {
     });
   }
 
-  // Validate doctor exists
-  const doctorExists = await Doctor.findById(doctor);
+  // Auto-resolve doctor from logged-in user
+  const doctorExists = await Doctor.findOne({ userId: req.user._id });
   if (!doctorExists) {
     return res.status(404).json({
       success: false,
-      message: 'Doctor not found'
+      message: 'Doctor profile not found for this account'
     });
   }
+  const doctor = doctorExists._id;
 
   // Validate medicine availability and stock
   for (let med of medicines) {
@@ -84,12 +88,22 @@ const createPrescription = async (req, res) => {
 // @route   GET /api/prescriptions
 // @access  Private
 const getPrescriptions = async (req, res) => {
-  const { patient, doctor, status, startDate, endDate, page = 1, limit = 10 } = req.query;
-  
+  const { status, startDate, endDate, page = 1, limit = 50 } = req.query;
+
   let query = {};
-  
-  if (patient) query.patient = patient;
-  if (doctor) query.doctor = doctor;
+
+  // Auto-filter based on role
+  if (req.user.role === 'Patient') {
+    const patientProfile = await Patient.findOne({ userId: req.user._id });
+    if (!patientProfile) return res.json({ success: true, count: 0, data: [] });
+    query.patient = patientProfile._id;
+  } else if (req.user.role === 'Doctor') {
+    const doctorProfile = await Doctor.findOne({ userId: req.user._id });
+    if (!doctorProfile) return res.json({ success: true, count: 0, data: [] });
+    query.doctor = doctorProfile._id;
+  }
+  // Pharmacist and Admin see all
+
   if (status) query.status = status;
   
   if (startDate && endDate) {
@@ -103,10 +117,16 @@ const getPrescriptions = async (req, res) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
   const prescriptions = await Prescription.find(query)
-    .populate('patient', 'patientId userId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name phone' } })
-    .populate('doctor', 'userId specialization')
-    .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } })
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name phone' }
+    })
+    .populate({
+      path: 'doctor',
+      select: 'userId specialization',
+      populate: { path: 'userId', select: 'name email' }
+    })
     .populate('medicines.medicine', 'name genericName strength unitPrice')
     .populate('appointment', 'appointmentId appointmentDate')
     .sort('-createdAt')
@@ -130,9 +150,7 @@ const getPrescriptions = async (req, res) => {
 // @access  Private
 const getPrescription = async (req, res) => {
   const prescription = await Prescription.findById(req.params.id)
-    .populate('patient')
     .populate({ path: 'patient', populate: { path: 'userId' } })
-    .populate('doctor')
     .populate({ path: 'doctor', populate: { path: 'userId' } })
     .populate('medicines.medicine')
     .populate('appointment');
@@ -174,10 +192,13 @@ const updatePrescriptionStatus = async (req, res) => {
   }
 
   // If fulfilling prescription, update medicine stock
+  const billingItems = [];
+  let billingSubtotal = 0;
+
   if (status === 'Fulfilled' || status === 'Partially-Filled') {
     for (let med of prescription.medicines) {
       const medicine = await Medicine.findById(med.medicine);
-      
+
       if (!medicine) {
         return res.status(404).json({
           success: false,
@@ -195,11 +216,37 @@ const updatePrescriptionStatus = async (req, res) => {
       // Reduce stock
       medicine.stockQuantity -= med.quantity;
       await medicine.save();
+
+      const unitPrice = medicine.unitPrice || 0;
+      const amount = unitPrice * med.quantity;
+      billingItems.push({
+        description: `${medicine.name}${medicine.strength ? ' ' + medicine.strength : ''}`,
+        category: 'Medicine',
+        quantity: med.quantity,
+        unitPrice,
+        amount
+      });
+      billingSubtotal += amount;
     }
   }
 
   prescription.status = status;
   await prescription.save();
+
+  // Auto-generate medicine bill when a prescription is fully fulfilled
+  if (status === 'Fulfilled' && billingItems.length > 0) {
+    await Billing.create({
+      patient: prescription.patient,
+      items: billingItems,
+      subtotal: billingSubtotal,
+      totalAmount: billingSubtotal,
+      balance: billingSubtotal,
+      billType: 'Pharmacy',
+      createdByRole: 'Pharmacist',
+      generatedBy: req.user._id,
+      notes: `Auto-generated on prescription fulfilment`
+    });
+  }
 
   await prescription.populate([
     { path: 'patient', select: 'patientId userId' },

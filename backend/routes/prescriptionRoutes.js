@@ -17,7 +17,6 @@ router.route('/')
   .get(getPrescriptions)
   .post(authorize('Doctor'), [
     body('patient').notEmpty().withMessage('Patient ID is required'),
-    body('doctor').notEmpty().withMessage('Doctor ID is required'),
     body('medicines').isArray({ min: 1 }).withMessage('At least one medicine is required'),
     validate
   ], createPrescription);

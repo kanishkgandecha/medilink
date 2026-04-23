@@ -26,13 +26,11 @@ router.get('/available-users', authorize('Admin', 'Receptionist'), getAvailableD
 router.route('/')
   .get(getDoctors)
   .post(authorize('Admin', 'Receptionist'), [
-    body('userId').notEmpty().withMessage('User ID is required'),
     body('specialization').notEmpty().withMessage('Specialization is required'),
-    body('qualification').notEmpty().withMessage('Qualification is required'),
-    body('licenseNumber').notEmpty().withMessage('License number is required'),
-    body('department').optional(),
     body('consultationFee').optional().isNumeric().withMessage('Consultation fee must be a number'),
     body('experience').optional().isNumeric().withMessage('Experience must be a number'),
+    body('email').optional().isEmail().withMessage('Valid email is required'),
+    body('phone').optional().notEmpty().withMessage('Phone is required'),
     validate
   ], createDoctor);
 

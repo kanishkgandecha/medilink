@@ -20,8 +20,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Patient', 'Pharmacist'],
+    enum: ['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Patient', 'Pharmacist', 'Staff'],
     default: 'Patient'
+  },
+  subRole: {
+    type: String,
+    enum: ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Ward Manager'],
   },
   phone: { type: String, required: true },
   address: {
@@ -51,11 +55,9 @@ userSchema.methods.matchPassword = async function(pw) {
 };
 
 userSchema.methods.generateToken = function() {
-  return jwt.sign(
-    { id: this._id, role: this.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE }
-  );
+  const payload = { id: this._id, role: this.role };
+  if (this.subRole) payload.subRole = this.subRole;
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 };
 
 userSchema.methods.getResetPasswordToken = function() {

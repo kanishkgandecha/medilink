@@ -1,10 +1,15 @@
 // ===========================
 // FILE: controllers/reportController.js
 // ===========================
+const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const Ward = require('../models/Ward');
 const Billing = require('../models/Billing');
 const Staff = require('../models/Staff');
+const Patient = require('../models/Patient');
+const Doctor = require('../models/Doctor');
+const Medicine = require('../models/Medicine');
+const Prescription = require('../models/Prescription');
 
 // @desc    Get patient visits report
 // @route   GET /api/reports/patient-visits
@@ -25,10 +30,16 @@ const getPatientVisitsReport = async (req, res) => {
   if (patientId) query.patient = patientId;
 
   const visits = await Appointment.find(query)
-    .populate('patient', 'patientId userId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name age gender' } })
-    .populate('doctor', 'userId specialization')
-    .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } })
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name gender dateOfBirth' }
+    })
+    .populate({
+      path: 'doctor',
+      select: 'userId specialization',
+      populate: { path: 'userId', select: 'name' }
+    })
     .sort('-appointmentDate');
 
   const stats = {
@@ -351,16 +362,25 @@ const getDashboardStats =   async (req, res) => {
   const recentAppointments = await Appointment.find()
     .sort('-createdAt')
     .limit(5)
-    .populate('patient', 'patientId userId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } })
-    .populate('doctor', 'userId')
-    .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } });
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name' }
+    })
+    .populate({
+      path: 'doctor',
+      select: 'userId',
+      populate: { path: 'userId', select: 'name' }
+    });
 
   const recentBills = await Billing.find()
     .sort('-billDate')
     .limit(5)
-    .populate('patient', 'patientId userId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } });
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name' }
+    });
 
   // Calculate trends (compare with last 7 days)
   const lastWeek = new Date(today);

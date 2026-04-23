@@ -1,210 +1,146 @@
-import React from 'react'
-import { Bed, Users, Activity, ClipboardList, AlertCircle } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Bed, Users, ClipboardList, AlertCircle } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import StatCard from '../common/StatCard'
+import { SkeletonDashboard } from '../common/SkeletonCard'
+import { getNurseDashboard } from '../../services/dashboardService'
+import { toast } from 'react-toastify'
+
+const PRIORITY_BADGE = {
+  Emergency: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  Urgent: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  Normal: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+}
 
 const NurseDashboard = () => {
   const { darkMode } = useTheme()
+  const [dashboard, setDashboard] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const assignedPatients = [
-    {
-      id: 1,
-      name: 'Kanishk New',
-      bedNumber: 'B101',
-      ward: 'General Ward A',
-      condition: 'Stable',
-      lastCheckup: '2 hours ago',
-      vitals: { bp: '120/80', temp: '98.6°F', pulse: '72 bpm' }
-    },
-    {
-      id: 2,
-      name: 'Keshav Patient',
-      bedNumber: 'B102',
-      ward: 'General Ward A',
-      condition: 'Critical',
-      lastCheckup: '30 minutes ago',
-      vitals: { bp: '140/90', temp: '101°F', pulse: '95 bpm' }
-    },
-    {
-      id: 3,
-      name: 'Robert Davis',
-      bedNumber: 'B104',
-      ward: 'Kanishk Gandecha',
-      condition: 'Stable',
-      lastCheckup: '1 hour ago',
-      vitals: { bp: '118/75', temp: '98.2°F', pulse: '68 bpm' }
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await getNurseDashboard()
+        setDashboard(res.dashboard)
+      } catch {
+        toast.error('Failed to load nurse dashboard')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetch()
+  }, [])
 
-  const tasks = [
-    { id: 1, task: 'Administer medication to B101', time: '10:00 AM', priority: 'High', completed: false },
-    { id: 2, task: 'Check vitals for B102', time: '10:30 AM', priority: 'Critical', completed: false },
-    { id: 3, task: 'Change IV for B104', time: '11:00 AM', priority: 'Medium', completed: true },
-    { id: 4, task: 'Wound dressing for ICU-05', time: '11:30 AM', priority: 'High', completed: false }
-  ]
+  const card = `border rounded-2xl p-6 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`
+  const textCls = darkMode ? 'text-white' : 'text-gray-900'
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'Critical':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-      case 'High':
-        return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-      default:
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-    }
-  }
+  if (loading) return <SkeletonDashboard />
 
-  const getConditionColor = (condition) => {
-    switch (condition) {
-      case 'Critical':
-        return 'text-red-600'
-      case 'Stable':
-        return 'text-green-600'
-      case 'Moderate':
-        return 'text-yellow-600'
-      default:
-        return 'text-gray-600'
-    }
-  }
+  const overview = dashboard?.overview || {}
+  const wardOccupancy = dashboard?.wardOccupancy || []
+  const criticalPatients = dashboard?.criticalPatients || []
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Nurse Dashboard
-        </h1>
-        <p className="text-gray-500 mt-1">Monitor your assigned patients and tasks</p>
+        <h1 className={`text-2xl font-bold ${textCls}`}>Nurse Dashboard</h1>
+        <p className="text-gray-400 text-sm mt-1">Ward occupancy and emergency case monitor</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Assigned Patients"
-          value={assignedPatients.length}
-          icon={Users}
-          color="from-blue-600 to-cyan-600"
-        />
-        <StatCard
-          title="Critical Patients"
-          value={assignedPatients.filter(p => p.condition === 'Critical').length}
-          icon={AlertCircle}
-          color="from-red-600 to-pink-600"
-        />
-        <StatCard
-          title="Pending Tasks"
-          value={tasks.filter(t => !t.completed).length}
-          icon={ClipboardList}
-          color="from-orange-600 to-yellow-600"
-        />
-        <StatCard
-          title="Ward Beds"
-          value="15/20"
-          icon={Bed}
-          color="from-green-600 to-emerald-600"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Today's Appointments" value={overview.todayAppointments ?? '—'} icon={ClipboardList} color="from-blue-600 to-cyan-500" />
+        <StatCard title="Emergency Cases" value={overview.criticalPatients ?? '—'} icon={AlertCircle} color="from-red-500 to-rose-500" />
+        <StatCard title="Occupied Beds" value={overview.occupiedBeds ?? '—'} icon={Bed} color="from-orange-500 to-amber-500" />
+        <StatCard title="Available Beds" value={overview.availableBeds ?? '—'} icon={Users} color="from-emerald-600 to-teal-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Assigned Patients */}
-        <div className={`lg:col-span-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Assigned Patients
-          </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Ward Occupancy */}
+        <div className={`lg:col-span-2 ${card}`}>
+          <h2 className={`text-lg font-bold mb-5 ${textCls}`}>Ward Occupancy</h2>
           <div className="space-y-4">
-            {assignedPatients.map((patient) => (
-              <div
-                key={patient.id}
-                className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-750' : 'border-gray-200 bg-gray-50'}`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white font-semibold">
-                      {patient.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {patient.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{patient.ward} - {patient.bedNumber}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`font-semibold ${getConditionColor(patient.condition)}`}>
-                      {patient.condition}
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">{patient.lastCheckup}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3 mt-3">
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                    <p className="text-xs text-gray-500">BP</p>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {patient.vitals.bp}
-                    </p>
-                  </div>
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                    <p className="text-xs text-gray-500">Temp</p>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {patient.vitals.temp}
-                    </p>
-                  </div>
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                    <p className="text-xs text-gray-500">Pulse</p>
-                    <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {patient.vitals.pulse}
-                    </p>
-                  </div>
-                </div>
-                <button className="mt-3 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                  Update Vitals
-                </button>
+            {wardOccupancy.length === 0 ? (
+              <div className="text-center py-10">
+                <Bed className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-400 text-sm">No ward data available</p>
               </div>
-            ))}
+            ) : (
+              wardOccupancy.map((ward) => {
+                const occupied = ward.totalBeds - ward.availableBeds
+                const pct = ward.totalBeds > 0 ? Math.round((occupied / ward.totalBeds) * 100) : 0
+                const isCritical = pct >= 90
+                const isHigh = pct >= 70
+                const barColor = isCritical ? 'bg-red-500' : isHigh ? 'bg-orange-500' : 'bg-emerald-500'
+                const pctColor = isCritical ? 'text-red-500' : isHigh ? 'text-orange-500' : 'text-emerald-500'
+                return (
+                  <div key={ward._id} className={`p-4 rounded-xl border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className={`font-semibold text-sm ${textCls}`}>{ward.wardName}</p>
+                        <p className="text-xs text-gray-400">{ward.wardType} · Ward {ward.wardNumber}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-sm font-bold ${pctColor}`}>{occupied}/{ward.totalBeds}</span>
+                        <p className="text-xs text-gray-400">beds used</p>
+                      </div>
+                    </div>
+                    <div className={`w-full rounded-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                      <div
+                        className={`h-2 rounded-full transition-all duration-500 ${barColor}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1.5 text-xs text-gray-400">
+                      <span>{pct}% occupied</span>
+                      <span>{ward.availableBeds} available</span>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
 
-        {/* Today's Tasks */}
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Today's Tasks
-          </h2>
+        {/* Emergency Cases */}
+        <div className={card}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className={`text-lg font-bold ${textCls}`}>Emergency Cases</h2>
+            {criticalPatients.length > 0 && (
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            )}
+          </div>
           <div className="space-y-3">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`p-3 rounded-lg border ${
-                  task.completed
-                    ? darkMode ? 'border-gray-700 bg-gray-750 opacity-60' : 'border-gray-200 bg-gray-50 opacity-60'
-                    : darkMode ? 'border-gray-700' : 'border-gray-200'
-                }`}
-              >
-                <div className="flex items-start space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    className="w-5 h-5 mt-0.5 text-blue-600 rounded focus:ring-blue-500"
-                    readOnly
-                  />
-                  <div className="flex-1">
-                    <p className={`font-medium text-sm ${
-                      task.completed
-                        ? 'line-through text-gray-500'
-                        : darkMode ? 'text-white' : 'text-gray-800'
-                    }`}>
-                      {task.task}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-gray-500">{task.time}</p>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority}
+            {criticalPatients.length === 0 ? (
+              <div className="text-center py-10">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${darkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
+                  <AlertCircle className="w-6 h-6 text-emerald-500" />
+                </div>
+                <p className={`font-semibold text-sm ${textCls}`}>All clear</p>
+                <p className="text-gray-400 text-xs mt-1">No emergency cases</p>
+              </div>
+            ) : (
+              criticalPatients.map((apt) => {
+                const name = apt.patient?.userId?.name || apt.patient?.patientId || 'Unknown'
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                const timeStr = apt.timeSlot?.startTime || '—'
+                return (
+                  <div key={apt._id} className={`p-3 rounded-xl border ${darkMode ? 'border-red-900/40 bg-red-900/10' : 'border-red-100 bg-red-50/60'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm truncate ${textCls}`}>{name}</p>
+                        <p className="text-xs text-gray-400">{apt.type} · {timeStr}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ${PRIORITY_BADGE[apt.priority] || PRIORITY_BADGE.Emergency}`}>
+                        {apt.priority}
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                )
+              })
+            )}
           </div>
         </div>
       </div>

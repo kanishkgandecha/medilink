@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, AlertTriangle, Package, TrendingDown, Filter, Downl
 import { useTheme } from '../context/ThemeContext'
 import TableComponent from '../components/common/TableComponent'
 import Modal from '../components/common/Modal'
+import StatCard from '../components/common/StatCard'
 import api from '../services/api'
 import { toast } from 'react-toastify'
 
@@ -55,12 +56,7 @@ const Pharmacy = () => {
     setLoading(true)
     try {
       const response = await api.get('/medicines')
-      console.log('Medicines API Response:', response.data)
       const medicinesData = response.data || []
-      console.log('Total medicines:', medicinesData.length)
-      if (medicinesData.length > 0) {
-        console.log(' First medicine sample:', medicinesData[0])
-      }
       setMedicines(medicinesData)
     } catch (error) {
       console.error('Fetch error:', error)
@@ -73,7 +69,7 @@ const Pharmacy = () => {
   const fetchStats = async () => {
     try {
       const response = await api.get('/medicines/stats')
-      setStats(response.data.data || {})
+      setStats(response.data || {})
     } catch (error) {
       console.error('Stats error:', error)
     }
@@ -96,26 +92,20 @@ const Pharmacy = () => {
         reorderLevel: parseInt(formData.reorderLevel) || 50
       }
 
-      console.log('📤 Submitting medicine:', payload)
-
       let response
       if (selectedMedicine) {
         response = await api.put(`/medicines/${selectedMedicine._id}`, payload)
-        console.log('✅ Update response:', response.data)
         toast.success('Medicine updated successfully')
       } else {
         response = await api.post('/medicines', payload)
-        console.log('✅ Create response:', response.data)
         toast.success('Medicine added successfully')
       }
-      
+
       setShowAddModal(false)
       resetForm()
       await fetchMedicines()
       await fetchStats()
     } catch (error) {
-      console.error('❌ Submit error:', error)
-      console.error('❌ Error response:', error.response?.data)
       toast.error(error.response?.data?.message || 'Operation failed')
     }
   }
@@ -215,6 +205,19 @@ const Pharmacy = () => {
     return 'In Stock'
   }
 
+  const getExpiryStatus = (expiryDateRaw) => {
+    if (!expiryDateRaw) return 'unknown'
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const oneMonthLater = new Date(today)
+    oneMonthLater.setDate(today.getDate() + 30)
+    const expiryDate = new Date(expiryDateRaw)
+    expiryDate.setHours(0, 0, 0, 0)
+    if (expiryDate < today) return 'expired'
+    if (expiryDate <= oneMonthLater) return 'soon'
+    return 'ok'
+  }
+
   const columns = [
     { 
       header: 'Medicine ID', 
@@ -238,10 +241,33 @@ const Pharmacy = () => {
       accessor: 'unitPrice',
       render: (row) => <span className="font-semibold">₹{row.unitPrice?.toFixed(2)}</span>
     },
-    { 
-      header: 'Expiry Date', 
+    {
+      header: 'Expiry Date',
       accessor: 'expiryDate',
-      render: (row) => new Date(row.expiryDate).toLocaleDateString()
+      render: (row) => {
+        const status = getExpiryStatus(row.expiryDate)
+        const dateStr = row.expiryDate
+          ? new Date(row.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '—'
+        const badge = {
+          expired: { label: 'Expired',      cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+          soon:    { label: 'Expiring Soon', cls: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+          ok:      { label: null, cls: '' },
+          unknown: { label: null, cls: '' },
+        }[status]
+        return (
+          <div className="flex flex-col gap-1">
+            <span className={status === 'expired' ? 'text-red-600 dark:text-red-400 font-semibold' : status === 'soon' ? 'text-orange-600 dark:text-orange-400 font-medium' : ''}>
+              {dateStr}
+            </span>
+            {badge.label && (
+              <span className={`inline-flex w-fit px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.cls}`}>
+                {badge.label}
+              </span>
+            )}
+          </div>
+        )
+      }
     },
     {
       header: 'Status',
@@ -318,74 +344,32 @@ const Pharmacy = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Pharmacy Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage medicines and inventory</p>
+          <p className="text-gray-400 text-sm mt-1">Manage medicines and inventory</p>
         </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => {
-              resetForm()
-              setShowAddModal(true)
-            }}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Medicine</span>
-          </button>
-        </div>
+        <button
+          onClick={() => { resetForm(); setShowAddModal(true) }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98]"
+        >
+          <Plus className="w-4 h-4" />
+          Add Medicine
+        </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Total Medicines</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {stats.totalMedicines || 0}
-              </h3>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Package className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Low Stock</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {stats.lowStock || 0}
-              </h3>
-            </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <TrendingDown className="w-6 h-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Expiring Soon</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {stats.expiringSoon || 0}
-              </h3>
-            </div>
-            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Out of Stock</p>
-              <h3 className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Total Medicines" value={stats.totalMedicines || 0} icon={Package} color="from-blue-600 to-cyan-500" />
+        <StatCard title="Low Stock" value={stats.lowStock || 0} icon={TrendingDown} color="from-amber-500 to-yellow-500" />
+        <StatCard title="Expiring Soon" value={stats.expiringSoon || 0} icon={AlertTriangle} color="from-orange-500 to-red-500" />
+        <div className={`relative overflow-hidden border rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl cursor-default
+          ${darkMode ? 'bg-gray-800 border-gray-700/60 shadow-gray-900/40' : 'bg-white border-gray-100 shadow-sm shadow-gray-200/80'}`}>
+          <div className={`absolute -top-6 -right-6 w-28 h-28 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 opacity-10 blur-xl pointer-events-none`} />
+          <div className="flex items-start justify-between relative">
+            <div className="flex-1 min-w-0">
+              <p className={`text-xs font-semibold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Out of Stock</p>
+              <h3 className={`text-3xl font-bold mt-2 tabular-nums ${stats.outOfStock > 0 ? 'text-red-500' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {stats.outOfStock || 0}
               </h3>
             </div>
@@ -397,15 +381,13 @@ const Pharmacy = () => {
       </div>
 
       {/* Medicines Table */}
-      <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-      
-        
-        <TableComponent
-          columns={columns}
-          data={medicines}
-          searchPlaceholder="Search medicines by name, ID, or category..."
-        />
-      </div>
+      <TableComponent
+        columns={columns}
+        data={medicines}
+        searchPlaceholder="Search medicines by name, ID, or category…"
+        emptyIcon={Package}
+        emptyText="No medicines found"
+      />
 
       {/* Add/Edit Medicine Modal */}
       <Modal
@@ -690,18 +672,16 @@ const Pharmacy = () => {
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={() => setShowAddModal(false)}
-            className={`px-6 py-2 rounded-lg border ${
-              darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
-            } transition`}
+            className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
           >
             {selectedMedicine ? 'Update' : 'Add'} Medicine
           </button>
@@ -814,18 +794,16 @@ const Pharmacy = () => {
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={() => setShowStockModal(false)}
-            className={`px-6 py-2 rounded-lg border ${
-              darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
-            } transition`}
+            className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
           >
             Cancel
           </button>
           <button
             onClick={handleStockUpdate}
-            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
           >
             Update Stock
           </button>

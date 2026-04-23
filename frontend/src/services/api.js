@@ -1,76 +1,53 @@
 import axios from 'axios'
 
-// ✅ Determine if we're in development or production
 const isDevelopment = import.meta.env.MODE === 'development'
 
-// ✅ Use local backend in development, deployed backend in production
-const API_URL = isDevelopment 
-  ? 'http://localhost:5001'  // Change 5000 to your backend port
-  : (import.meta.env.VITE_BACKEND_URL || 'https://medilink-oajt.onrender.com')
+// Dev  → use Vite proxy (/api → localhost:5001), no CORS issues
+// Prod → full deployed backend URL
+const BASE_URL = isDevelopment
+  ? '/api'
+  : `${import.meta.env.VITE_BACKEND_URL || 'https://medilink-g1wy.onrender.com'}/api`
 
-// Debug: show what the app is using
-console.info('🌐 Environment:', import.meta.env.MODE)
-console.info('🔗 API base URL:', API_URL)
-
-// ✅ Axios instance
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: BASE_URL,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
+  headers: { 'Content-Type': 'application/json' },
 })
 
-// ✅ Request interceptor
+// Attach JWT on every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    console.log('📤 API Request:', config.method?.toUpperCase(), config.url)
+    if (token) config.headers.Authorization = `Bearer ${token}`
     return config
   },
-  (error) => {
-    console.error('❌ Request Error:', error)
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// ✅ Response interceptor with better error handling
+// Handle responses and auth errors
 api.interceptors.response.use(
-  (response) => {
-    console.log('✅ API Response:', response.config.url, response.status)
-    return response.data
-  },
+  (response) => response.data,
   (error) => {
-    console.error('❌ API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data
-    })
-
-    // Network error (can't reach server)
     if (!error.response) {
-      console.error('🚫 NETWORK ERROR: Cannot reach backend at', API_URL)
-      console.error('Make sure:')
-      console.error('1. Backend server is running')
-      console.error('2. Backend URL is correct')
-      console.error('3. CORS is enabled on backend')
-      
-      // Create a more helpful error message
-      error.message = `Cannot connect to server at ${API_URL}. Is the backend running?`
+      error.message = 'Cannot connect to server. Make sure the backend is running.'
+      return Promise.reject(error)
     }
 
-    // 401 Unauthorized
-    if (error.response?.status === 401) {
-      console.warn('⚠️ Unauthorized - redirecting to login')
+    const status = error.response?.status
+
+    if (status === 401) {
       localStorage.removeItem('token')
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
+    }
+
+    if (status === 429) {
+      error.message = 'Too many requests. Please wait a moment before trying again.'
+    }
+
+    if (status === 403) {
+      error.message = 'You do not have permission to perform this action.'
     }
 
     return Promise.reject(error)

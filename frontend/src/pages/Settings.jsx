@@ -62,10 +62,10 @@ const Settings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+        <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           Settings
         </h1>
-        <p className="text-gray-500 mt-1">Manage your accountsettings and preferences</p>
+        <p className="text-gray-400 text-sm mt-1">Manage your account settings and preferences</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -196,7 +196,7 @@ const Settings = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handleProfileUpdate}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
                 >
                   Save Changes
                 </button>
@@ -260,7 +260,7 @@ const Settings = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handlePasswordChange}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
                 >
                   Change Password
                 </button>
@@ -322,7 +322,7 @@ const Settings = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handleNotificationUpdate}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
                 >
                   Save Preferences
                 </button>
@@ -400,7 +400,7 @@ const Settings = () => {
               <div className="flex justify-end">
                 <button
                   onClick={() => toast.success('Preferences saved')}
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200"
                 >
                   Save Preferences
                 </button>

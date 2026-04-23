@@ -73,7 +73,7 @@ export const getDoctorSchedule = async (id, params) => {
 // Update doctor availability/schedule
 export const updateDoctorSchedule = async (id, data) => {
   try {
-    return await api.put(`/doctors/${id}/availability`, data)
+    return await api.put(`/doctors/${id}/availability`, { availability: data })
   } catch (error) {
     console.error('Error updating doctor schedule:', error)
     throw error

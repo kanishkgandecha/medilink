@@ -36,34 +36,49 @@ exports.getAvailablePatientUsers = asyncHandler(async (req, res) => {
   });
 });
 
-// Create patient profile
+// Create patient profile (supports atomic user+profile creation)
 exports.createPatient = asyncHandler(async (req, res) => {
-  const { userId, bloodGroup, emergencyContact, allergies, insuranceInfo } = req.body;
+  const { userId, name, email, phone, gender, dateOfBirth,
+          bloodGroup, emergencyContact, allergies, insuranceInfo } = req.body;
 
-  // Validate user exists and is a patient
-  const user = await User.findById(userId);
-  if (!user || user.role !== 'Patient') {
-    return res.status(400).json({ 
-      success: false,
-      message: 'Invalid user or not a patient' 
+  let targetUser;
+
+  if (userId) {
+    // Legacy flow: link existing User
+    targetUser = await User.findById(userId);
+    if (!targetUser || targetUser.role !== 'Patient') {
+      return res.status(400).json({ success: false, message: 'Invalid user or not a Patient role' });
+    }
+  } else {
+    // New atomic flow: create User + Patient profile together
+    if (!name || !email || !phone) {
+      return res.status(400).json({ success: false, message: 'Name, email and phone are required' });
+    }
+    const duplicate = await User.findOne({ $or: [{ email: email.toLowerCase() }, { phone }] });
+    if (duplicate) {
+      const field = duplicate.email === email.toLowerCase() ? 'Email' : 'Phone number';
+      return res.status(409).json({ success: false, message: `${field} already registered` });
+    }
+    targetUser = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password: phone, // bcrypt pre-save hook hashes this
+      role: 'Patient',
+      phone,
+      ...(gender && { gender }),
+      ...(dateOfBirth && { dateOfBirth })
     });
   }
 
-  // Check if patient profile already exists
-  const existingPatient = await Patient.findOne({ userId });
+  const existingPatient = await Patient.findOne({ userId: targetUser._id });
   if (existingPatient) {
-    return res.status(400).json({ 
-      success: false,
-      message: 'Patient profile already exists for this user' 
-    });
+    return res.status(400).json({ success: false, message: 'Patient profile already exists for this user' });
   }
 
-  // Generate unique patient ID
   const patientId = await generatePatientId();
 
-  // Create patient
   const patient = await Patient.create({
-    userId,
+    userId: targetUser._id,
     patientId,
     bloodGroup,
     emergencyContact,
@@ -73,17 +88,30 @@ exports.createPatient = asyncHandler(async (req, res) => {
 
   await patient.populate('userId', 'name email phone address dateOfBirth gender');
 
-  res.status(201).json({ 
-    success: true, 
-    message: 'Patient profile created successfully',
-    data: patient 
+  res.status(201).json({
+    success: true,
+    message: userId
+      ? 'Patient profile created successfully'
+      : 'Patient created successfully. Default password is the phone number.',
+    data: patient
   });
 });
 
-// Get all patients
+// Get all patients (Patient role only sees their own profile)
 exports.getPatients = asyncHandler(async (req, res) => {
+  // Patient role: return only their own profile
+  if (req.user.role === 'Patient') {
+    const patient = await Patient.findOne({ userId: req.user._id })
+      .populate('userId', 'name email phone address dateOfBirth gender');
+    return res.status(200).json({
+      success: true,
+      count: patient ? 1 : 0,
+      data: patient ? [patient] : [],
+    });
+  }
+
   const { search, bloodGroup, page = 1, limit = 10 } = req.query;
-  
+
   let query = {};
   
   if (bloodGroup) {
@@ -176,7 +204,11 @@ exports.getPatientAppointments = asyncHandler(async (req, res) => {
   }
 
   const appointments = await Appointment.find({ patient: req.params.id })
-    .populate('doctor', 'name specialization')
+    .populate({
+      path: 'doctor',
+      select: 'userId specialization',
+      populate: { path: 'userId', select: 'name' }
+    })
     .populate('patient', 'patientId')
     .sort({ appointmentDate: -1 });
 
@@ -228,11 +260,14 @@ exports.deletePatient = asyncHandler(async (req, res) => {
     });
   }
 
+  if (patient.userId) {
+    await User.deleteOne({ _id: patient.userId });
+  }
   await patient.deleteOne();
-  
-  res.status(200).json({ 
-    success: true, 
-    message: 'Patient deleted successfully' 
+
+  res.status(200).json({
+    success: true,
+    message: 'Patient deleted successfully'
   });
 });
 
@@ -331,11 +366,11 @@ exports.addLabReport = asyncHandler(async (req, res) => {
     });
   }
 
-  const { testName, testDate, results } = req.body;
-  if (!testName || !testDate || !results) {
+  const { testName } = req.body;
+  if (!testName) {
     return res.status(400).json({
       success: false,
-      message: 'Test name, test date, and results are required'
+      message: 'Test name is required'
     });
   }
 

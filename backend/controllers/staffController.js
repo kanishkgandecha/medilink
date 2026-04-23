@@ -3,38 +3,71 @@ const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
 exports.createStaff = asyncHandler(async (req, res) => {
-  const { userId, designation, department, qualification, joiningDate, 
+  const { userId, name, email, phone, gender,
+          subRole, designation, department, qualification, joiningDate,
           employmentType, shift, salary } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+  let targetUser;
+
+  if (userId) {
+    // Legacy: link an existing User account
+    targetUser = await User.findById(userId);
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+  } else {
+    // New: create User + Staff profile atomically
+    if (!name || !email || !phone) {
+      return res.status(400).json({ success: false, message: 'Name, email and phone are required' });
+    }
+    const duplicate = await User.findOne({
+      $or: [{ email: email.toLowerCase() }, { phone }]
+    });
+    if (duplicate) {
+      const field = duplicate.email === email.toLowerCase() ? 'Email' : 'Phone';
+      return res.status(409).json({ success: false, message: `${field} already registered` });
+    }
+    const finalSubRole = subRole || designation;
+    // password = phone — bcrypt pre-save hook hashes it automatically
+    targetUser = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password: phone,
+      role: 'Staff',
+      subRole: finalSubRole,
+      phone,
+      ...(gender && { gender })
+    });
   }
 
-  // Check if staff profile already exists for this user
-  const existingStaff = await Staff.findOne({ userId });
+  const existingStaff = await Staff.findOne({ userId: targetUser._id });
   if (existingStaff) {
-    return res.status(400).json({ message: 'Staff profile already exists for this user' });
+    return res.status(400).json({ success: false, message: 'Staff profile already exists for this user' });
   }
+
+  const finalDesignation = designation || subRole || 'Staff';
+  const basic = parseFloat(salary?.basic) || 0;
+  const allowances = parseFloat(salary?.allowances) || 0;
 
   const staff = await Staff.create({
-    userId,
-    designation,
+    userId: targetUser._id,
+    designation: finalDesignation,
     department,
     qualification,
-    joiningDate,
-    employmentType,
-    shift,
-    salary: {
-      basic: salary.basic || 0,
-      allowances: salary.allowances || 0,
-      total: (salary.basic || 0) + (salary.allowances || 0)
-    }
+    joiningDate: joiningDate || new Date(),
+    employmentType: employmentType || 'Full-Time',
+    shift: shift || 'Morning',
+    salary: { basic, allowances, total: basic + allowances }
   });
 
-  const populatedStaff = await Staff.findById(staff._id).populate('userId', 'name email phone');
+  const populatedStaff = await Staff.findById(staff._id)
+    .populate('userId', 'name email phone role subRole dateOfBirth gender');
 
-  res.status(201).json({ success: true, data: populatedStaff });
+  res.status(201).json({
+    success: true,
+    message: 'Staff member created successfully. Default password is the phone number.',
+    data: populatedStaff
+  });
 });
 
 exports.getStaff = asyncHandler(async (req, res) => {

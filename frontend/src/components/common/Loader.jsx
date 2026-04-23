@@ -1,14 +1,24 @@
 import React from 'react'
 import { Activity } from 'lucide-react'
 
-const Loader = ({ fullScreen = false, text = 'Loading...' }) => {
+const Loader = ({ fullScreen = false, text = 'Loading…' }) => {
   const content = (
-    <div className="flex flex-col items-center justify-center space-y-4">
+    <div className="flex flex-col items-center justify-center gap-4">
       <div className="relative">
-        <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
-        <Activity className="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+        {/* Outer ring */}
+        <div className="w-14 h-14 rounded-full border-[3px] border-blue-100 dark:border-gray-700" />
+        {/* Spinning arc */}
+        <div className="absolute inset-0 w-14 h-14 rounded-full border-[3px] border-transparent border-t-blue-600 animate-spin" />
+        {/* Center icon */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" strokeWidth={2} />
+        </div>
       </div>
-      {text && <p className="text-gray-600 dark:text-gray-400 font-medium">{text}</p>}
+      {text && (
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 animate-pulse">
+          {text}
+        </p>
+      )}
     </div>
   )
 
@@ -21,7 +31,7 @@ const Loader = ({ fullScreen = false, text = 'Loading...' }) => {
   }
 
   return (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex items-center justify-center py-16">
       {content}
     </div>
   )

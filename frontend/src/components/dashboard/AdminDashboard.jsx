@@ -1,206 +1,225 @@
 import React, { useEffect, useState } from 'react'
-import { Users, Calendar, Bed, IndianRupee ,Activity, TrendingUp } from 'lucide-react'
+import { Users, Calendar, Bed, IndianRupee, Activity, AlertCircle, TrendingUp, Stethoscope } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import StatCard from '../common/StatCard'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { SkeletonDashboard } from '../common/SkeletonCard'
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts'
+import { getAdminDashboard } from '../../services/dashboardService'
+import { toast } from 'react-toastify'
+
+const STATUS_COLORS = {
+  Confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  Scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  Completed: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+}
+
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+
+const CustomTooltip = ({ active, payload, label, darkMode }) => {
+  if (!active || !payload?.length) return null
+  return (
+    <div className={`px-4 py-3 rounded-xl border shadow-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
+      <p className="font-semibold mb-1">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ color: p.color }}>{p.name}: <span className="font-bold">{p.name === 'Revenue' ? `₹${Number(p.value).toLocaleString()}` : p.value}</span></p>
+      ))}
+    </div>
+  )
+}
 
 const AdminDashboard = () => {
   const { darkMode } = useTheme()
-  const [stats, setStats] = useState({
-    totalPatients: 2845,
-    appointmentsToday: 124,
-    availableBeds: 45,
-    revenueToday: 12450
-  })
+  const [dashboard, setDashboard] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const recentAppointments = [
-    { id: 1, patient: 'Kanan Patient', doctor: 'Dr. Kanishk Doctor', time: '09:00 AM', status: 'Confirmed', type: 'Consultation' },
-    { id: 2, patient: 'Keshav Patient', doctor: 'Dr. Kanishk Doctor', time: '10:30 AM', status: 'Pending', type: 'Follow-up' },
-    { id: 3, patient: 'Kanishk New', doctor: 'Dr. Kanan Goenka', time: '11:00 AM', status: 'Confirmed', type: 'Surgery' },
-    { id: 4, patient: '	Kanishk Gandecha', doctor: 'Dr. Kanan Goenka', time: '02:00 PM', status: 'Confirmed', type: 'Check-up' },
-  ]
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await getAdminDashboard()
+        setDashboard(res.dashboard)
+      } catch {
+        toast.error('Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDashboard()
+  }, [])
+
+  const cardBase = `border rounded-2xl p-6 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`
+  const headingCls = `text-lg font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-900'}`
+  const textCls = darkMode ? 'text-white' : 'text-gray-900'
+  const gridStroke = darkMode ? '#374151' : '#f3f4f6'
+  const axisStroke = darkMode ? '#6b7280' : '#9ca3af'
+
+  if (loading) return <SkeletonDashboard />
+
+  const overview = dashboard?.overview || {}
+  const alerts = dashboard?.alerts || {}
+  const recentAppointments = dashboard?.recentActivities?.appointments || []
 
   const revenueData = [
-    { month: 'Jan', revenue: 45000 },
-    { month: 'Feb', revenue: 52000 },
-    { month: 'Mar', revenue: 48000 },
-    { month: 'Apr', revenue: 61000 },
-    { month: 'May', revenue: 55000 },
-    { month: 'Jun', revenue: 67000 },
+    { month: 'Nov', Revenue: 38000 },
+    { month: 'Dec', Revenue: 52000 },
+    { month: 'Jan', Revenue: 44000 },
+    { month: 'Feb', Revenue: 61000 },
+    { month: 'Mar', Revenue: 57000 },
+    { month: 'Apr', Revenue: (dashboard?.revenue?.today || 0) > 0 ? dashboard.revenue.today * 30 : 67000 },
   ]
 
-  const departmentData = [
-    { name: 'Cardiology', patients: 45, color: '#ef4444' },
-    { name: 'Neurology', patients: 32, color: '#8b5cf6' },
-    { name: 'Orthopedics', patients: 28, color: '#3b82f6' },
-    { name: 'Pediatrics', patients: 52, color: '#10b981' },
+  const aptTrendData = [
+    { day: 'Mon', Appointments: 14 },
+    { day: 'Tue', Appointments: 18 },
+    { day: 'Wed', Appointments: 12 },
+    { day: 'Thu', Appointments: 21 },
+    { day: 'Fri', Appointments: 16 },
+    { day: 'Sat', Appointments: 9 },
+  ]
+
+  const bedData = [
+    { name: 'Occupied', value: overview.occupiedBeds || 0, color: '#ef4444' },
+    { name: 'Available', value: overview.availableBeds || 0, color: '#10b981' },
   ]
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Dashboard Overview
-        </h1>
-        <p className="text-gray-500 mt-1">Welcome back! Here's what's happening today.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className={`text-2xl font-bold ${textCls}`}>Dashboard Overview</h1>
+          <p className="text-gray-400 text-sm mt-1">Welcome back — here's what's happening today.</p>
+        </div>
+        <div className={`hidden sm:flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full ${darkMode ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          System Live
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Patients"
-          value={stats.totalPatients.toLocaleString()}
-          change="+12.5%"
-          trend="up"
-          icon={Users}
-          color="from-blue-600 to-cyan-600"
-        />
-        <StatCard
-          title="Appointments Today"
-          value={stats.appointmentsToday}
-          change="+8.2%"
-          trend="up"
-          icon={Calendar}
-          color="from-purple-600 to-pink-600"
-        />
-        <StatCard
-          title="Available Beds"
-          value={stats.availableBeds}
-          change="-5.3%"
-          trend="down"
-          icon={Bed}
-          color="from-green-600 to-emerald-600"
-        />
-        <StatCard
-          title="Revenue (Today)"
-          value={`₹${stats.revenueToday.toLocaleString()}`}
-          change="+15.8%"
-          trend="up"
-          icon={IndianRupee}
-          color="from-orange-600 to-red-600"
-        />
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Total Patients" value={(overview.totalPatients || 0).toLocaleString()} icon={Users} color="from-blue-600 to-cyan-500" />
+        <StatCard title="Appointments Today" value={overview.todayAppointments || 0} icon={Calendar} color="from-violet-600 to-purple-500" />
+        <StatCard title="Available Beds" value={overview.availableBeds || 0} icon={Bed} color="from-emerald-600 to-teal-500" />
+        <StatCard title="Revenue Today" value={`₹${(dashboard?.revenue?.today || 0).toLocaleString()}`} icon={IndianRupee} color="from-orange-500 to-amber-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`lg:col-span-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              Recent Appointments
-            </h2>
-            <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-              View All
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {recentAppointments.map((apt) => (
-              <div
-                key={apt.id}
-                className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 hover:bg-gray-750' : 'border-gray-200 hover:bg-gray-50'} transition-colors`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white font-semibold">
-                      {apt.patient.split(' ').map(n => n[0]).join('')}
+      {/* Alerts */}
+      {(alerts.lowStockMedicines > 0 || alerts.pendingBills > 0) && (
+        <div className="flex flex-wrap gap-3">
+          {alerts.lowStockMedicines > 0 && (
+            <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium ${darkMode ? 'bg-red-900/20 border-red-800/60 text-red-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
+              <AlertCircle size={15} />
+              {alerts.lowStockMedicines} low-stock medicine{alerts.lowStockMedicines > 1 ? 's' : ''}
+            </div>
+          )}
+          {alerts.pendingBills > 0 && (
+            <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium ${darkMode ? 'bg-amber-900/20 border-amber-800/60 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+              <Activity size={15} />
+              {alerts.pendingBills} pending bill{alerts.pendingBills > 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main content: Appointments + Bed Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className={`lg:col-span-2 ${cardBase}`}>
+          <h2 className={headingCls}>Recent Appointments</h2>
+          <div className="space-y-3">
+            {recentAppointments.length === 0 ? (
+              <div className="text-center py-10">
+                <Stethoscope className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-400 text-sm">No appointments today</p>
+              </div>
+            ) : (
+              recentAppointments.slice(0, 5).map((apt) => {
+                const patientName = apt.patient?.userId?.name || apt.patient?.patientId || 'Unknown'
+                const doctorName = (apt.doctor?.userId?.name || 'Unknown').replace(/^Dr\.?\s*/i, '').trim()
+                const initials = patientName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                const timeStr = apt.timeSlot?.startTime || '—'
+                return (
+                  <div key={apt._id} className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-700/40' : 'border-gray-100 hover:bg-gray-50'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {initials}
+                      </div>
+                      <div>
+                        <p className={`font-semibold text-sm ${textCls}`}>{patientName}</p>
+                        <p className="text-xs text-gray-400">Dr. {doctorName} · {timeStr}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {apt.patient}
-                      </p>
-                      <p className="text-sm text-gray-500">{apt.doctor}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {apt.time}
-                    </p>
-                    <span
-                      className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
-                        apt.status === 'Confirmed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                    >
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[apt.status] || STATUS_COLORS.Scheduled}`}>
                       {apt.status}
                     </span>
                   </div>
-                </div>
-              </div>
-            ))}
+                )
+              })
+            )}
           </div>
         </div>
 
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Department Overview
-          </h2>
-          <div className="space-y-4">
-            {departmentData.map((dept, index) => (
-              <div key={index}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {dept.name}
-                  </span>
-                  <span className="text-sm font-semibold text-blue-600">{dept.patients}</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full"
-                    style={{ 
-                      width: `${(dept.patients / 60) * 100}%`,
-                      background: dept.color
-                    }}
-                  ></div>
-                </div>
+        {/* Bed Status */}
+        <div className={cardBase}>
+          <h2 className={headingCls}>Bed Status</h2>
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={bedData} cx="50%" cy="50%" innerRadius={40} outerRadius={68} dataKey="value" strokeWidth={0}>
+                {bedData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Pie>
+              <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ backgroundColor: darkMode ? '#1f2937' : '#fff', border: 'none', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="mt-4 space-y-2.5">
+            {[
+              { label: 'Total Beds', value: overview.totalBeds || 0, color: textCls },
+              { label: 'Occupied', value: overview.occupiedBeds || 0, color: 'text-red-500' },
+              { label: 'Available', value: overview.availableBeds || 0, color: 'text-emerald-500' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">{label}</span>
+                <span className={`font-bold ${color}`}>{value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Revenue Trend
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Revenue trend */}
+        <div className={cardBase}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className={`text-lg font-bold ${textCls}`}>Revenue Trend</h2>
+            <div className={`flex items-center gap-1 text-xs font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+              <TrendingUp className="w-4 h-4" /> +18% this month
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-              <XAxis dataKey="month" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-                  border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                  borderRadius: '8px'
-                }}
-              />
-              <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+              <XAxis dataKey="month" stroke={axisStroke} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis stroke={axisStroke} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
+              <Tooltip content={<CustomTooltip darkMode={darkMode} />} />
+              <Line type="monotone" dataKey="Revenue" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Patient Distribution
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={departmentData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="patients"
-              >
-                {departmentData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
+        {/* Weekly appointments */}
+        <div className={cardBase}>
+          <h2 className={`text-lg font-bold mb-5 ${textCls}`}>Weekly Appointments</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={aptTrendData} barSize={28}>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+              <XAxis dataKey="day" stroke={axisStroke} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis stroke={axisStroke} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip darkMode={darkMode} />} />
+              <Bar dataKey="Appointments" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

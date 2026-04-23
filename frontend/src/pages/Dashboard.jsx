@@ -5,6 +5,8 @@ import DoctorDashboard from '../components/dashboard/DoctorDashboard'
 import PatientDashboard from '../components/dashboard/PatientDashboard'
 import NurseDashboard from '../components/dashboard/NurseDashboard'
 import ReceptionistDashboard from '../components/dashboard/ReceptionistDashboard'
+import PharmacistDashboard from '../components/dashboard/PharmacistDashboard'
+import StaffDashboard from '../components/dashboard/StaffDashboard'
 import Loader from '../components/common/Loader'
 
 const Dashboard = () => {
@@ -42,9 +44,13 @@ const Dashboard = () => {
       
       case 'receptionist':
         return <ReceptionistDashboard />
-      
-        return <AdminDashboard />
-      
+
+      case 'pharmacist':
+        return <PharmacistDashboard />
+
+      case 'staff':
+        return <StaffDashboard />
+
       default:
         return (
           <div className="flex items-center justify-center min-h-screen">

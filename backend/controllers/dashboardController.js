@@ -57,10 +57,15 @@ const getAdminDashboard = async (_req, res) => {
   const recentAppointments = await Appointment.find()
     .sort('-createdAt')
     .limit(5)
-    .populate('patient', 'patientId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } })
-    .populate('doctor')
-    .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } });
+    .populate({
+      path: 'patient',
+      select: 'patientId userId',
+      populate: { path: 'userId', select: 'name' }
+    })
+    .populate({
+      path: 'doctor',
+      populate: { path: 'userId', select: 'name' }
+    });
 
   const recentUsers = await User.find({ isActive: true })
     .sort('-createdAt')
@@ -237,25 +242,31 @@ const getPatientDashboard = async (req, res) => {
       status: { $in: ['Scheduled', 'Confirmed'] }
     })
       .sort('appointmentDate')
-      .populate('doctor')
-      .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } }),
-    
+      .populate({
+        path: 'doctor',
+        populate: { path: 'userId', select: 'name' }
+      }),
+
     Appointment.find({
       patient: patient._id,
       status: 'Completed'
     })
       .sort('-appointmentDate')
       .limit(5)
-      .populate('doctor')
-      .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } }),
-    
+      .populate({
+        path: 'doctor',
+        populate: { path: 'userId', select: 'name' }
+      }),
+
     Prescription.find({
       patient: patient._id,
       status: { $in: ['Pending', 'Partially-Filled'] }
     })
       .sort('-createdAt')
-      .populate('doctor')
-      .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } })
+      .populate({
+        path: 'doctor',
+        populate: { path: 'userId', select: 'name' }
+      })
       .populate('medicines.medicine', 'name dosageForm'),
     
     Billing.find({
@@ -272,7 +283,10 @@ const getPatientDashboard = async (req, res) => {
       patientId: patient.patientId,
       name: req.user.name,
       bloodGroup: patient.bloodGroup,
-      age: req.user.dateOfBirth ? Math.floor((Date.now() - new Date(req.user.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000)) : null
+      age: req.user.dateOfBirth ? Math.floor((Date.now() - new Date(req.user.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000)) : null,
+      medicalHistory: patient.medicalHistory || [],
+      allergies: patient.allergies || [],
+      currentMedications: patient.currentMedications || [],
     },
     dashboard: {
       overview: {
@@ -325,8 +339,11 @@ const getNurseDashboard = async (req, res) => {
       priority: 'Emergency',
       status: { $in: ['Scheduled', 'Confirmed', 'In-Progress'] }
     })
-      .populate('patient', 'patientId')
-      .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } })
+      .populate({
+        path: 'patient',
+        select: 'patientId userId',
+        populate: { path: 'userId', select: 'name' }
+      })
       .limit(10),
     
     Appointment.countDocuments({
@@ -384,10 +401,15 @@ const getReceptionistDashboard = async (req, res) => {
       appointmentDate: { $gte: today, $lt: tomorrow }
     })
       .sort('timeSlot.startTime')
-      .populate('patient', 'patientId')
-      .populate({ path: 'patient', populate: { path: 'userId', select: 'name phone' } })
-      .populate('doctor')
-      .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } }),
+      .populate({
+        path: 'patient',
+        select: 'patientId userId',
+        populate: { path: 'userId', select: 'name phone' }
+      })
+      .populate({
+        path: 'doctor',
+        populate: { path: 'userId', select: 'name' }
+      }),
     
     Appointment.countDocuments({
       status: 'Scheduled'
@@ -449,10 +471,15 @@ const getPharmacistDashboard = async (req, res) => {
     })
       .sort('-createdAt')
       .limit(10)
-      .populate('patient', 'patientId')
-      .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } })
-      .populate('doctor')
-      .populate({ path: 'doctor', populate: { path: 'userId', select: 'name' } }),
+      .populate({
+        path: 'patient',
+        select: 'patientId userId',
+        populate: { path: 'userId', select: 'name' }
+      })
+      .populate({
+        path: 'doctor',
+        populate: { path: 'userId', select: 'name' }
+      }),
     
     Medicine.find({
       $expr: { $lte: ['$stockQuantity', '$reorderLevel'] },

@@ -1,310 +1,213 @@
-import React, { useState } from 'react'
-import { BarChart3, TrendingUp, Users, Calendar, Download, Filter } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { BarChart3, TrendingUp, Users, Calendar, DollarSign, Activity } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import * as reportService from '../services/reportService'
+import { toast } from 'react-toastify'
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
+
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+const getDateBounds = (range) => {
+  const end = new Date()
+  const start = new Date()
+  switch (range) {
+    case 'week':    start.setDate(start.getDate() - 7); break
+    case 'month':   start.setMonth(start.getMonth() - 1); break
+    case 'quarter': start.setMonth(start.getMonth() - 3); break
+    case 'year':    start.setFullYear(start.getFullYear() - 1); break
+    default:        start.setMonth(start.getMonth() - 1)
+  }
+  return {
+    startDate: start.toISOString().split('T')[0],
+    endDate:   end.toISOString().split('T')[0]
+  }
+}
+
+const monthKey = (dateStr) => {
+  const d = new Date(dateStr)
+  return MONTH_SHORT[d.getMonth()]
+}
 
 const Reports = () => {
   const { darkMode } = useTheme()
   const [dateRange, setDateRange] = useState('month')
-  const [reportType, setReportType] = useState('revenue')
+  const [loading, setLoading] = useState(true)
 
-  const revenueData = [
-    { month: 'Jan', revenue: 45000, expenses: 32000, profit: 13000 },
-    { month: 'Feb', revenue: 52000, expenses: 35000, profit: 17000 },
-    { month: 'Mar', revenue: 48000, expenses: 33000, profit: 15000 },
-    { month: 'Apr', revenue: 61000, expenses: 38000, profit: 23000 },
-    { month: 'May', revenue: 55000, expenses: 36000, profit: 19000 },
-    { month: 'Jun', revenue: 67000, expenses: 40000, profit: 27000 },
-  ]
+  const [summary, setSummary] = useState({
+    totalPatients: 0,
+    totalDoctors: 0,
+    appointmentsToday: 0,
+    periodRevenue: 0
+  })
+  const [revenueData, setRevenueData] = useState([])
+  const [appointmentData, setAppointmentData] = useState([])
 
-  const appointmentData = [
-    { month: 'Jan', total: 245, completed: 220, cancelled: 25 },
-    { month: 'Feb', total: 280, completed: 265, cancelled: 15 },
-    { month: 'Mar', total: 265, completed: 240, cancelled: 25 },
-    { month: 'Apr', total: 310, completed: 295, cancelled: 15 },
-    { month: 'May', total: 295, completed: 275, cancelled: 20 },
-    { month: 'Jun', total: 340, completed: 320, cancelled: 20 },
-  ]
+  const card = `border rounded-xl p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`
+  const text = darkMode ? 'text-white' : 'text-gray-800'
+  const gridStroke = darkMode ? '#374151' : '#e5e7eb'
+  const axisStroke = darkMode ? '#9ca3af' : '#6b7280'
+  const tooltipStyle = {
+    backgroundColor: darkMode ? '#1f2937' : '#ffffff',
+    border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
+    borderRadius: '8px'
+  }
 
-  const departmentData = [
-    { name: 'Cardiology', patients: 450, revenue: 125000 },
-    { name: 'Neurology', patients: 320, revenue: 98000 },
-    { name: 'Orthopedics', patients: 380, revenue: 110000 },
-    { name: 'Pediatrics', patients: 520, revenue: 85000 },
-    { name: 'General', patients: 680, revenue: 95000 },
-  ]
+  useEffect(() => {
+    fetchAll()
+  }, [dateRange])
 
-  const patientDistribution = [
-    { name: 'Cardiology', value: 450, color: '#ef4444' },
-    { name: 'Neurology', value: 320, color: '#8b5cf6' },
-    { name: 'Orthopedics', value: 380, color: '#3b82f6' },
-    { name: 'Pediatrics', value: 520, color: '#10b981' },
-    { name: 'General', value: 680, color: '#f59e0b' },
-  ]
+  const fetchAll = async () => {
+    setLoading(true)
+    const { startDate, endDate } = getDateBounds(dateRange)
+
+    try {
+      const [dashRes, revRes, apptRes] = await Promise.allSettled([
+        reportService.getDashboardReport(),
+        reportService.getRevenueReport({ startDate, endDate }),
+        reportService.getPatientVisitReport({ startDate, endDate })
+      ])
+
+      // Summary cards from dashboard endpoint
+      if (dashRes.status === 'fulfilled') {
+        const s = dashRes.value?.stats || {}
+        setSummary(prev => ({
+          ...prev,
+          totalPatients: s.patients?.total ?? prev.totalPatients,
+          totalDoctors: s.doctors?.total ?? prev.totalDoctors,
+          appointmentsToday: s.appointments?.today ?? prev.appointmentsToday
+        }))
+      }
+
+      // Revenue chart: group bills by month
+      if (revRes.status === 'fulfilled') {
+        const bills = revRes.value?.data || []
+        const statsData = revRes.value?.stats || {}
+        setSummary(prev => ({ ...prev, periodRevenue: statsData.totalRevenue || prev.periodRevenue }))
+
+        const grouped = {}
+        bills.forEach(bill => {
+          const m = monthKey(bill.billDate)
+          if (!grouped[m]) grouped[m] = { month: m, revenue: 0, collected: 0 }
+          grouped[m].revenue   += bill.totalAmount || 0
+          grouped[m].collected += bill.amountPaid  || 0
+        })
+        setRevenueData(Object.values(grouped))
+      }
+
+      // Appointment chart: group appointments by month
+      if (apptRes.status === 'fulfilled') {
+        const apts = apptRes.value?.data || []
+        const grouped = {}
+        apts.forEach(apt => {
+          const m = monthKey(apt.appointmentDate)
+          if (!grouped[m]) grouped[m] = { month: m, total: 0, completed: 0, cancelled: 0 }
+          grouped[m].total++
+          if (apt.status === 'Completed') grouped[m].completed++
+          if (apt.status === 'Cancelled') grouped[m].cancelled++
+        })
+        setAppointmentData(Object.values(grouped))
+      }
+    } catch {
+      toast.error('Failed to load report data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const StatCard = ({ label, value, icon: Icon, color, prefix = '' }) => (
+    <div className={card}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-500 font-medium">{label}</p>
+          <h3 className={`text-2xl font-bold mt-1 ${text}`}>
+            {prefix}{typeof value === 'number' ? value.toLocaleString() : value}
+          </h3>
+        </div>
+        <div className={`p-3 ${color} rounded-lg`}>
+          <Icon className="w-6 h-6" />
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Reports & Analytics
-          </h1>
-          <p className="text-gray-500 mt-1">View comprehensive hospital statistics and insights</p>
+          <h1 className={`text-2xl font-bold ${text}`}>Reports & Analytics</h1>
+          <p className="text-gray-400 text-sm mt-1">Live hospital statistics and insights</p>
         </div>
-        <div className="flex space-x-3">
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className={`px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
-          >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
-          </select>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition">
-            <Download className="w-5 h-5" />
-            <span>Export Report</span>
-          </button>
-        </div>
+        <select
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value)}
+          className={`px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all
+            ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
+        >
+          <option value="week">Last 7 Days</option>
+          <option value="month">Last Month</option>
+          <option value="quarter">Last Quarter</option>
+          <option value="year">Last Year</option>
+        </select>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Total Revenue</p>
-              <h3
-                className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-              >
-                ₹{revenueData.reduce((acc, item) => acc + item.revenue, 0).toLocaleString()}
-              </h3>
-              <div className="flex items-center mt-2 space-x-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-500 font-medium">+12.5%</span>
-              </div>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Total Patients</p>
-              <h3
-                className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-              >
-                {patientDistribution.reduce((acc, item) => acc + item.value, 0).toLocaleString()}
-              </h3>
-              <div className="flex items-center mt-2 space-x-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-500 font-medium">+8.2%</span>
-              </div>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Users className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Appointments</p>
-              <h3
-                className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-              >
-                {appointmentData.reduce((acc, item) => acc + item.total, 0)}
-              </h3>
-              <div className="flex items-center mt-2 space-x-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-500 font-medium">+15.3%</span>
-              </div>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <Calendar className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Avg Rating</p>
-              <h3
-                className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-              >
-                4.8/5.0
-              </h3>
-              <div className="flex items-center mt-2 space-x-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-500 font-medium">+0.3</span>
-              </div>
-            </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
+        <StatCard label="Total Patients"      value={summary.totalPatients}     icon={Users}     color="bg-green-100 dark:bg-green-900/30 text-green-600" />
+        <StatCard label="Active Doctors"      value={summary.totalDoctors}      icon={Activity}  color="bg-blue-100 dark:bg-blue-900/30 text-blue-600" />
+        <StatCard label="Appointments Today"  value={summary.appointmentsToday} icon={Calendar}  color="bg-purple-100 dark:bg-purple-900/30 text-purple-600" />
+        <StatCard label="Revenue (Period)"    value={summary.periodRevenue}     icon={DollarSign} color="bg-orange-100 dark:bg-orange-900/30 text-orange-600" prefix="₹" />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Revenue & Profit Trend
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-              <XAxis dataKey="month" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <Tooltip
-                formatter={(value) => [`₹${value.toLocaleString()}`, '']}
-                contentStyle={{
-                  backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-                  border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} name="Revenue" />
-              <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} name="Profit" />
-            </LineChart>
-          </ResponsiveContainer>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-64">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
+          <div className={card}>
+            <h2 className={`text-xl font-bold mb-4 ${text}`}>Revenue vs Collected</h2>
+            {revenueData.length === 0 ? (
+              <div className="flex items-center justify-center h-64 text-gray-400">No revenue data for this period</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                  <XAxis dataKey="month" stroke={axisStroke} />
+                  <YAxis stroke={axisStroke} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`₹${v.toLocaleString()}`, '']} />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenue"   stroke="#3b82f6" strokeWidth={2} name="Billed" />
+                  <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2} name="Collected" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
 
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Appointment Statistics
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={appointmentData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#374151' : '#e5e7eb'} />
-              <XAxis dataKey="month" stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <YAxis stroke={darkMode ? '#9ca3af' : '#6b7280'} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-                  border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Bar dataKey="completed" fill="#10b981" name="Completed" />
-              <Bar dataKey="cancelled" fill="#ef4444" name="Cancelled" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Patient Distribution by Department
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={patientDistribution}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {patientDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div
-          className={`${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border rounded-xl p-6`}
-        >
-          <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Department Performance
-          </h2>
-          <div className="space-y-4">
-            {departmentData.map((dept, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span
-                    className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                  >
-                    {dept.name}
-                  </span>
-                  <div className="text-right">
-                    <span className="text-sm font-semibold text-blue-600">{dept.patients} patients</span>
-                    <span className="text-xs text-gray-500 ml-2">₹{dept.revenue.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-blue-600 to-cyan-600 h-2 rounded-full transition-all"
-                    style={{ width: `${(dept.patients / 700) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+          {/* Appointment Chart */}
+          <div className={card}>
+            <h2 className={`text-xl font-bold mb-4 ${text}`}>Appointment Statistics</h2>
+            {appointmentData.length === 0 ? (
+              <div className="flex items-center justify-center h-64 text-gray-400">No appointment data for this period</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={appointmentData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                  <XAxis dataKey="month" stroke={axisStroke} />
+                  <YAxis stroke={axisStroke} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="completed" fill="#10b981" name="Completed" />
+                  <Bar dataKey="cancelled" fill="#ef4444" name="Cancelled" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

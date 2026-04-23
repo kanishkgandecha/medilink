@@ -1,21 +1,28 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
+const Billing = require('../models/Billing');
 const asyncHandler = require('../utils/asyncHandler');
 
 // Create new appointment
 const createAppointment = asyncHandler(async (req, res) => {
-  const { patient, doctor, appointmentDate, timeSlot, type, symptoms, priority } = req.body;
+  let { patient, doctor, appointmentDate, timeSlot, type, symptoms, priority } = req.body;
+
+  // For Patient role: auto-resolve their own patient profile
+  if (req.user.role === 'Patient') {
+    const ownProfile = await Patient.findOne({ userId: req.user._id });
+    if (!ownProfile) {
+      return res.status(400).json({ success: false, message: 'Patient profile not found. Contact reception to set up your profile.' });
+    }
+    patient = ownProfile._id;
+  }
 
   // Verify patient and doctor exist
   const patientExists = await Patient.findById(patient);
   const doctorExists = await Doctor.findById(doctor).populate('userId');
 
   if (!patientExists) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Patient not found' 
-    });
+    return res.status(404).json({ success: false, message: 'Patient not found' });
   }
 
   if (!doctorExists) {
@@ -60,15 +67,8 @@ const createAppointment = asyncHandler(async (req, res) => {
   });
 
   const populatedAppointment = await Appointment.findById(appointment._id)
-    .populate('patient')
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId' }
-    })
-    .populate({
-      path: 'patient',
-      populate: { path: 'userId' }
-    });
+    .populate({ path: 'patient', populate: { path: 'userId' } })
+    .populate({ path: 'doctor', populate: { path: 'userId' } });
 
   res.status(201).json({ 
     success: true, 
@@ -80,11 +80,29 @@ const createAppointment = asyncHandler(async (req, res) => {
 // Get all appointments with filters
 const getAppointments = asyncHandler(async (req, res) => {
   const { doctor, patient, status, date, priority, search } = req.query;
-  
+
   let query = {};
-  
-  if (doctor) query.doctor = doctor;
-  if (patient) query.patient = patient;
+
+  // Patients only see their own appointments
+  if (req.user.role === 'Patient') {
+    const ownProfile = await Patient.findOne({ userId: req.user._id });
+    if (!ownProfile) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+    query.patient = ownProfile._id;
+  } else if (req.user.role === 'Doctor') {
+    // Doctors only see their own appointments
+    const ownProfile = await Doctor.findOne({ userId: req.user._id });
+    if (!ownProfile) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+    query.doctor = ownProfile._id;
+    if (patient) query.patient = patient;
+  } else {
+    if (doctor) query.doctor = doctor;
+    if (patient) query.patient = patient;
+  }
+
   if (status) query.status = status;
   if (priority) query.priority = priority;
   
@@ -106,8 +124,7 @@ const getAppointments = asyncHandler(async (req, res) => {
     })
     .populate({
       path: 'doctor',
-      populate: { path: 'userId', select: 'name email' },
-      select: 'userId specialization consultationFee'
+      populate: { path: 'userId', select: 'name email phone' }
     })
     .sort('-appointmentDate -timeSlot.startTime');
 
@@ -162,13 +179,15 @@ const getAppointment = asyncHandler(async (req, res) => {
 // Update appointment
 const updateAppointment = asyncHandler(async (req, res) => {
   let appointment = await Appointment.findById(req.params.id);
-  
+
   if (!appointment) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Appointment not found' 
+    return res.status(404).json({
+      success: false,
+      message: 'Appointment not found'
     });
   }
+
+  const previousStatus = appointment.status;
 
   // If updating time slot, check availability
   if (req.body.timeSlot || req.body.appointmentDate) {
@@ -208,8 +227,42 @@ const updateAppointment = asyncHandler(async (req, res) => {
       populate: { path: 'userId' }
     });
 
-  res.status(200).json({ 
-    success: true, 
+  // Auto-generate bill when appointment is marked Completed
+  if (req.body.status === 'Completed' && previousStatus !== 'Completed') {
+    try {
+      const appt = await Appointment.findById(req.params.id)
+        .populate({ path: 'doctor', select: 'consultationFee' });
+
+      const fee = appt?.doctor?.consultationFee || 500;
+      const patientId = appt?.patient;
+
+      if (patientId) {
+        await Billing.create({
+          patient: patientId,
+          billType: 'Consultation',
+          items: [{
+            description: `Consultation - ${appointment.type || 'General'}`,
+            category: 'Consultation',
+            quantity: 1,
+            unitPrice: fee,
+            amount: fee
+          }],
+          subtotal: fee,
+          discount: 0,
+          tax: 0,
+          totalAmount: fee,
+          balance: fee,
+          notes: `Auto-generated on appointment completion`,
+          generatedBy: req.user.id
+        });
+      }
+    } catch (billingErr) {
+      // Don't fail the status update if billing creation fails
+    }
+  }
+
+  res.status(200).json({
+    success: true,
     data: appointment,
     message: 'Appointment updated successfully'
   });

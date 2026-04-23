@@ -1,211 +1,109 @@
-import React from 'react'
-import { Calendar, Users, Phone, Clock, CheckCircle, XCircle } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Calendar, Users, IndianRupee, Clock, CheckCircle2, Stethoscope } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import StatCard from '../common/StatCard'
+import { SkeletonDashboard } from '../common/SkeletonCard'
+import { getReceptionistDashboard } from '../../services/dashboardService'
+import { toast } from 'react-toastify'
+
+const STATUS_BADGE = {
+  Confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  Scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  Cancelled: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+  Completed: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300',
+}
 
 const ReceptionistDashboard = () => {
   const { darkMode } = useTheme()
+  const [dashboard, setDashboard] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const todayAppointments = [
-    {
-      id: 1,
-      time: '09:00 AM',
-      patient: 'Kanishk New',
-      doctor: 'Dr. Kanan Goenka',
-      type: 'Consultation',
-      status: 'Checked In'
-    },
-    {
-      id: 2,
-      time: '09:30 AM',
-      patient: 'Keshav Patient',
-      doctor: 'Dr. Kanishk Gandecha',
-      type: 'Follow-up',
-      status: 'Waiting'
-    },
-    {
-      id: 3,
-      time: '10:00 AM',
-      patient: 'Kanishk Gandecha',
-      doctor: 'Dr. Kanan Goenka',
-      type: 'Check-up',
-      status: 'Scheduled'
-    },
-    {
-      id: 4,
-      time: '10:30 AM',
-      patient: 'Kanan Patient',
-      doctor: 'Dr. Kanishk Gandecha',
-      type: 'Consultation',
-      status: 'Scheduled'
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await getReceptionistDashboard()
+        setDashboard(res.dashboard)
+      } catch {
+        toast.error('Failed to load receptionist dashboard')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetch()
+  }, [])
 
-  const checkIns = [
-    { id: 1, patient: 'Kanishk New', time: '08:55 AM', doctor: 'Dr. Sarah Wilson' },
-    { id: 2, patient: 'Keshav Patient', time: '09:15 AM', doctor: 'Dr. Emily Chen' }
-  ]
+  const card = `border rounded-2xl p-6 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`
+  const textCls = darkMode ? 'text-white' : 'text-gray-900'
 
-  const pendingCalls = [
-    { id: 1, caller: 'Kanishk Gandecha', reason: 'Appointment Booking', time: '5 min ago' },
-    { id: 2, caller: 'Kanan Patient', reason: 'Report Inquiry', time: '10 min ago' },
-  ]
+  if (loading) return <SkeletonDashboard />
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Checked In':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-      case 'Waiting':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-      case 'Completed':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-      default:
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
-    }
-  }
+  const overview = dashboard?.overview || {}
+  const todaySchedule = dashboard?.todaySchedule || []
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Receptionist Dashboard
-        </h1>
-        <p className="text-gray-500 mt-1">Manage appointments and patient check-ins</p>
+        <h1 className={`text-2xl font-bold ${textCls}`}>Receptionist Dashboard</h1>
+        <p className="text-gray-400 text-sm mt-1">Today's appointments and front-desk overview</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Today's Appointments"
-          value={todayAppointments.length}
-          icon={Calendar}
-          color="from-blue-600 to-cyan-600"
-        />
-        <StatCard
-          title="Checked In"
-          value={todayAppointments.filter(a => a.status === 'Checked In').length}
-          icon={CheckCircle}
-          color="from-green-600 to-emerald-600"
-        />
-        <StatCard
-          title="Pending Calls"
-          value={pendingCalls.length}
-          icon={Phone}
-          color="from-orange-600 to-red-600"
-        />
-        <StatCard
-          title="Walk-ins Today"
-          value="8"
-          icon={Users}
-          color="from-purple-600 to-pink-600"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard title="Today's Appointments" value={overview.todayAppointments ?? '—'} icon={Calendar} color="from-blue-600 to-cyan-500" />
+        <StatCard title="Available Doctors" value={overview.availableDoctors ?? '—'} icon={CheckCircle2} color="from-emerald-600 to-teal-500" />
+        <StatCard title="Pending Bills" value={overview.pendingBills ?? '—'} icon={IndianRupee} color="from-orange-500 to-amber-500" />
+        <StatCard title="New Registrations" value={overview.todayRegistrations ?? '—'} icon={Users} color="from-violet-600 to-purple-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's Appointments */}
-        <div className={`lg:col-span-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              Today's Appointments
-            </h2>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-              New Appointment
-            </button>
-          </div>
-          <div className="space-y-3">
-            {todayAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
-                      <Clock className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {appointment.patient}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {appointment.time} • {appointment.doctor}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">{appointment.type}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end space-y-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
-                      {appointment.status}
-                    </span>
-                    {appointment.status === 'Scheduled' && (
-                      <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                        Check In
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className={card}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className={`text-lg font-bold ${textCls}`}>Today's Schedule</h2>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${darkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+            {todaySchedule.length} total
+          </span>
         </div>
 
-        {/* Quick Actions */}
-        <div className="space-y-6">
-          {/* Recent Check-ins */}
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-            <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              Recent Check-ins
-            </h2>
-            <div className="space-y-3">
-              {checkIns.map((checkIn) => (
-                <div
-                  key={checkIn.id}
-                  className={`p-3 rounded-lg ${darkMode ? 'bg-gray-750' : 'bg-green-50'}`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {checkIn.patient}
-                      </p>
-                      <p className="text-xs text-gray-500">{checkIn.doctor}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1 ml-7">{checkIn.time}</p>
-                </div>
-              ))}
-            </div>
+        {todaySchedule.length === 0 ? (
+          <div className="text-center py-12">
+            <Stethoscope className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className={`font-semibold ${textCls}`}>No appointments today</p>
+            <p className="text-gray-400 text-sm mt-1">The schedule is clear for today</p>
           </div>
+        ) : (
+          <div className="space-y-2">
+            {todaySchedule.map((apt) => {
+              const patientName = apt.patient?.userId?.name || apt.patient?.patientId || 'Unknown'
+              const doctorName = (apt.doctor?.userId?.name || 'Unknown').replace(/^Dr\.?\s*/i, '').trim()
+              const timeStr = apt.timeSlot?.startTime || '—'
+              const initials = patientName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+              return (
+                <div key={apt._id} className={`flex items-center gap-4 p-4 rounded-xl border transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-700/40' : 'border-gray-100 hover:bg-gray-50'}`}>
+                  {/* Time column */}
+                  <div className={`w-16 text-center flex-shrink-0 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    <p className="text-sm font-bold">{timeStr}</p>
+                  </div>
 
-          {/* Pending Calls */}
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-            <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              Pending Calls
-            </h2>
-            <div className="space-y-3">
-              {pendingCalls.map((call) => (
-                <div
-                  key={call.id}
-                  className={`p-3 rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
-                >
-                  <div className="flex items-start space-x-2">
-                    <Phone className="w-5 h-5 text-orange-600 mt-0.5" />
-                    <div className="flex-1">
-                      <p className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {call.caller}
-                      </p>
-                      <p className="text-xs text-gray-500">{call.reason}</p>
-                      <p className="text-xs text-gray-400 mt-1">{call.time}</p>
+                  <div className={`w-px h-10 flex-shrink-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+
+                  {/* Patient info */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-blue-500 to-cyan-500`}>
+                      {initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`font-semibold text-sm truncate ${textCls}`}>{patientName}</p>
+                      <p className="text-xs text-gray-400 truncate">Dr. {doctorName} · {apt.type}</p>
                     </div>
                   </div>
-                  <button className="mt-2 w-full py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700 transition">
-                    Call Back
-                  </button>
+
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${STATUS_BADGE[apt.status] || STATUS_BADGE.Scheduled}`}>
+                    {apt.status}
+                  </span>
                 </div>
-              ))}
-            </div>
+              )
+            })}
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

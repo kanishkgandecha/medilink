@@ -1,6 +1,5 @@
 import api from './api'
 
-// Get all patients (directly from patient endpoint - same as Patients.jsx)
 export const getAllPatients = async (params) => {
   try {
     return await api.get('/patients', { params })
@@ -10,7 +9,6 @@ export const getAllPatients = async (params) => {
   }
 }
 
-// Get billing stats (MUST be called before other routes to avoid conflicts)
 export const getBillingStats = async (params) => {
   try {
     return await api.get('/billing/stats', { params })
@@ -20,7 +18,6 @@ export const getBillingStats = async (params) => {
   }
 }
 
-// Get all bills
 export const getAllBills = async (params) => {
   try {
     return await api.get('/billing', { params })
@@ -30,7 +27,6 @@ export const getAllBills = async (params) => {
   }
 }
 
-// Get bill by ID
 export const getBillById = async (id) => {
   try {
     return await api.get(`/billing/${id}`)
@@ -40,42 +36,25 @@ export const getBillById = async (id) => {
   }
 }
 
-// Create new bill
 export const createBill = async (data) => {
   try {
-    console.log('Creating bill with data:', data)
-    const response = await api.post('/billing', data)
-    console.log('Bill created:', response)
-    return response
+    return await api.post('/billing', data)
   } catch (error) {
-    console.error(' Error creating bill:', error.response?.data || error.message)
+    console.error('Error creating bill:', error.response?.data || error.message)
     throw error
   }
 }
 
-// Update bill
-export const updateBill = async (id, data) => {
+// Patient self-pay: pays full outstanding balance
+export const patientPayBill = async (id, paymentMethod) => {
   try {
-    return await api.put(`/billing/${id}`, data)
+    return await api.post(`/billing/${id}/pay`, { paymentMethod })
   } catch (error) {
-    console.error('Error updating bill:', error)
+    console.error('Error paying bill:', error.response?.data || error.message)
     throw error
   }
 }
 
-// Generate invoice (PDF download)
-export const generateInvoice = async (id) => {
-  try {
-    return await api.get(`/billing/${id}/invoice`, {
-      responseType: 'blob'
-    })
-  } catch (error) {
-    console.error('Error generating invoice:', error)
-    throw error
-  }
-}
-
-// Record payment
 export const recordPayment = async (id, data) => {
   try {
     return await api.post(`/billing/${id}/payment`, data)
@@ -85,7 +64,6 @@ export const recordPayment = async (id, data) => {
   }
 }
 
-// Process insurance claim
 export const processInsuranceClaim = async (id, data) => {
   try {
     return await api.post(`/billing/${id}/insurance`, data)
@@ -95,7 +73,6 @@ export const processInsuranceClaim = async (id, data) => {
   }
 }
 
-// Update insurance claim
 export const updateInsuranceClaim = async (id, data) => {
   try {
     return await api.put(`/billing/${id}/insurance`, data)
@@ -105,7 +82,6 @@ export const updateInsuranceClaim = async (id, data) => {
   }
 }
 
-// Delete bill
 export const deleteBill = async (id) => {
   try {
     return await api.delete(`/billing/${id}`)

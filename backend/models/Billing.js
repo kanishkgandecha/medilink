@@ -14,6 +14,11 @@ const billingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  billType: {
+    type: String,
+    enum: ['Consultation', 'Pharmacy', 'Test', 'Other'],
+    default: 'Other'
+  },
   items: [{
     description: {
       type: String,
@@ -77,7 +82,7 @@ const billingSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['Cash', 'Card', 'UPI', 'Net Banking', 'Insurance', 'Cheque']
+    enum: ['Cash', 'Card', 'UPI', 'Net Banking', 'Insurance', 'Online', 'Cheque']
   },
   payments: [{
     amount: {
@@ -108,22 +113,23 @@ const billingSchema = new mongoose.Schema({
     processedDate: Date,
     rejectionReason: String
   },
+  // Who created this bill and in what role capacity
+  createdByRole: {
+    type: String,
+    enum: ['Admin', 'Receptionist', 'Pharmacist', 'Doctor']
+  },
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  notes: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
+  // Optional link to the appointment this bill relates to
+  relatedAppointmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Appointment'
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  notes: String
+}, { timestamps: true });
 
-// Generate unique bill number before saving
 billingSchema.pre('save', async function(next) {
   if (this.isNew && !this.billNumber) {
     const year = new Date().getFullYear();
@@ -131,14 +137,13 @@ billingSchema.pre('save', async function(next) {
     const count = await this.constructor.countDocuments();
     this.billNumber = `BILL-${year}${month}-${String(count + 1).padStart(6, '0')}`;
   }
-  this.updatedAt = Date.now();
   next();
 });
 
-// Indexes for better query performance
 billingSchema.index({ billNumber: 1 });
 billingSchema.index({ patient: 1 });
 billingSchema.index({ billDate: -1 });
 billingSchema.index({ paymentStatus: 1 });
+billingSchema.index({ billType: 1 });
 
 module.exports = mongoose.model('Billing', billingSchema);
