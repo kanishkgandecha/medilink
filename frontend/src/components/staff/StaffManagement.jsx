@@ -102,7 +102,7 @@ const StaffManagement = ({ staffMember }) => {
                     <div>
                       <p className="text-xs text-gray-500">Annual Salary</p>
                       <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        ${staffMember.salary.toLocaleString()}
+                        ₹{staffMember.salary.toLocaleString()}
                       </p>
                     </div>
                   </div>

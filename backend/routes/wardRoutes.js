@@ -10,7 +10,9 @@ const {
   updateWard,
   deleteWard,
   allocateBed,
-  releaseBed
+  releaseBed,
+  assignBed,
+  dischargeBed
 } = require('../controllers/wardController');
 
 router.use(protect);
@@ -29,7 +31,14 @@ router.route('/:id')
   .put(authorize('Admin'), updateWard)
   .delete(authorize('Admin'), deleteWard);
 
+// Existing: auto-assigns next available bed
 router.post('/:id/allocate', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), allocateBed);
-router.post('/:id/release', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), releaseBed);
+// Existing: release by bedNumber string
+router.post('/:id/release',  authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), releaseBed);
+
+// New: assign specific bed by beds._id
+router.post('/:id/assign',   authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), assignBed);
+// New: discharge from specific bed by beds._id
+router.post('/:id/discharge', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), dischargeBed);
 
 module.exports = router;

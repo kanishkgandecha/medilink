@@ -108,8 +108,9 @@ const appointmentSchema = new mongoose.Schema({
 // Generate unique appointment ID before saving
 appointmentSchema.pre('save', async function(next) {
   if (!this.appointmentId) {
-    const count = await mongoose.model('Appointment').countDocuments();
-    this.appointmentId = `APT${String(count + 1).padStart(6, '0')}`;
+    const ts   = Date.now().toString(36).toUpperCase()
+    const rand = Math.random().toString(36).substr(2, 5).toUpperCase()
+    this.appointmentId = `APT-${ts}-${rand}`
   }
   next();
 });

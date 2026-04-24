@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Plus, DollarSign, FileText, Download, Eye, CreditCard,
   CheckCircle, Clock, Trash2, User, Calendar, Pill,
-  Stethoscope, FlaskConical, Receipt, IndianRupee
+  Stethoscope, FlaskConical, Receipt, IndianRupee, Search, AlertTriangle
 } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
@@ -10,6 +10,7 @@ import TableComponent from '../components/common/TableComponent'
 import Modal from '../components/common/Modal'
 import { toast } from 'react-toastify'
 import * as billingService from '../services/billingService'
+import api from '../services/api'
 
 // ─── Constants ────────────────────────────────────────────────
 const BILL_TYPES = ['Consultation', 'Pharmacy', 'Test', 'Other']
@@ -45,7 +46,22 @@ const SERVICE_TEMPLATES = [
   { name: 'Emergency Service',          category: 'Emergency',    price: 1500  },
   { name: 'Minor Surgery',             category: 'Surgery',      price: 15000 },
   { name: 'Major Surgery',             category: 'Surgery',      price: 50000 },
-  { name: 'Medicines (Custom)',         category: 'Medicine',     price: 0     }
+  { name: 'Medicine (Custom)',          category: 'Medicine',     price: 0     }
+]
+
+const PHARMACY_TEMPLATES = [
+  { name: 'Antibiotic (Custom)',        category: 'Medicine', price: 0 },
+  { name: 'Painkiller / Analgesic',     category: 'Medicine', price: 0 },
+  { name: 'Antacid / Antiflatulent',    category: 'Medicine', price: 0 },
+  { name: 'Vitamin / Supplement',       category: 'Medicine', price: 0 },
+  { name: 'Antihypertensive',           category: 'Medicine', price: 0 },
+  { name: 'Antidiabetic',               category: 'Medicine', price: 0 },
+  { name: 'Antihistamine / Allergy',    category: 'Medicine', price: 0 },
+  { name: 'Antifungal / Antiviral',     category: 'Medicine', price: 0 },
+  { name: 'Syrup / Suspension',         category: 'Medicine', price: 0 },
+  { name: 'Topical / Ointment',         category: 'Medicine', price: 0 },
+  { name: 'IV / Injectable',            category: 'Medicine', price: 0 },
+  { name: 'Dispensing Charge',          category: 'Other',    price: 50 },
 ]
 
 const EMPTY_GENERATE = {
@@ -57,7 +73,8 @@ const EMPTY_GENERATE = {
   notes:    ''
 }
 
-const EMPTY_ITEM = { description: '', category: 'Consultation', quantity: 1, unitPrice: 0 }
+const EMPTY_ITEM         = { description: '', category: 'Consultation', quantity: 1, unitPrice: 0 }
+const EMPTY_PHARMA_ITEM  = { description: '', category: 'Medicine',     quantity: 1, unitPrice: 0 }
 
 // ─── Small helpers ─────────────────────────────────────────────
 const BillTypeBadge = ({ type }) => {
@@ -104,11 +121,17 @@ const Billing = () => {
 
   // Form state
   const [generateData, setGenerateData] = useState(EMPTY_GENERATE)
-  const [newItem, setNewItem]           = useState(EMPTY_ITEM)
+  const [newItem, setNewItem]           = useState(isPharmacist ? EMPTY_PHARMA_ITEM : EMPTY_ITEM)
   const [paymentData, setPaymentData]   = useState({ amount: '', paymentMethod: '', transactionId: '', notes: '' })
   const [insuranceData, setInsuranceData] = useState({ claimNumber: '', provider: '', amountClaimed: '' })
   const [payNowMethod, setPayNowMethod] = useState('UPI')
   const [submitting, setSubmitting]     = useState(false)
+
+  // Medicine state (pharmacist only)
+  const [medicines, setMedicines]           = useState([])
+  const [medicinesLoading, setMedLoading]   = useState(false)
+  const [medicineSearch, setMedicineSearch] = useState('')
+  const [medicineQtys, setMedicineQtys]     = useState({})
 
   // ── Helpers ──────────────────────────────────────────────────
   const inp = `w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-200 ${
@@ -124,6 +147,7 @@ const Billing = () => {
       fetchPatients()
       fetchStats()
     }
+    if (isPharmacist) fetchMedicines()
   }, []) // eslint-disable-line
 
   // Derive patient stats from bill list
@@ -144,7 +168,7 @@ const Billing = () => {
       const res = await billingService.getAllBills({ limit: 500 })
       setBills(res.bills || [])
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to fetch bills')
+      toast.error(err.response?.data?.message || err.message || 'Failed to fetch bills')
     } finally {
       setLoading(false)
     }
@@ -168,6 +192,37 @@ const Billing = () => {
         totalBills:     d.totalBills     || 0
       })
     } catch { /* keep zeros */ }
+  }
+
+  const fetchMedicines = async () => {
+    setMedLoading(true)
+    try {
+      const res = await api.get('/medicines', { params: { limit: 500, isActive: true } })
+      const list = res.data || []
+      setMedicines(list)
+      const qtys = {}
+      list.forEach(m => { qtys[m._id] = 1 })
+      setMedicineQtys(qtys)
+    } catch { toast.error('Failed to load medicines') }
+    finally { setMedLoading(false) }
+  }
+
+  const addMedicineToItems = (medicine) => {
+    const qty = medicineQtys[medicine._id] || 1
+    if (qty < 1) return toast.error('Quantity must be at least 1')
+    if (medicine.stockQuantity !== undefined && qty > medicine.stockQuantity) {
+      return toast.error(`Only ${medicine.stockQuantity} in stock`)
+    }
+    setGenerateData(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        description: medicine.name,
+        category:    'Medicine',
+        quantity:    qty,
+        unitPrice:   medicine.unitPrice ?? 0
+      }]
+    }))
+    toast.success(`${medicine.name} added`)
   }
 
   // ── Bill CRUD ────────────────────────────────────────────────
@@ -196,7 +251,7 @@ const Billing = () => {
       fetchBills()
       if (!isPatient) fetchStats()
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create bill')
+      toast.error(err.response?.data?.message || err.message || 'Failed to create bill')
     } finally {
       setSubmitting(false)
     }
@@ -276,11 +331,10 @@ const Billing = () => {
 
   // ── Item helpers ─────────────────────────────────────────────
   const addItem = () => {
-    if (!newItem.description || newItem.unitPrice <= 0) {
-      return toast.error('Enter a valid item name and price')
-    }
+    if (!newItem.description) return toast.error('Enter an item name')
+    if (newItem.unitPrice <= 0) return toast.error('Enter a price greater than 0')
     setGenerateData(prev => ({ ...prev, items: [...prev.items, { ...newItem }] }))
-    setNewItem(EMPTY_ITEM)
+    setNewItem(isPharmacist ? EMPTY_PHARMA_ITEM : EMPTY_ITEM)
   }
 
   const removeItem = (i) =>
@@ -295,7 +349,7 @@ const Billing = () => {
 
   const resetGenerateForm = () => {
     setGenerateData(EMPTY_GENERATE)
-    setNewItem(EMPTY_ITEM)
+    setNewItem(isPharmacist ? EMPTY_PHARMA_ITEM : EMPTY_ITEM)
   }
 
   // ── Filtered bill lists ───────────────────────────────────────
@@ -488,67 +542,179 @@ const Billing = () => {
           </div>
         )}
 
-        {/* Add item row */}
-        <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-900/30' : 'border-gray-200 bg-gray-50'}`}>
-          <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add Item</p>
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-4">
-              <label className="block text-xs text-gray-500 mb-1">Service / Item</label>
-              <select
-                value={newItem.description}
-                onChange={e => {
-                  const tmpl = SERVICE_TEMPLATES.find(t => t.name === e.target.value)
-                  setNewItem(it => ({
-                    ...it,
-                    description: e.target.value,
-                    category:   tmpl?.category || 'Other',
-                    unitPrice:  tmpl?.price    || 0
-                  }))
-                }}
-                className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
-              >
-                <option value="">Select template…</option>
-                {SERVICE_TEMPLATES.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
-              </select>
+        {/* Add item — pharmacist: live medicine picker; others: template/manual */}
+        {isPharmacist ? (
+          <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-900/30' : 'border-gray-200 bg-gray-50'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Select Medicines</p>
+              {medicinesLoading && <span className="text-xs text-gray-400 animate-pulse">Loading…</span>}
             </div>
-            <div className="col-span-3">
-              <label className="block text-xs text-gray-500 mb-1">Custom name</label>
+
+            {/* Search */}
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
               <input
                 type="text"
-                value={newItem.description}
-                onChange={e => setNewItem(it => ({ ...it, description: e.target.value }))}
-                placeholder="or type custom…"
-                className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                value={medicineSearch}
+                onChange={e => setMedicineSearch(e.target.value)}
+                placeholder="Search by name or generic name…"
+                className={`w-full pl-8 pr-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
               />
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">Qty</label>
-              <input
-                type="number" min="1"
-                value={newItem.quantity}
-                onChange={e => setNewItem(it => ({ ...it, quantity: parseInt(e.target.value) || 1 }))}
-                className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
-              />
+
+            {/* Medicine list */}
+            <div className={`max-h-52 overflow-y-auto rounded-lg border divide-y ${darkMode ? 'border-gray-700 divide-gray-700' : 'border-gray-200 divide-gray-100'}`}>
+              {(() => {
+                const q = medicineSearch.toLowerCase()
+                const filtered = medicines.filter(m =>
+                  !q || m.name?.toLowerCase().includes(q) || m.genericName?.toLowerCase().includes(q)
+                )
+                if (filtered.length === 0) {
+                  return (
+                    <div className="py-8 text-center text-xs text-gray-400">
+                      {medicineSearch ? 'No medicines match your search' : (medicinesLoading ? 'Loading medicines…' : 'No medicines found in database')}
+                    </div>
+                  )
+                }
+                return filtered.map(medicine => (
+                  <div key={medicine._id} className={`flex items-center gap-3 px-3 py-2 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} transition`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-xs truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{medicine.name}</p>
+                      {medicine.genericName && (
+                        <p className="text-gray-400 text-xs truncate">{medicine.genericName}</p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0 text-xs">
+                      <p className={`font-semibold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>₹{(medicine.unitPrice ?? 0).toFixed(2)}</p>
+                      <p className={`${(medicine.stockQuantity ?? 0) > 0 ? 'text-gray-400' : 'text-red-500'}`}>
+                        {medicine.stockQuantity ?? 0} in stock
+                      </p>
+                    </div>
+                    <input
+                      type="number" min="1" max={medicine.stockQuantity || 9999}
+                      value={medicineQtys[medicine._id] || 1}
+                      onChange={e => setMedicineQtys(prev => ({ ...prev, [medicine._id]: parseInt(e.target.value) || 1 }))}
+                      className={`w-14 px-2 py-1.5 rounded-lg border text-xs text-center ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addMedicineToItems(medicine)}
+                      disabled={(medicine.stockQuantity ?? 0) < 1}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-semibold disabled:opacity-40 shrink-0"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))
+              })()}
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">Price (₹)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={newItem.unitPrice}
-                onChange={e => setNewItem(it => ({ ...it, unitPrice: parseFloat(e.target.value) || 0 }))}
-                className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
-              />
-            </div>
-            <div className="col-span-1 flex items-end">
-              <button
-                onClick={addItem}
-                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-semibold"
-              >
-                <Plus className="w-4 h-4 mx-auto" />
-              </button>
+
+            {/* Custom / unlisted item (collapsible) */}
+            <details className="mt-3">
+              <summary className={`text-xs cursor-pointer select-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}>
+                + Add custom item (not in database)
+              </summary>
+              <div className="grid grid-cols-12 gap-2 mt-2">
+                <div className="col-span-5">
+                  <input
+                    type="text"
+                    value={newItem.description}
+                    onChange={e => setNewItem(it => ({ ...it, description: e.target.value }))}
+                    placeholder="Item name…"
+                    className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <input
+                    type="number" min="1"
+                    value={newItem.quantity}
+                    onChange={e => setNewItem(it => ({ ...it, quantity: parseInt(e.target.value) || 1 }))}
+                    placeholder="Qty"
+                    className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                  />
+                </div>
+                <div className="col-span-3">
+                  <input
+                    type="number" min="0" step="0.01"
+                    value={newItem.unitPrice}
+                    onChange={e => setNewItem(it => ({ ...it, unitPrice: parseFloat(e.target.value) || 0 }))}
+                    placeholder="Price (₹)"
+                    className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                  />
+                </div>
+                <div className="col-span-2 flex items-center">
+                  <button
+                    onClick={addItem}
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-semibold"
+                  >
+                    <Plus className="w-4 h-4 mx-auto" />
+                  </button>
+                </div>
+              </div>
+            </details>
+          </div>
+        ) : (
+          <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-900/30' : 'border-gray-200 bg-gray-50'}`}>
+            <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add Item</p>
+            <div className="grid grid-cols-12 gap-2">
+              <div className="col-span-4">
+                <label className="block text-xs text-gray-500 mb-1">Service / Item</label>
+                <select
+                  value={newItem.description}
+                  onChange={e => {
+                    const tmpl = SERVICE_TEMPLATES.find(t => t.name === e.target.value)
+                    setNewItem(it => ({
+                      ...it,
+                      description: e.target.value,
+                      category:   tmpl?.category || 'Other',
+                      unitPrice:  tmpl?.price    || 0
+                    }))
+                  }}
+                  className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                >
+                  <option value="">Select template…</option>
+                  {SERVICE_TEMPLATES.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+              <div className="col-span-3">
+                <label className="block text-xs text-gray-500 mb-1">Custom name</label>
+                <input
+                  type="text"
+                  value={newItem.description}
+                  onChange={e => setNewItem(it => ({ ...it, description: e.target.value }))}
+                  placeholder="or type custom…"
+                  className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-500 mb-1">Qty</label>
+                <input
+                  type="number" min="1"
+                  value={newItem.quantity}
+                  onChange={e => setNewItem(it => ({ ...it, quantity: parseInt(e.target.value) || 1 }))}
+                  className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-500 mb-1">Price (₹)</label>
+                <input
+                  type="number" min="0" step="0.01"
+                  value={newItem.unitPrice}
+                  onChange={e => setNewItem(it => ({ ...it, unitPrice: parseFloat(e.target.value) || 0 }))}
+                  className={`w-full px-3 py-2 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div className="col-span-1 flex items-end">
+                <button
+                  onClick={addItem}
+                  className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-semibold"
+                >
+                  <Plus className="w-4 h-4 mx-auto" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Items list */}
         {generateData.items.length > 0 && (
@@ -756,7 +922,7 @@ const Billing = () => {
           <p className="text-sm text-gray-400 mt-1">View and pay your hospital bills</p>
         </div>
 
-        <StatsRow patientMode />
+        {StatsRow({ patientMode: true })}
 
         {/* Tabs */}
         <div className="flex gap-2">
@@ -916,7 +1082,7 @@ const Billing = () => {
           </div>
         </Modal>
 
-        <InvoiceModal />
+        {InvoiceModal()}
       </div>
     )
   }
@@ -933,7 +1099,7 @@ const Billing = () => {
             <p className="text-sm text-gray-500 mt-1">Manage pharmacy bills — medicines and dispensing charges</p>
           </div>
           <button
-            onClick={() => { resetGenerateForm(); setShowGenerateModal(true) }}
+            onClick={() => { setGenerateData(EMPTY_GENERATE); setNewItem(EMPTY_PHARMA_ITEM); setShowGenerateModal(true) }}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition"
           >
             <Plus className="w-4 h-4" />
@@ -941,7 +1107,7 @@ const Billing = () => {
           </button>
         </div>
 
-        <StatsRow />
+        {StatsRow({})}
 
         <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
           <Pill className="w-4 h-4 text-green-600" />
@@ -958,8 +1124,8 @@ const Billing = () => {
           emptyText="No pharmacy bills found"
         />
 
-        <GenerateModal />
-        <InvoiceModal />
+        {GenerateModal()}
+        {InvoiceModal()}
       </div>
     )
   }
@@ -977,7 +1143,7 @@ const Billing = () => {
         </div>
         {canCreateBill && (
           <button
-            onClick={() => { resetGenerateForm(); setShowGenerateModal(true) }}
+            onClick={() => { setGenerateData(EMPTY_GENERATE); setNewItem(EMPTY_ITEM); setShowGenerateModal(true) }}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" /> Generate Invoice
@@ -985,7 +1151,7 @@ const Billing = () => {
         )}
       </div>
 
-      <StatsRow />
+      {StatsRow({})}
 
       {/* Bill type filter tabs */}
       <div className={`flex gap-2 flex-wrap p-1.5 rounded-2xl border ${darkMode ? 'bg-gray-800/60 border-gray-700/60' : 'bg-gray-100/80 border-gray-200/60'}`}>
@@ -1022,7 +1188,7 @@ const Billing = () => {
       />
 
       {/* Generate Bill Modal */}
-      <GenerateModal />
+      {GenerateModal()}
 
       {/* Record Payment Modal (Admin/Receptionist) */}
       <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Record Payment">
@@ -1107,7 +1273,7 @@ const Billing = () => {
         </div>
       </Modal>
 
-      <InvoiceModal />
+      {InvoiceModal()}
     </div>
   )
 }

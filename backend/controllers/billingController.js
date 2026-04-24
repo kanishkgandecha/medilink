@@ -53,7 +53,12 @@ exports.createBill = asyncHandler(async (req, res) => {
     });
   }
 
-  const effectiveBillType = pharmacist ? 'Pharmacy' : (billType || 'Other');
+  const VALID_BILL_TYPES = ['Consultation', 'Pharmacy', 'Test', 'Other'];
+  // 'Medicine' is an item-level category, not a bill type — normalise it to 'Pharmacy'
+  const sanitisedBillType = billType === 'Medicine' ? 'Pharmacy'
+    : VALID_BILL_TYPES.includes(billType) ? billType
+    : 'Other';
+  const effectiveBillType = pharmacist ? 'Pharmacy' : sanitisedBillType;
 
   const user = await User.findById(patient);
   if (!user || user.role !== 'Patient') {

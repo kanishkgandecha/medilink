@@ -106,7 +106,7 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
                   <p className="text-xs text-gray-500">{medicine.genericName}</p>
                 </div>
                 <span className="text-sm font-semibold text-green-600">
-                  ${medicine.price}
+                  ₹{medicine.unitPrice ?? medicine.price ?? 0}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
@@ -185,7 +185,7 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
                       <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                         {item.name}
                       </p>
-                      <p className="text-xs text-gray-500">${item.price} each</p>
+                      <p className="text-xs text-gray-500">₹{item.unitPrice ?? item.price ?? 0} each</p>
                     </div>
                     <button
                       onClick={() => removeFromCart(item._id)}
@@ -213,7 +213,7 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
                       </button>
                     </div>
                     <span className="text-sm font-semibold text-blue-600">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{((item.unitPrice ?? item.price ?? 0) * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -228,19 +228,19 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">Subtotal:</span>
                   <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    ${getTotalAmount().toFixed(2)}
+                    ₹{getTotalAmount().toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">Tax (0%):</span>
                   <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    $0.00
+                    ₹0.00
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">Total:</span>
                   <span className="text-lg font-bold text-blue-600">
-                    ${getTotalAmount().toFixed(2)}
+                    ₹{getTotalAmount().toFixed(2)}
                   </span>
                 </div>
               </div>
