@@ -8,6 +8,7 @@ const BedManagement = ({ beds, onAssignPatient, onDischarge }) => {
   const [filterWard, setFilterWard] = useState('all')
 
   const wards = [...new Set(beds.map(b => b.ward))]
+  const inp = `px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
 
   const filteredBeds = beds.filter(bed => {
     const matchesStatus = filterStatus === 'all' || 
@@ -37,9 +38,7 @@ const BedManagement = ({ beds, onAssignPatient, onDischarge }) => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Beds</option>
           <option value="occupied">Occupied</option>
@@ -48,9 +47,7 @@ const BedManagement = ({ beds, onAssignPatient, onDischarge }) => {
         <select
           value={filterWard}
           onChange={(e) => setFilterWard(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Wards</option>
           {wards.map((ward) => (
@@ -124,7 +121,7 @@ const BedManagement = ({ beds, onAssignPatient, onDischarge }) => {
                 </p>
                 <button
                   onClick={() => onDischarge(bed.id)}
-                  className="w-full mt-2 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition"
+                  className="w-full mt-2 py-1.5 bg-[#2E86DE] text-white rounded-xl text-xs hover:bg-[#1a6db5] transition-all duration-200"
                 >
                   Discharge Patient
                 </button>

@@ -13,30 +13,23 @@ const SIZE_MAP = {
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   const { darkMode } = useTheme()
 
-  // Lock body scroll while open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    }
+    if (isOpen) document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  // Close on Escape
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') onClose()
   }, [onClose])
 
   useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-    }
+    if (isOpen) document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, handleKeyDown])
 
   if (!isOpen) return null
 
   return (
-    /* Backdrop */
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       aria-modal="true"
@@ -44,7 +37,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     >
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-fade-in"
+        className="absolute inset-0 bg-[#2C3E50]/50 backdrop-blur-[2px] animate-fade-in"
         onClick={onClose}
       />
 
@@ -52,31 +45,34 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       <div
         className={`relative w-full ${SIZE_MAP[size] || SIZE_MAP.md}
           max-h-[90vh] flex flex-col
-          rounded-2xl shadow-2xl overflow-hidden
+          rounded-2xl overflow-hidden
           animate-scale-in
-          ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+          border
+          ${darkMode
+            ? 'bg-gray-800 border-gray-700/60'
+            : 'bg-white border-[#E2E8F0]'}`}
         style={{
           boxShadow: darkMode
             ? '0 32px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)'
-            : '0 32px 64px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04)',
+            : '0 24px 60px rgba(44,62,80,0.16), 0 0 0 1px rgba(46,134,222,0.06)',
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* ── Header ─────────────────────────────────────── */}
         <div
           className={`flex items-center justify-between px-6 py-4 border-b flex-shrink-0
-            ${darkMode ? 'border-gray-700/80' : 'border-gray-100'}`}
+            ${darkMode
+              ? 'border-gray-700/80 bg-gray-800'
+              : 'border-gray-100 bg-white'}`}
         >
-          <h3
-            className={`text-base font-semibold leading-tight
-              ${darkMode ? 'text-white' : 'text-gray-900'}`}
-          >
+          <h3 className={`text-base font-semibold leading-tight
+            ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {title}
           </h3>
 
           <button
             onClick={onClose}
-            className={`ml-4 p-1.5 rounded-lg transition-all duration-200 flex-shrink-0
+            className={`ml-4 p-2 rounded-lg transition-all duration-200 flex-shrink-0
               ${darkMode
                 ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                 : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}

@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   },
   dateOfBirth: Date,
   gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+  avatar: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

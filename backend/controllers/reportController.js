@@ -2,6 +2,7 @@
 // FILE: controllers/reportController.js
 // ===========================
 const mongoose = require('mongoose');
+const asyncHandler = require('../utils/asyncHandler');
 const Appointment = require('../models/Appointment');
 const Ward = require('../models/Ward');
 const Billing = require('../models/Billing');
@@ -769,14 +770,14 @@ const exportReport =   async (req, res) => {
 };
 
 module.exports = {
-  getPatientVisitsReport,
-  getDoctorPerformanceReport,
-  getWardUsageReport,
-  getRevenueReport,
-  getDashboardStats,
-  getAppointmentStats,
-  getMedicineConsumptionReport,
-  getStaffPerformanceReport,
-  getFinancialSummaryReport,
-  exportReport
+  getPatientVisitsReport:       asyncHandler(getPatientVisitsReport),
+  getDoctorPerformanceReport:   asyncHandler(getDoctorPerformanceReport),
+  getWardUsageReport:           asyncHandler(getWardUsageReport),
+  getRevenueReport:             asyncHandler(getRevenueReport),
+  getDashboardStats:            asyncHandler(getDashboardStats),
+  getAppointmentStats:          asyncHandler(getAppointmentStats),
+  getMedicineConsumptionReport: asyncHandler(getMedicineConsumptionReport),
+  getStaffPerformanceReport:    asyncHandler(getStaffPerformanceReport),
+  getFinancialSummaryReport:    asyncHandler(getFinancialSummaryReport),
+  exportReport:                 asyncHandler(exportReport),
 };

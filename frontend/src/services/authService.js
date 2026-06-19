@@ -27,3 +27,19 @@ export const resetPassword = async (token, password) => {
 export const changePassword = async (currentPassword, newPassword) => {
   return await api.put('/auth/update-password', { currentPassword, newPassword })
 }
+
+export const updateProfile = async (data) => {
+  return await api.put('/auth/profile', data)
+}
+
+export const getMyProfile = async () => {
+  return await api.get('/auth/my-profile')
+}
+
+export const uploadAvatar = async (file) => {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  return await api.post('/auth/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}

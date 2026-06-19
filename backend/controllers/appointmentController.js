@@ -3,6 +3,10 @@ const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const Billing = require('../models/Billing');
 const asyncHandler = require('../utils/asyncHandler');
+const { sendEmail } = require('../services/emailService');
+
+const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+const fmtTime = (slot) => slot ? `${slot.startTime} – ${slot.endTime}` : '';
 
 // Create new appointment
 const createAppointment = asyncHandler(async (req, res) => {
@@ -70,10 +74,24 @@ const createAppointment = asyncHandler(async (req, res) => {
     .populate({ path: 'patient', populate: { path: 'userId' } })
     .populate({ path: 'doctor', populate: { path: 'userId' } });
 
-  res.status(201).json({ 
-    success: true, 
+  // Send booking confirmation email (non-blocking)
+  const patientEmail = populatedAppointment.patient?.userId?.email;
+  const notifResult = await sendEmail(patientEmail, 'appointmentBooked', {
+    patientName: populatedAppointment.patient?.userId?.name || 'Patient',
+    doctorName:  populatedAppointment.doctor?.userId?.name  || 'Doctor',
+    department:  populatedAppointment.doctor?.department,
+    date:        fmtDate(appointment.appointmentDate),
+    time:        fmtTime(appointment.timeSlot),
+    appointmentId: appointment.appointmentId,
+    type:        appointment.type
+  });
+
+  res.status(201).json({
+    success: true,
     data: populatedAppointment,
-    message: 'Appointment created successfully'
+    message: 'Appointment created successfully',
+    notificationSent: notifResult.success,
+    notificationMock: notifResult.mock || false
   });
 });
 
@@ -261,10 +279,34 @@ const updateAppointment = asyncHandler(async (req, res) => {
     }
   }
 
+  // Appointment notifications on key status transitions / reschedule
+  const newStatus = req.body.status;
+  const patEmail  = appointment.patient?.userId?.email;
+  let notifResult = null;
+
+  if (newStatus === 'Confirmed' && previousStatus !== 'Confirmed') {
+    notifResult = await sendEmail(patEmail, 'appointmentConfirmed', {
+      patientName:   appointment.patient?.userId?.name || 'Patient',
+      doctorName:    appointment.doctor?.userId?.name  || 'Doctor',
+      date:          fmtDate(appointment.appointmentDate),
+      time:          fmtTime(appointment.timeSlot),
+      appointmentId: appointment.appointmentId
+    });
+  } else if ((req.body.appointmentDate || req.body.timeSlot) && previousStatus !== 'Cancelled') {
+    notifResult = await sendEmail(patEmail, 'appointmentRescheduled', {
+      patientName:   appointment.patient?.userId?.name || 'Patient',
+      doctorName:    appointment.doctor?.userId?.name  || 'Doctor',
+      newDate:       fmtDate(appointment.appointmentDate),
+      newTime:       fmtTime(appointment.timeSlot),
+      appointmentId: appointment.appointmentId
+    });
+  }
+
   res.status(200).json({
     success: true,
     data: appointment,
-    message: 'Appointment updated successfully'
+    message: 'Appointment updated successfully',
+    ...(notifResult && { notificationSent: notifResult.success, notificationMock: notifResult.mock || false })
   });
 });
 

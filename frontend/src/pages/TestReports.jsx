@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { FlaskConical, Upload, Eye, Download, FileText, Plus, X, Calendar, User } from 'lucide-react'
+import { FlaskConical, Upload, Eye, Download, FileText, Plus, X, Calendar, User, Sparkles, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import StatCard from '../components/common/StatCard'
+import PageLayout from '../components/common/PageLayout'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/common/Modal'
+import ReportAnalysisAgent from '../agents/ReportAnalysisAgent'
 import * as patientService from '../services/patientService'
 import { toast } from 'react-toastify'
 
@@ -23,6 +26,7 @@ const TestReports = () => {
   const [selectedPatientId, setSelectedPatientId] = useState('')
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showAiAnalysis, setShowAiAnalysis] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
   const [searchPatient, setSearchPatient] = useState('')
 
@@ -37,9 +41,9 @@ const TestReports = () => {
     notes: '',
   })
 
-  const card = `border rounded-xl transition-all ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`
-  const inp = `w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-blue-500 transition ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`
-  const lbl = `block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`
+  const card = `border rounded-xl transition-all ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`
+  const inp = `w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+  const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
   const textCls = darkMode ? 'text-white' : 'text-gray-800'
 
   const fetchOwnReports = async () => {
@@ -129,16 +133,34 @@ const TestReports = () => {
             {isPatient ? 'Your lab tests and diagnostic reports' : 'View and manage patient lab reports'}
           </p>
         </div>
-        {!isPatient && selectedPatientId && (
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 transition"
+            onClick={() => setShowAiAnalysis(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/20"
           >
-            <Plus className="w-4 h-4" />
-            Add Report
+            <Sparkles className="w-4 h-4" />
+            AI Analysis
           </button>
-        )}
+          {!isPatient && selectedPatientId && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] transition"
+            >
+              <Plus className="w-4 h-4" />
+              Add Report
+            </button>
+          )}
+        </div>
       </div>
+
+      <PageLayout leftPanel={
+        <div className="space-y-3">
+          <StatCard title="Total Reports" value={labReports.length}                                                        icon={FlaskConical}  iconBg="bg-blue-50 text-[#2E86DE]"     />
+          <StatCard title="Normal"        value={labReports.filter(r => r.status === 'Normal').length}                     icon={CheckCircle}   iconBg="bg-emerald-50 text-emerald-600" />
+          <StatCard title="Abnormal"      value={labReports.filter(r => r.status === 'Abnormal').length}                   icon={AlertCircle}   iconBg="bg-red-50 text-red-600"        />
+          <StatCard title="Borderline"    value={labReports.filter(r => r.status === 'Borderline').length}                 icon={Clock}         iconBg="bg-amber-50 text-amber-600"    />
+        </div>
+      }>
 
       {/* Patient selector (non-patient roles) */}
       {!isPatient && (
@@ -149,12 +171,12 @@ const TestReports = () => {
               value={searchPatient}
               onChange={e => setSearchPatient(e.target.value)}
               placeholder="Search patient by name or ID…"
-              className={`flex-1 min-w-[200px] px-3 py-2 rounded-lg border text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+              className={`flex-1 min-w-[200px] ${inp}`}
             />
             <select
               value={selectedPatientId}
               onChange={e => setSelectedPatientId(e.target.value)}
-              className={`px-3 py-2 rounded-lg border text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} focus:ring-2 focus:ring-blue-500`}
+              className={inp}
             >
               <option value="">— Select patient —</option>
               {filteredPatients.map(p => (
@@ -247,6 +269,8 @@ const TestReports = () => {
           ))}
         </div>
       )}
+
+      </PageLayout>
 
       {/* Add Report Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add Lab Report" size="lg">
@@ -342,18 +366,21 @@ const TestReports = () => {
         <div className="flex justify-end gap-3 mt-5">
           <button
             onClick={() => setShowAddModal(false)}
-            className={`px-5 py-2 rounded-lg border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+            className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
           >
             Cancel
           </button>
           <button
             onClick={handleAddReport}
-            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-700 transition"
+            className="px-5 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all"
           >
             Save Report
           </button>
         </div>
       </Modal>
+
+      {/* AI Report Analysis Agent */}
+      <ReportAnalysisAgent open={showAiAnalysis} onClose={() => setShowAiAnalysis(false)} />
     </div>
   )
 }

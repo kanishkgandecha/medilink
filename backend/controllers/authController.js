@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const Patient = require('../models/Patient');
+const Doctor = require('../models/Doctor');
+const Staff = require('../models/Staff');
 const asyncHandler = require('../utils/asyncHandler');
 const sendEmail = require('../utils/email');
 const crypto = require('crypto');
@@ -341,6 +343,91 @@ const updatePassword = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const { name, phone, dateOfBirth, gender, address, avatar } = req.body;
+    const updates = {};
+    if (name)                      updates.name        = name;
+    if (phone)                     updates.phone       = phone;
+    if (dateOfBirth)               updates.dateOfBirth = dateOfBirth;
+    if (gender)                    updates.gender      = gender;
+    if (address !== undefined)     updates.address     = address;
+    if (avatar  !== undefined)     updates.avatar      = avatar;
+
+    const user = await User.findByIdAndUpdate(req.user.id, updates, {
+      new: true, runValidators: true
+    });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id, name: user.name, email: user.email,
+        role: user.role, subRole: user.subRole,
+        phone: user.phone, dateOfBirth: user.dateOfBirth,
+        gender: user.gender, address: user.address, avatar: user.avatar
+      }
+    });
+  } catch (err) {
+    logger.error('Update profile error:', err.message);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    let roleProfile = null;
+    if (user.role === 'Doctor') {
+      roleProfile = await Doctor.findOne({ userId: user._id }).lean();
+    } else if (user.role === 'Patient') {
+      roleProfile = await Patient.findOne({ userId: user._id }).lean();
+    } else if (['Staff', 'Nurse', 'Receptionist', 'Pharmacist'].includes(user.role)) {
+      roleProfile = await Staff.findOne({ userId: user._id }).lean();
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id, name: user.name, email: user.email,
+        role: user.role, subRole: user.subRole,
+        phone: user.phone, dateOfBirth: user.dateOfBirth,
+        gender: user.gender, address: user.address,
+        avatar: user.avatar, isActive: user.isActive,
+        createdAt: user.createdAt
+      },
+      roleProfile
+    });
+  } catch (err) {
+    logger.error('Get my profile error:', err.message);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+const uploadAvatarImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file provided' });
+    }
+
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    await User.findByIdAndUpdate(req.user.id, { avatar: avatarUrl });
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar uploaded successfully',
+      avatarUrl
+    });
+  } catch (err) {
+    logger.error('Avatar upload error:', err.message);
+    res.status(500).json({ success: false, message: 'Upload failed' });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -348,5 +435,8 @@ module.exports = {
   resetPassword,
   verifyToken,
   getMe,
-  updatePassword
+  updatePassword,
+  updateProfile,
+  getMyProfile,
+  uploadAvatarImage
 };

@@ -8,7 +8,9 @@ const {
   getPrescriptions,
   getPrescription,
   updatePrescriptionStatus,
-  refillPrescription
+  cancelPrescription,
+  refillPrescription,
+  dispensePrescription
 } = require('../controllers/prescriptionController');
 
 router.use(protect);
@@ -25,6 +27,8 @@ router.route('/:id')
   .get(getPrescription);
 
 router.put('/:id/status', authorize('Pharmacist'), updatePrescriptionStatus);
+router.put('/:id/cancel', authorize('Doctor', 'Admin'), cancelPrescription);
 router.post('/:id/refill', authorize('Pharmacist'), refillPrescription);
+router.post('/:id/dispense', authorize('Pharmacist'), dispensePrescription);
 
 module.exports = router;

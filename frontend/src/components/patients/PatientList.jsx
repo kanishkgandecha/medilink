@@ -6,6 +6,7 @@ const PatientList = ({ patients, onPatientSelect }) => {
   const { darkMode } = useTheme()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBy, setFilterBy] = useState('all')
+  const inp = `px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -24,17 +25,13 @@ const PatientList = ({ patients, onPatientSelect }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name or ID..."
-            className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={`w-full pl-10 pr-4 ${inp}`}
           />
         </div>
         <select
           value={filterBy}
           onChange={(e) => setFilterBy(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Blood Groups</option>
           <option value="A+">A+</option>

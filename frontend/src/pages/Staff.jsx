@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Users, Briefcase, Filter, Star, TrendingUp, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Users, Briefcase, Filter, Star, TrendingUp, X, Search, Clock, IndianRupee } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
-import TableComponent from '../components/common/TableComponent'
+import CardPagination, { paginateData, CARDS_PER_PAGE } from '../components/common/CardPagination'
 import Modal from '../components/common/Modal'
+import ConfirmDialog from '../components/common/ConfirmDialog'
 import StatCard from '../components/common/StatCard'
+import PageLayout from '../components/common/PageLayout'
 import { SkeletonDashboard } from '../components/common/SkeletonCard'
 import * as staffService from '../services/staffService'
 import { toast } from 'react-toastify'
@@ -11,12 +13,10 @@ import { toast } from 'react-toastify'
 const SUB_ROLES = ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Ward Manager']
 
 const EMPTY_FORM = {
-  // User fields (add mode only)
   name: '',
   email: '',
   phone: '',
   gender: '',
-  // Staff profile fields
   subRole: '',
   department: '',
   qualification: '',
@@ -27,17 +27,131 @@ const EMPTY_FORM = {
   skills: []
 }
 
+const ROLE_COLOURS = {
+  'Nurse':           'bg-green-100 text-green-700',
+  'Receptionist':    'bg-blue-100 text-blue-700',
+  'Pharmacist':      'bg-purple-100 text-purple-700',
+  'Lab Technician':  'bg-yellow-100 text-yellow-700',
+  'Ward Manager':    'bg-orange-100 text-orange-700'
+}
+
+const SHIFT_COLOURS = {
+  Morning:     'bg-blue-100 text-blue-700',
+  Evening:     'bg-orange-100 text-orange-700',
+  Night:       'bg-purple-100 text-purple-700',
+  Rotational:  'bg-gray-100 text-gray-700'
+}
+
+const EMP_COLOURS = {
+  'Full-Time': 'bg-green-100 text-green-700',
+  'Part-Time': 'bg-yellow-100 text-yellow-700',
+  'Contract':  'bg-red-100 text-red-700',
+  'Intern':    'bg-gray-100 text-gray-700'
+}
+
+const StaffCard = ({ member, onEdit, onDelete, darkMode }) => {
+  const name     = member.userId?.name || 'Unknown'
+  const email    = member.userId?.email || ''
+  const phone    = member.userId?.phone || ''
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const role     = member.userId?.subRole || member.designation || 'Staff'
+  const salary   = member.salary?.total?.toLocaleString() || '0'
+
+  const card = darkMode
+    ? 'bg-gray-800/90 border-gray-700/60 hover:border-[#2E86DE]/40'
+    : 'bg-white/85 border-gray-100 hover:border-[#2E86DE]/20 hover:shadow-[0_4px_16px_rgba(46,134,222,0.10)]'
+
+  return (
+    <div className={`rounded-2xl border p-5 flex flex-col gap-4 transition-all duration-200 ${card}`}>
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#2E86DE] to-[#1ABC9C] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`font-semibold text-sm leading-tight truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</p>
+          <p className="text-xs text-gray-400 truncate">{email}</p>
+          {member.employeeId && (
+            <p className="text-[11px] font-mono text-gray-400 mt-0.5">{member.employeeId}</p>
+          )}
+        </div>
+        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0 ${ROLE_COLOURS[role] || 'bg-gray-100 text-gray-700'}`}>
+          {role}
+        </span>
+      </div>
+
+      {/* Badges row */}
+      <div className="flex flex-wrap gap-1.5">
+        {member.department && (
+          <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+            {member.department}
+          </span>
+        )}
+        {member.shift && (
+          <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${SHIFT_COLOURS[member.shift] || 'bg-gray-100 text-gray-700'}`}>
+            {member.shift}
+          </span>
+        )}
+        {member.employmentType && (
+          <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${EMP_COLOURS[member.employmentType] || 'bg-gray-100 text-gray-700'}`}>
+            {member.employmentType}
+          </span>
+        )}
+      </div>
+
+      {/* Stats */}
+      <div className={`grid grid-cols-2 gap-2 p-3 rounded-xl ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Salary</p>
+          <p className={`text-sm font-bold mt-0.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{salary}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Qualification</p>
+          <p className={`text-xs font-semibold mt-0.5 truncate ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            {member.qualification || '—'}
+          </p>
+        </div>
+        {phone && (
+          <div className="col-span-2">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Phone</p>
+            <p className={`text-xs font-semibold mt-0.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{phone}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={() => onEdit(member)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-semibold bg-[#2E86DE] text-white hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.25)] transition-all duration-150"
+        >
+          <Edit className="w-3.5 h-3.5" /> Edit
+        </button>
+        <button
+          onClick={() => onDelete(member._id)}
+          className={`p-1.5 rounded-xl border transition-all duration-150 ${darkMode ? 'border-red-800/60 text-red-400 hover:bg-red-900/30' : 'border-red-100 text-red-500 hover:bg-red-50'}`}
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const Staff = () => {
   const { darkMode } = useTheme()
-  const [staff, setStaff] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [staff, setStaff]               = useState([])
+  const [loading, setLoading]           = useState(false)
+  const [submitting, setSubmitting]     = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
-  const [formData, setFormData] = useState(EMPTY_FORM)
-  const [skillInput, setSkillInput] = useState('')
+  const [formData, setFormData]         = useState(EMPTY_FORM)
+  const [skillInput, setSkillInput]     = useState('')
+  const [search, setSearch]             = useState('')
   const [filterSubRole, setFilterSubRole] = useState('')
-  const [filterShift, setFilterShift] = useState('')
+  const [filterShift, setFilterShift]   = useState('')
+  const [page, setPage]                 = useState(1)
+  const [confirmDeactivate, setConfirmDeactivate] = useState(null)
 
   useEffect(() => { fetchStaff() }, [])
 
@@ -68,7 +182,7 @@ const Staff = () => {
         ...formData,
         designation: formData.subRole || formData.designation,
         salary: {
-          basic: parseFloat(formData.salary.basic) || 0,
+          basic:      parseFloat(formData.salary.basic) || 0,
           allowances: parseFloat(formData.salary.allowances) || 0
         }
       }
@@ -91,7 +205,6 @@ const Staff = () => {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Deactivate this staff member?')) return
     try {
       await staffService.deleteStaff(id)
       toast.success('Staff member deactivated')
@@ -99,6 +212,22 @@ const Staff = () => {
     } catch {
       toast.error('Failed to deactivate staff member')
     }
+  }
+
+  const openEdit = (member) => {
+    setSelectedStaff(member)
+    setFormData({
+      ...EMPTY_FORM,
+      subRole:        member.userId?.subRole || member.designation || '',
+      department:     member.department || '',
+      qualification:  member.qualification || '',
+      joiningDate:    member.joiningDate ? new Date(member.joiningDate).toISOString().split('T')[0] : '',
+      employmentType: member.employmentType || 'Full-Time',
+      shift:          member.shift || 'Morning',
+      salary:         { basic: member.salary?.basic || '', allowances: member.salary?.allowances || '' },
+      skills:         member.skills || []
+    })
+    setShowAddModal(true)
   }
 
   const addSkill = () => {
@@ -109,109 +238,39 @@ const Staff = () => {
     }
   }
 
+  const setFilter = (setter) => (val) => { setter(val); setPage(1) }
+
   const inp = `w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-200 ${
     darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
   }`
   const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
 
-  const columns = [
-    {
-      header: 'Employee ID',
-      accessor: 'employeeId',
-      render: (row) => <span className="font-mono text-sm">{row.employeeId || 'N/A'}</span>
-    },
-    {
-      header: 'Name',
-      accessor: 'name',
-      render: (row) => (
-        <div>
-          <p className="font-semibold">{row.userId?.name || 'N/A'}</p>
-          <p className="text-xs text-gray-500">{row.userId?.email || ''}</p>
-        </div>
-      )
-    },
-    {
-      header: 'Role',
-      accessor: 'designation',
-      render: (row) => {
-        const role = row.userId?.subRole || row.designation || 'Staff'
-        const colours = {
-          'Nurse': 'bg-green-100 text-green-700',
-          'Receptionist': 'bg-blue-100 text-blue-700',
-          'Pharmacist': 'bg-purple-100 text-purple-700',
-          'Lab Technician': 'bg-yellow-100 text-yellow-700',
-          'Ward Manager': 'bg-orange-100 text-orange-700'
-        }
-        return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colours[role] || 'bg-gray-100 text-gray-700'}`}>{role}</span>
-      }
-    },
-    { header: 'Department', accessor: 'department' },
-    { header: 'Phone', accessor: 'phone', render: (row) => row.userId?.phone || 'N/A' },
-    {
-      header: 'Shift',
-      accessor: 'shift',
-      render: (row) => {
-        const colours = { Morning: 'bg-blue-100 text-blue-700', Evening: 'bg-orange-100 text-orange-700', Night: 'bg-purple-100 text-purple-700', Rotational: 'bg-gray-100 text-gray-700' }
-        return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colours[row.shift] || 'bg-gray-100 text-gray-700'}`}>{row.shift}</span>
-      }
-    },
-    {
-      header: 'Type',
-      accessor: 'employmentType',
-      render: (row) => {
-        const colours = { 'Full-Time': 'bg-green-100 text-green-700', 'Part-Time': 'bg-yellow-100 text-yellow-700', Contract: 'bg-red-100 text-red-700', Intern: 'bg-gray-100 text-gray-700' }
-        return <span className={`px-2 py-1 rounded-full text-xs font-medium ${colours[row.employmentType] || 'bg-gray-100 text-gray-700'}`}>{row.employmentType}</span>
-      }
-    },
-    {
-      header: 'Salary',
-      accessor: 'salary',
-      render: (row) => <span className="font-semibold text-green-600">₹{row.salary?.total?.toLocaleString() || '0'}</span>
-    },
-    {
-      header: 'Actions',
-      accessor: 'actions',
-      render: (row) => (
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              setSelectedStaff(row)
-              setFormData({
-                ...EMPTY_FORM,
-                subRole: row.userId?.subRole || row.designation || '',
-                department: row.department || '',
-                qualification: row.qualification || '',
-                joiningDate: row.joiningDate ? new Date(row.joiningDate).toISOString().split('T')[0] : '',
-                employmentType: row.employmentType || 'Full-Time',
-                shift: row.shift || 'Morning',
-                salary: { basic: row.salary?.basic || '', allowances: row.salary?.allowances || '' },
-                skills: row.skills || []
-              })
-              setShowAddModal(true)
-            }}
-            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDelete(row._id)}
-            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )
-    }
-  ]
-
   const filtered = staff.filter(s => {
     const role = s.userId?.subRole || s.designation || ''
+    if (search) {
+      const q = search.toLowerCase()
+      const name = (s.userId?.name || '').toLowerCase()
+      const email = (s.userId?.email || '').toLowerCase()
+      const empId = (s.employeeId || '').toLowerCase()
+      if (!name.includes(q) && !email.includes(q) && !empId.includes(q) && !role.toLowerCase().includes(q)) return false
+    }
     if (filterSubRole && role !== filterSubRole) return false
     if (filterShift && s.shift !== filterShift) return false
     return true
   })
 
+  const pageStaff = paginateData(filtered, page)
+
   if (loading) return <SkeletonDashboard />
+
+  const leftPanel = (
+    <div className="space-y-3">
+      <StatCard title="Total Staff"   value={staff.length}                                                                       icon={Users}      iconBg="bg-blue-50 text-[#2E86DE]"     />
+      <StatCard title="Nurses"        value={staff.filter(s => (s.userId?.subRole || s.designation) === 'Nurse').length}        icon={Briefcase}  iconBg="bg-emerald-50 text-emerald-600" />
+      <StatCard title="Support Staff" value={staff.filter(s => (s.userId?.subRole || s.designation) !== 'Nurse').length}       icon={Star}       iconBg="bg-violet-50 text-violet-600"   />
+      <StatCard title="On Duty"       value={staff.filter(s => s.isActive).length}                                              icon={TrendingUp} iconBg="bg-orange-50 text-orange-600"   />
+    </div>
+  )
 
   return (
     <div className="space-y-6">
@@ -223,28 +282,32 @@ const Staff = () => {
         </div>
         <button
           onClick={() => { setSelectedStaff(null); setFormData(EMPTY_FORM); setShowAddModal(true) }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98]"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200 active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           Add Staff Member
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total Staff" value={staff.length} icon={Users} color="from-blue-600 to-cyan-500" />
-        <StatCard title="Nurses" value={staff.filter(s => (s.userId?.subRole || s.designation) === 'Nurse').length} icon={Briefcase} color="from-emerald-600 to-teal-500" />
-        <StatCard title="Support Staff" value={staff.filter(s => (s.userId?.subRole || s.designation) !== 'Nurse').length} icon={Star} color="from-violet-600 to-purple-500" />
-        <StatCard title="On Duty" value={staff.filter(s => s.isActive).length} icon={TrendingUp} color="from-orange-500 to-amber-500" />
-      </div>
+      <PageLayout leftPanel={leftPanel}>
 
-      {/* Filters */}
+      {/* Filter bar */}
       <div className={`border rounded-2xl px-4 py-3 flex flex-wrap gap-3 items-center
         ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`}>
         <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <div className={`flex items-center gap-2 flex-1 min-w-[180px] px-3 py-1.5 rounded-xl border text-sm
+          ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'}`}>
+          <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <input
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Search staff…"
+            className="bg-transparent flex-1 outline-none text-sm placeholder-gray-400"
+          />
+        </div>
         <select
           value={filterSubRole}
-          onChange={e => setFilterSubRole(e.target.value)}
+          onChange={e => setFilter(setFilterSubRole)(e.target.value)}
           className={`px-3 py-1.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all
             ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-800'}`}
         >
@@ -253,19 +316,19 @@ const Staff = () => {
         </select>
         <select
           value={filterShift}
-          onChange={e => setFilterShift(e.target.value)}
+          onChange={e => setFilter(setFilterShift)(e.target.value)}
           className={`px-3 py-1.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all
             ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-800'}`}
         >
           <option value="">All Shifts</option>
           {['Morning', 'Evening', 'Night', 'Rotational'].map(s => <option key={s}>{s}</option>)}
         </select>
-        {(filterSubRole || filterShift) && (
+        {(search || filterSubRole || filterShift) && (
           <button
-            onClick={() => { setFilterSubRole(''); setFilterShift('') }}
+            onClick={() => { setSearch(''); setFilterSubRole(''); setFilterShift(''); setPage(1) }}
             className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 font-medium transition-colors"
           >
-            <X className="w-3.5 h-3.5" /> Clear filters
+            <X className="w-3.5 h-3.5" /> Clear
           </button>
         )}
         <span className={`ml-auto text-xs tabular-nums ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -273,18 +336,38 @@ const Staff = () => {
         </span>
       </div>
 
-      <TableComponent
-        columns={columns}
-        data={filtered}
-        searchPlaceholder="Search staff by name, ID, or role…"
-        emptyIcon={Users}
-        emptyText="No staff members found"
+      {/* Card Grid */}
+      {filtered.length === 0 ? (
+        <div className={`flex flex-col items-center justify-center py-20 rounded-2xl border ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100'}`}>
+          <Users className="w-12 h-12 text-gray-300 mb-3" />
+          <p className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No staff members found</p>
+          <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {pageStaff.map(member => (
+            <StaffCard
+              key={member._id}
+              member={member}
+              onEdit={openEdit}
+              onDelete={id => setConfirmDeactivate(id)}
+              darkMode={darkMode}
+            />
+          ))}
+        </div>
+      )}
+
+      <CardPagination
+        total={filtered.length}
+        page={page}
+        onPage={p => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
       />
+
+      </PageLayout>
 
       {/* Add / Edit Staff Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title={selectedStaff ? 'Edit Staff Member' : 'Add New Staff Member'} size="xl">
         <div className="space-y-5">
-          {/* Personal info — only when creating new */}
           {!selectedStaff && (
             <>
               <div className={`rounded-lg p-3 text-sm ${darkMode ? 'bg-blue-900/20 text-blue-300' : 'bg-blue-50 text-blue-700'}`}>
@@ -317,7 +400,6 @@ const Staff = () => {
             </>
           )}
 
-          {/* Staff profile fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Sub-Role *</label>
@@ -375,12 +457,11 @@ const Staff = () => {
             </div>
           </div>
 
-          {/* Skills */}
           <div>
             <label className={lbl}>Skills</label>
             <div className="flex space-x-2 mb-2">
               <input type="text" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill() } }} className={`${inp} flex-1`} placeholder="Add a skill and press Enter" />
-              <button type="button" onClick={addSkill} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Add</button>
+              <button type="button" onClick={addSkill} className="px-4 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition">Add</button>
             </div>
             <div className="flex flex-wrap gap-2">
               {formData.skills.map((s, i) => (
@@ -393,17 +474,26 @@ const Staff = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
-            <button onClick={() => setShowAddModal(false)} className={`px-5 py-2 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>Cancel</button>
+            <button onClick={() => setShowAddModal(false)} className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>Cancel</button>
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-sm hover:shadow-md hover:shadow-blue-500/25 active:scale-[0.97] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] active:scale-[0.97] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {submitting ? 'Saving…' : (selectedStaff ? 'Update Staff' : 'Add Staff')}
             </button>
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!confirmDeactivate}
+        onClose={() => setConfirmDeactivate(null)}
+        onConfirm={() => handleDelete(confirmDeactivate)}
+        title="Deactivate Staff Member"
+        message="This will deactivate the staff member's account. They will no longer be able to log in."
+        confirmLabel="Deactivate"
+      />
     </div>
   )
 }

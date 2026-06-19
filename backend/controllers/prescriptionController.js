@@ -4,6 +4,7 @@ const Doctor = require('../models/Doctor');
 const Prescription = require('../models/Prescription');
 const Medicine = require('../models/Medicine');
 const Billing = require('../models/Billing');
+const asyncHandler = require('../utils/asyncHandler');
 
 // @desc    Create new prescription
 // @route   POST /api/prescriptions
@@ -168,12 +169,12 @@ const getPrescription = async (req, res) => {
   });
 };
 
-// @desc    Update prescription status
+// @desc    Update prescription status (cancel / minor overrides)
 // @route   PUT /api/prescriptions/:id/status
-// @access  Private (Pharmacist)
+// @access  Private (Pharmacist, Admin)
 const updatePrescriptionStatus = async (req, res) => {
   const { status } = req.body;
-  
+
   const validStatuses = ['Pending', 'Partially-Filled', 'Fulfilled', 'Cancelled'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({
@@ -183,37 +184,28 @@ const updatePrescriptionStatus = async (req, res) => {
   }
 
   const prescription = await Prescription.findById(req.params.id);
-  
   if (!prescription) {
-    return res.status(404).json({
-      success: false,
-      message: 'Prescription not found'
-    });
+    return res.status(404).json({ success: false, message: 'Prescription not found' });
   }
 
-  // If fulfilling prescription, update medicine stock
-  const billingItems = [];
-  let billingSubtotal = 0;
+  // If the new dispense flow has already run (any item has dispensedQuantity > 0),
+  // only allow Cancelled via this endpoint — actual stock/billing changes happen in /dispense.
+  const alreadyDispensed = prescription.medicines.some(m => m.dispensedQuantity > 0);
 
-  if (status === 'Fulfilled' || status === 'Partially-Filled') {
+  if ((status === 'Fulfilled' || status === 'Partially-Filled') && !alreadyDispensed) {
+    // Legacy flow: bulk-fulfill using prescribed quantities
+    const billingItems = [];
+    let billingSubtotal = 0;
+
     for (let med of prescription.medicines) {
       const medicine = await Medicine.findById(med.medicine);
-
       if (!medicine) {
-        return res.status(404).json({
-          success: false,
-          message: `Medicine not found for prescription item`
-        });
+        return res.status(404).json({ success: false, message: 'Medicine not found for prescription item' });
       }
-
       if (medicine.stockQuantity < med.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${medicine.name}`
-        });
+        return res.status(400).json({ success: false, message: `Insufficient stock for ${medicine.name}` });
       }
 
-      // Reduce stock
       medicine.stockQuantity -= med.quantity;
       await medicine.save();
 
@@ -228,14 +220,155 @@ const updatePrescriptionStatus = async (req, res) => {
       });
       billingSubtotal += amount;
     }
+
+    prescription.status = status;
+    await prescription.save();
+
+    if (status === 'Fulfilled' && billingItems.length > 0) {
+      await Billing.create({
+        patient: prescription.patient,
+        items: billingItems,
+        subtotal: billingSubtotal,
+        totalAmount: billingSubtotal,
+        balance: billingSubtotal,
+        billType: 'Pharmacy',
+        createdByRole: 'Pharmacist',
+        generatedBy: req.user._id,
+        notes: `Auto-generated on prescription fulfilment`
+      });
+    }
+  } else {
+    // New dispense flow: just update the status label (no stock change here)
+    prescription.status = status;
+    await prescription.save();
   }
 
-  prescription.status = status;
+  await prescription.populate([
+    { path: 'patient', select: 'patientId userId' },
+    { path: 'doctor', select: 'userId specialization' },
+    { path: 'medicines.medicine', select: 'name genericName stockQuantity' }
+  ]);
+
+  res.status(200).json({
+    success: true,
+    message: 'Prescription status updated successfully',
+    data: prescription
+  });
+};
+
+// @desc    Dispense medicines for a prescription (pharmacist per-item qty control)
+// @route   POST /api/prescriptions/:id/dispense
+// @access  Private (Pharmacist)
+const dispensePrescription = async (req, res) => {
+  const { items } = req.body;
+  // items: [{ medicineId: String, dispensedQuantity: Number }]
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: 'items array is required' });
+  }
+
+  const prescription = await Prescription.findById(req.params.id)
+    .populate('medicines.medicine');
+
+  if (!prescription) {
+    return res.status(404).json({ success: false, message: 'Prescription not found' });
+  }
+  if (prescription.status === 'Cancelled') {
+    return res.status(400).json({ success: false, message: 'Cannot dispense a cancelled prescription' });
+  }
+  if (prescription.status === 'Fulfilled') {
+    return res.status(400).json({ success: false, message: 'Prescription is already fully dispensed' });
+  }
+
+  // Verify there is something left to dispense
+  const hasRemaining = prescription.medicines.some(m => (m.quantity - (m.dispensedQuantity || 0)) > 0);
+  if (!hasRemaining) {
+    return res.status(400).json({ success: false, message: 'All medicines have been fully dispensed' });
+  }
+
+  const billingItems = [];
+  let billingSubtotal = 0;
+
+  for (const item of items) {
+    const qty = parseInt(item.dispensedQuantity, 10);
+
+    if (!item.medicineId) {
+      return res.status(400).json({ success: false, message: 'Each item must have a medicineId' });
+    }
+    if (!qty || qty <= 0) {
+      return res.status(400).json({ success: false, message: 'dispensedQuantity must be > 0 for each item' });
+    }
+
+    // Find matching line in prescription
+    const medLine = prescription.medicines.find(
+      m => m.medicine?._id?.toString() === item.medicineId
+    );
+    if (!medLine) {
+      return res.status(400).json({
+        success: false,
+        message: `Medicine ${item.medicineId} is not part of this prescription`
+      });
+    }
+
+    const remaining = medLine.quantity - (medLine.dispensedQuantity || 0);
+    if (remaining <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: `${medLine.medicine.name} is already fully dispensed`
+      });
+    }
+
+    const medicine = await Medicine.findById(item.medicineId);
+    if (!medicine) {
+      return res.status(404).json({ success: false, message: `Medicine not found: ${item.medicineId}` });
+    }
+    if (qty > remaining) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot dispense more than remaining for ${medicine.name}. Remaining: ${remaining}, Requested: ${qty}`
+      });
+    }
+    if (medicine.stockQuantity < qty) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient stock for ${medicine.name}. Available: ${medicine.stockQuantity}, Requested: ${qty}`
+      });
+    }
+
+    // Deduct stock
+    medicine.stockQuantity -= qty;
+    await medicine.save();
+
+    // Accumulate dispensed quantity (allows partial → partial → complete)
+    medLine.dispensedQuantity = (medLine.dispensedQuantity || 0) + qty;
+    medLine.dispensedBy = req.user._id;
+    medLine.dispensedAt = new Date();
+
+    // Build billing line
+    const unitPrice = medicine.unitPrice || 0;
+    const amount = unitPrice * qty;
+    billingItems.push({
+      description: `${medicine.name}${medicine.strength ? ' ' + medicine.strength : ''}`,
+      category: 'Medicine',
+      quantity: qty,
+      unitPrice,
+      amount
+    });
+    billingSubtotal += amount;
+  }
+
+  // Auto-compute status (compare total dispensed vs prescribed for accuracy)
+  const allDispensed = prescription.medicines.every(m => (m.dispensedQuantity || 0) >= m.quantity);
+  const anyDispensed = prescription.medicines.some(m => (m.dispensedQuantity || 0) > 0);
+  prescription.status = allDispensed ? 'Fulfilled' : (anyDispensed ? 'Partially-Filled' : 'Pending');
+
   await prescription.save();
 
-  // Auto-generate medicine bill when a prescription is fully fulfilled
-  if (status === 'Fulfilled' && billingItems.length > 0) {
-    await Billing.create({
+  // Auto-generate pharmacy bill for every dispense event
+  let bill = null;
+  if (billingItems.length > 0 && billingSubtotal > 0) {
+    const isPartial = prescription.status === 'Partially-Filled';
+    bill = await Billing.create({
       patient: prescription.patient,
       items: billingItems,
       subtotal: billingSubtotal,
@@ -244,20 +377,24 @@ const updatePrescriptionStatus = async (req, res) => {
       billType: 'Pharmacy',
       createdByRole: 'Pharmacist',
       generatedBy: req.user._id,
-      notes: `Auto-generated on prescription fulfilment`
+      notes: `Auto-generated — Rx ${prescription.prescriptionId}${isPartial ? ' (partial dispense)' : ''}`
     });
   }
 
   await prescription.populate([
-    { path: 'patient', select: 'patientId userId' },
-    { path: 'doctor', select: 'userId specialization' },
-    { path: 'medicines.medicine', select: 'name genericName' }
+    { path: 'patient',  select: 'patientId userId', populate: { path: 'userId', select: 'name' } },
+    { path: 'doctor',   select: 'userId specialization', populate: { path: 'userId', select: 'name' } },
+    { path: 'medicines.medicine', select: 'name genericName strength unitPrice stockQuantity' },
+    { path: 'medicines.dispensedBy', select: 'name' }
   ]);
 
   res.status(200).json({
     success: true,
-    message: 'Prescription status updated successfully',
-    data: prescription
+    message: prescription.status === 'Fulfilled'
+      ? 'Prescription fully dispensed and pharmacy bill generated'
+      : 'Medicines partially dispensed',
+    data: prescription,
+    bill: bill || null
   });
 };
 
@@ -452,11 +589,13 @@ const getPrescriptionStats = async (req, res) => {
 
 
 module.exports = {
-  createPrescription,
-  getPrescriptions,
-  updatePrescriptionStatus,
-  getPrescription,
-  refillPrescription,
-  updatePrescription,
-  getPrescriptionStats
+  createPrescription:       asyncHandler(createPrescription),
+  getPrescriptions:         asyncHandler(getPrescriptions),
+  updatePrescriptionStatus: asyncHandler(updatePrescriptionStatus),
+  getPrescription:          asyncHandler(getPrescription),
+  refillPrescription:       asyncHandler(refillPrescription),
+  updatePrescription:       asyncHandler(updatePrescription),
+  cancelPrescription:       asyncHandler(cancelPrescription),
+  getPrescriptionStats:     asyncHandler(getPrescriptionStats),
+  dispensePrescription:     asyncHandler(dispensePrescription),
 }

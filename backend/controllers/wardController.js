@@ -1,6 +1,13 @@
 const Ward = require('../models/Ward');
 const Patient = require('../models/Patient');
+const Billing = require('../models/Billing');
 const asyncHandler = require('../utils/asyncHandler');
+
+const calcWardBill = (admissionDate, dailyRate) => {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const days = Math.max(1, Math.ceil((Date.now() - new Date(admissionDate).getTime()) / msPerDay));
+  return { days, total: days * dailyRate };
+};
 
 // Populate helper — used in multiple places
 const bedPatientPopulate = {
@@ -119,6 +126,7 @@ exports.releaseBed = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Bed not found or not occupied' });
   }
 
+  let wardBill = null;
   if (bed.patient) {
     const patient = await Patient.findById(bed.patient);
     if (patient) {
@@ -127,6 +135,25 @@ exports.releaseBed = asyncHandler(async (req, res) => {
         admission.dischargeDate = new Date();
         await patient.save();
       }
+    }
+
+    if (bed.admissionDate && ward.dailyRate > 0) {
+      const { days, total } = calcWardBill(bed.admissionDate, ward.dailyRate);
+      wardBill = await Billing.create({
+        patient: bed.patient,
+        billType: 'Ward',
+        items: [{
+          description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
+          category: 'Room Charges',
+          quantity: days,
+          unitPrice: ward.dailyRate,
+          amount: total
+        }],
+        subtotal: total,
+        totalAmount: total,
+        balance: total,
+        notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`
+      });
     }
   }
 
@@ -138,7 +165,7 @@ exports.releaseBed = asyncHandler(async (req, res) => {
   ward.availableBeds += 1;
   await ward.save();
 
-  res.status(200).json({ success: true, data: ward });
+  res.status(200).json({ success: true, data: ward, wardBill });
 });
 
 // ── NEW: assign a SPECIFIC bed (by beds._id) to a patient ────────────────────
@@ -203,7 +230,8 @@ exports.dischargeBed = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'Bed is not occupied' });
   }
 
-  // Close patient admission history
+  // Close patient admission history and auto-generate ward bill
+  let wardBill = null;
   if (bed.patient) {
     const patient = await Patient.findById(bed.patient);
     if (patient) {
@@ -212,6 +240,25 @@ exports.dischargeBed = asyncHandler(async (req, res) => {
         lastAdmission.dischargeDate = new Date();
         await patient.save();
       }
+    }
+
+    if (bed.admissionDate && ward.dailyRate > 0) {
+      const { days, total } = calcWardBill(bed.admissionDate, ward.dailyRate);
+      wardBill = await Billing.create({
+        patient: bed.patient,
+        billType: 'Ward',
+        items: [{
+          description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
+          category: 'Room Charges',
+          quantity: days,
+          unitPrice: ward.dailyRate,
+          amount: total
+        }],
+        subtotal: total,
+        totalAmount: total,
+        balance: total,
+        notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`
+      });
     }
   }
 
@@ -224,5 +271,5 @@ exports.dischargeBed = asyncHandler(async (req, res) => {
   await ward.save();
 
   await ward.populate(bedPatientPopulate);
-  res.status(200).json({ success: true, message: 'Patient discharged successfully', data: ward });
+  res.status(200).json({ success: true, message: 'Patient discharged successfully', data: ward, wardBill });
 });

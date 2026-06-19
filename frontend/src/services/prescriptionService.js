@@ -9,3 +9,7 @@ export const createPrescription = (data) => api.post('/prescriptions', data)
 export const updatePrescriptionStatus = (id, data) => api.put(`/prescriptions/${id}/status`, data)
 
 export const refillPrescription = (id, data) => api.post(`/prescriptions/${id}/refill`, data)
+
+export const dispensePrescription = (id, data) => api.post(`/prescriptions/${id}/dispense`, data)
+
+export const cancelPrescription = (id) => api.put(`/prescriptions/${id}/cancel`)

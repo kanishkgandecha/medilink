@@ -45,7 +45,7 @@ const AppointmentList = ({ appointments, onEdit, onDelete, onStatusChange }) => 
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
               filter === f
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#2E86DE] text-white'
                 : darkMode
                 ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

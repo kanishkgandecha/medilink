@@ -12,6 +12,10 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
     notes: ''
   })
 
+  const inp = `w-full px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+  const inpSm = `w-full px-3 py-2 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+  const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
+
   const [newService, setNewService] = useState({
     description: '',
     quantity: 1,
@@ -89,16 +93,14 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
       {/* Patient Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <User className="w-4 h-4 inline mr-2" />
             Select Patient *
           </label>
           <select
             value={formData.patientId}
             onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           >
             <option value="">Select Patient</option>
             {patients && patients.map((patient) => (
@@ -110,7 +112,7 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <Calendar className="w-4 h-4 inline mr-2" />
             Date *
           </label>
@@ -118,9 +120,7 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
             type="date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           />
         </div>
       </div>
@@ -143,9 +143,7 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
                   rate: template ? template.rate : 0
                 })
               }}
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inpSm}
             >
               <option value="">Select or enter service</option>
               {serviceTemplates.map((template) => (
@@ -160,9 +158,7 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
               min="1"
               value={newService.quantity}
               onChange={(e) => setNewService({ ...newService, quantity: parseInt(e.target.value) || 1 })}
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inpSm}
             />
           </div>
           <div className="md:col-span-3">
@@ -173,15 +169,13 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
               step="0.01"
               value={newService.rate}
               onChange={(e) => setNewService({ ...newService, rate: parseFloat(e.target.value) || 0 })}
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inpSm}
             />
           </div>
           <div className="md:col-span-2 flex items-end">
             <button
               onClick={addService}
-              className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm flex items-center justify-center space-x-1"
+              className="w-full py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-sm flex items-center justify-center space-x-1 shadow-[0_2px_8px_rgba(46,134,222,0.3)]"
             >
               <Plus className="w-4 h-4" />
               <span>Add</span>
@@ -260,15 +254,13 @@ const GenerateInvoice = ({ patients, onGenerate, onCancel }) => {
 
       {/* Notes */}
       <div>
-        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <label className={lbl}>
           Additional Notes
         </label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
           rows="3"
           placeholder="Any additional notes or comments..."
         />

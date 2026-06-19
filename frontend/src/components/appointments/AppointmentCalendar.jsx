@@ -73,7 +73,7 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
               {day}
             </span>
             {dayAppointments.length > 0 && (
-              <span className="text-xs bg-blue-600 text-white rounded-full px-2 py-0.5">
+              <span className="text-xs bg-[#2E86DE] text-white rounded-full px-2 py-0.5">
                 {dayAppointments.length}
               </span>
             )}
@@ -121,7 +121,7 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="px-3 py-2 text-sm bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200"
             >
               Today
             </button>
@@ -142,7 +142,7 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
               onClick={() => setView(v)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                 view === v
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#2E86DE] text-white'
                   : darkMode
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

@@ -20,6 +20,7 @@ const billingRoutes = require('./routes/billingRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const aiRoutes        = require('./routes/aiRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -92,6 +93,9 @@ mongoose
     process.exit(1);
   });
 
+// ── Static uploads ──────────────────────────────────────────
+app.use('/uploads', require('express').static(require('path').join(__dirname, 'uploads')));
+
 // ── API Routes ───────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
@@ -104,6 +108,7 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboards', dashboardRoutes);
+app.use('/api/ai',        aiRoutes);
 
 // ── Health & Root ────────────────────────────────────────────
 app.get('/', (_req, res) =>
@@ -128,12 +133,16 @@ const server = app.listen(PORT, () => {
 
 // ── Graceful shutdown ────────────────────────────────────────
 process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled Rejection:', reason);
-  // Only crash on startup errors; runtime rejections are logged but don't kill the server
+  const msg = reason instanceof Error ? reason.stack : String(reason);
+  logger.error(`Unhandled Rejection: ${msg}`);
   if (!server.listening) server.close(() => process.exit(1));
 });
 
 process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err.message);
+  logger.error(`Uncaught Exception: ${err.message}\n${err.stack}`);
+  if (err.code === 'EADDRINUSE') {
+    logger.error(`Port ${PORT} is already in use. Stop the existing server process first.`);
+    process.exit(1);
+  }
   process.exit(1);
 });

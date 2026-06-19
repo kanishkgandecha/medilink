@@ -80,7 +80,7 @@ const DoctorSchedule = ({ doctorId, schedule }) => {
             onClick={() => setSelectedDay(day.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
               selectedDay === day.id
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#2E86DE] text-white'
                 : darkMode
                 ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -136,7 +136,7 @@ const DoctorSchedule = ({ doctorId, schedule }) => {
           <div className="text-center py-8">
             <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-3" />
             <p className="text-gray-500">No schedule available for this day</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <button className="mt-4 px-4 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200">
               Add Schedule
             </button>
           </div>

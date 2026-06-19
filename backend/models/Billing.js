@@ -16,7 +16,7 @@ const billingSchema = new mongoose.Schema({
   },
   billType: {
     type: String,
-    enum: ['Consultation', 'Pharmacy', 'Test', 'Other'],
+    enum: ['Consultation', 'Pharmacy', 'Test', 'Ward', 'Other'],
     default: 'Other'
   },
   items: [{
@@ -130,12 +130,14 @@ const billingSchema = new mongoose.Schema({
   notes: String
 }, { timestamps: true });
 
-billingSchema.pre('save', async function(next) {
+billingSchema.pre('save', function(next) {
   if (this.isNew && !this.billNumber) {
-    const year = new Date().getFullYear();
-    const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const count = await this.constructor.countDocuments();
-    this.billNumber = `BILL-${year}${month}-${String(count + 1).padStart(6, '0')}`;
+    const now   = new Date();
+    const year  = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const ts    = Date.now().toString(36).toUpperCase().slice(-4);
+    const rand  = Math.random().toString(36).substr(2, 4).toUpperCase();
+    this.billNumber = `BILL-${year}${month}-${ts}${rand}`;
   }
   next();
 });

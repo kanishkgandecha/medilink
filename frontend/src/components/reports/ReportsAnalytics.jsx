@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 const ReportsAnalytics = () => {
   const { darkMode } = useTheme()
   const [dateRange, setDateRange] = useState('month')
+  const inp = `px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
 
   const departmentData = [
     { name: 'Cardiology', value: 450, color: '#ef4444' },
@@ -64,16 +65,14 @@ const ReportsAnalytics = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className={`px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           >
             <option value="week">This Week</option>
             <option value="month">This Month</option>
             <option value="quarter">This Quarter</option>
             <option value="year">This Year</option>
           </select>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <button className="flex items-center space-x-2 px-4 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200">
             <Download className="w-5 h-5" />
             <span>Export</span>
           </button>

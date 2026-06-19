@@ -1,13 +1,15 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import Sidebar from './Sidebar'
-import Header from './Header'
+import TopNav from './TopNav'
+import BottomNav from './BottomNav'
 import Loader from './Loader'
+import { useTheme } from '../../context/ThemeContext'
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
-  const location = useLocation()
+  const { darkMode }      = useTheme()
+  const location          = useLocation()
 
   if (loading) {
     return <Loader fullScreen text="Authenticating…" />
@@ -26,24 +28,23 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar — always rendered; width changes based on sidebarOpen */}
-      <Sidebar />
+    <div className={`flex flex-col h-screen overflow-hidden
+      ${darkMode
+        ? 'bg-gray-900'
+        : 'bg-gradient-to-br from-[#F9F8F4] via-[#F5F7FA] to-[#EFF4FC]'}`}>
 
-      {/* Main column */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header />
+      <TopNav />
 
-        {/* Scrollable content area with per-page enter animation */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin">
-          <div
-            key={location.pathname}
-            className="p-6 min-h-full animate-enter"
-          >
-            {children}
-          </div>
-        </main>
-      </div>
+      <main className="flex-1 overflow-y-auto scrollbar-thin">
+        <div
+          key={location.pathname}
+          className="p-6 pb-24 md:pb-6 min-h-full animate-enter"
+        >
+          {children}
+        </div>
+      </main>
+
+      <BottomNav />
     </div>
   )
 }

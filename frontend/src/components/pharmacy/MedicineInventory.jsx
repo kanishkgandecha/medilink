@@ -9,6 +9,7 @@ const MedicineInventory = ({ medicines, onRestock, onExpiry }) => {
   const [filterStatus, setFilterStatus] = useState('all')
 
   const categories = [...new Set(medicines.map(m => m.category))]
+  const inp = `px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
 
   const isExpiringSoon = (expiryDate) => {
     const today = new Date()
@@ -66,17 +67,13 @@ const MedicineInventory = ({ medicines, onRestock, onExpiry }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search medicines..."
-            className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={`w-full pl-10 pr-4 ${inp}`}
           />
         </div>
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Categories</option>
           {categories.map((cat) => (
@@ -86,9 +83,7 @@ const MedicineInventory = ({ medicines, onRestock, onExpiry }) => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Status</option>
           <option value="in-stock">In Stock</option>
@@ -183,7 +178,7 @@ const MedicineInventory = ({ medicines, onRestock, onExpiry }) => {
                 {medicine.quantity <= medicine.reorderLevel && (
                   <button
                     onClick={() => onRestock(medicine._id)}
-                    className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                    className="flex-1 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-sm font-medium shadow-[0_2px_8px_rgba(46,134,222,0.3)]"
                   >
                     Restock
                   </button>

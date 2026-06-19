@@ -17,16 +17,21 @@ const prescriptionSchema = new mongoose.Schema({
     ref: 'Appointment' 
   },
   medicines: [{
-    medicine: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'Medicine', 
-      required: true 
+    medicine: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Medicine',
+      required: true
     },
-    dosage: { type: String, required: true },
-    frequency: { type: String, required: true },
-    duration: { type: String, required: true },
+    dosage:       { type: String, required: true },
+    frequency:    { type: String, required: true },
+    duration:     { type: String, required: true },
     instructions: String,
-    quantity: { type: Number, required: true }
+    quantity:     { type: Number, required: true },   // doctor's prescribed qty
+
+    // Dispensing fields (filled by pharmacist)
+    dispensedQuantity: { type: Number, default: 0 },
+    dispensedBy:       { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    dispensedAt:       Date
   }],
   diagnosis: String,
   symptoms: String,
@@ -43,10 +48,11 @@ const prescriptionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-prescriptionSchema.pre('save', async function(next) {
+prescriptionSchema.pre('save', function(next) {
   if (!this.prescriptionId) {
-    const count = await mongoose.model('Prescription').countDocuments();
-    this.prescriptionId = `RX${String(count + 1).padStart(6, '0')}`;
+    const ts   = Date.now().toString(36).toUpperCase();
+    const rand = Math.random().toString(36).substr(2, 5).toUpperCase();
+    this.prescriptionId = `RX-${ts}-${rand}`;
   }
   next();
 });

@@ -1,3 +1,4 @@
+const asyncHandler = require('../utils/asyncHandler');
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
@@ -28,7 +29,8 @@ const getAdminDashboard = async (_req, res) => {
     lowStockMedicines,
     pendingBills,
     todayRevenue,
-    activeStaff
+    activeStaff,
+    expiringMedicines
   ] = await Promise.all([
     User.countDocuments({ isActive: true }),
     Doctor.countDocuments({ isAvailable: true }),
@@ -50,7 +52,11 @@ const getAdminDashboard = async (_req, res) => {
       { $match: { billDate: { $gte: today, $lt: tomorrow } } },
       { $group: { _id: null, total: { $sum: '$amountPaid' } } }
     ]),
-    Staff.countDocuments({ isActive: true })
+    Staff.countDocuments({ isActive: true }),
+    Medicine.countDocuments({
+      expiryDate: { $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), $gte: today },
+      isActive: true
+    })
   ]);
 
   // Recent activities
@@ -72,6 +78,37 @@ const getAdminDashboard = async (_req, res) => {
     .limit(5)
     .select('name email role createdAt');
 
+  // Monthly revenue for current year
+  const yearStart = new Date(today.getFullYear(), 0, 1);
+  const monthlyRevenue = await Billing.aggregate([
+    { $match: { billDate: { $gte: yearStart }, paymentStatus: { $in: ['Paid', 'Partially-Paid'] } } },
+    { $group: { _id: { month: { $month: '$billDate' } }, total: { $sum: '$amountPaid' } } },
+    { $sort: { '_id.month': 1 } }
+  ]);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const revenueByMonth = MONTHS.map((month, i) => {
+    const found = monthlyRevenue.find(r => r._id.month === i + 1);
+    return { month, Revenue: found ? found.total : 0 };
+  });
+
+  // Weekly appointment count (Mon–Sun of current week)
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+  const weeklyApts = await Appointment.aggregate([
+    { $match: { appointmentDate: { $gte: weekStart, $lt: weekEnd } } },
+    { $group: { _id: { $dayOfWeek: '$appointmentDate' }, count: { $sum: 1 } } }
+  ]);
+  // $dayOfWeek: 1=Sun, 2=Mon, ... 7=Sat
+  const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const weeklyTrend = DAY_LABELS.map((day, i) => {
+    const mongoDay = i + 2; // Mon=2, Tue=3, ..., Sat=7
+    const found = weeklyApts.find(a => a._id === mongoDay);
+    return { day, Appointments: found ? found.count : 0 };
+  });
+
   res.status(200).json({
     success: true,
     role: 'Admin',
@@ -89,12 +126,15 @@ const getAdminDashboard = async (_req, res) => {
       },
       alerts: {
         lowStockMedicines,
+        expiringMedicines,
         pendingBills,
         pendingAppointments
       },
       revenue: {
-        today: todayRevenue[0]?.total || 0
+        today: todayRevenue[0]?.total || 0,
+        monthly: revenueByMonth
       },
+      weeklyAppointments: weeklyTrend,
       recentActivities: {
         appointments: recentAppointments,
         users: recentUsers
@@ -536,10 +576,10 @@ const getPharmacistDashboard = async (req, res) => {
 };
 
 module.exports = {
-  getAdminDashboard,
-  getDoctorDashboard,
-  getPatientDashboard,
-  getNurseDashboard,
-  getReceptionistDashboard,
-  getPharmacistDashboard
+  getAdminDashboard:       asyncHandler(getAdminDashboard),
+  getDoctorDashboard:      asyncHandler(getDoctorDashboard),
+  getPatientDashboard:     asyncHandler(getPatientDashboard),
+  getNurseDashboard:       asyncHandler(getNurseDashboard),
+  getReceptionistDashboard: asyncHandler(getReceptionistDashboard),
+  getPharmacistDashboard:  asyncHandler(getPharmacistDashboard),
 };

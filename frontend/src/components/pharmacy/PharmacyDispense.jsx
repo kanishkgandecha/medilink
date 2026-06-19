@@ -7,6 +7,8 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
   const { darkMode } = useTheme()
   const [searchTerm, setSearchTerm] = useState('')
   const [cart, setCart] = useState([])
+  const inp = `w-full px-3 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+
   const [patientInfo, setPatientInfo] = useState({
     name: '',
     patientId: '',
@@ -84,9 +86,7 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search medicines..."
-            className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={`w-full pl-10 pr-4 ${inp}`}
           />
         </div>
 
@@ -119,7 +119,7 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
                 className={`w-full py-1.5 rounded text-xs font-medium transition ${
                   medicine.quantity === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-[#2E86DE] text-white hover:bg-[#1a6db5]'
                 }`}
               >
                 Add to Cart
@@ -143,27 +143,21 @@ const PharmacyDispense = ({ medicines, onDispense }) => {
               value={patientInfo.name}
               onChange={(e) => setPatientInfo({ ...patientInfo, name: e.target.value })}
               placeholder="Patient Name *"
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inp}
             />
             <input
               type="text"
               value={patientInfo.patientId}
               onChange={(e) => setPatientInfo({ ...patientInfo, patientId: e.target.value })}
               placeholder="Patient ID *"
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inp}
             />
             <input
               type="text"
               value={patientInfo.prescriptionId}
               onChange={(e) => setPatientInfo({ ...patientInfo, prescriptionId: e.target.value })}
               placeholder="Prescription ID (Optional)"
-              className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-              } focus:ring-2 focus:ring-blue-500`}
+              className={inp}
             />
           </div>
 

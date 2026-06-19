@@ -16,8 +16,6 @@ export const ThemeProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : false
   })
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
     if (darkMode) {
@@ -28,15 +26,11 @@ export const ThemeProvider = ({ children }) => {
   }, [darkMode])
 
   const toggleDarkMode = () => setDarkMode(prev => !prev)
-  const toggleSidebar = () => setSidebarOpen(prev => !prev)
 
   const value = {
     darkMode,
     setDarkMode,
     toggleDarkMode,
-    sidebarOpen,
-    setSidebarOpen,
-    toggleSidebar,
   }
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

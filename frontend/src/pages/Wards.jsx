@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {
   Bed, Users, Activity, Plus, Edit, Trash2, UserPlus, UserMinus,
-  BarChart3, Search, X, Calendar, CheckCircle2, AlertCircle, User
+  BarChart3, Search, X, Calendar, CheckCircle2, AlertCircle, User, Sparkles
 } from 'lucide-react'
 import StatCard from '../components/common/StatCard'
+import PageLayout from '../components/common/PageLayout'
+import { SkeletonDashboard } from '../components/common/SkeletonCard'
+import ConfirmDialog from '../components/common/ConfirmDialog'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/common/Modal'
 import { toast } from 'react-toastify'
 import * as wardService from '../services/wardService'
 import api from '../services/api'
+import BedAllocationAgent from '../agents/BedAllocationAgent'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const calcAge = (dob) => {
@@ -143,8 +147,8 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
   }
 
   return (
-    <div className={`border rounded-2xl transition-all duration-200
-      ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`}>
+    <div className={`border rounded-xl transition-all duration-200
+      ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`}>
 
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
@@ -187,23 +191,23 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
             <>
               <button
                 onClick={() => setExpanded(v => !v)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition border
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
                   ${expanded
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                    ? 'bg-[#2E86DE] text-white border-[#2E86DE]'
+                    : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}
               >
                 {expanded ? 'Hide Beds' : 'View Beds'}
               </button>
               <button
                 onClick={() => onEdit(ward)}
-                className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs hover:bg-blue-700 transition"
+                className={`p-2 rounded-lg transition-all duration-200 ${darkMode ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
                 title="Edit ward"
               >
                 <Edit className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(ward._id)}
-                className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs hover:bg-red-700 transition"
+                className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                 title="Delete ward"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -213,10 +217,10 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
           {!canManage && (
             <button
               onClick={() => setExpanded(v => !v)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition border
+              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
                 ${expanded
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                  ? 'bg-[#2E86DE] text-white border-[#2E86DE]'
+                  : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
             >
               {expanded ? 'Hide Beds' : 'View Beds'}
             </button>
@@ -264,6 +268,7 @@ const Wards = () => {
   const [patients, setPatients] = useState([])
   const [loading,  setLoading]  = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [confirmDeleteWard, setConfirmDeleteWard] = useState(null)
 
   // Ward CRUD modal
   const [showWardModal, setShowWardModal] = useState(false)
@@ -274,8 +279,9 @@ const Wards = () => {
   })
 
   // Assign modal
-  const [showAssignModal, setShowAssignModal] = useState(false)
-  const [assignTarget, setAssignTarget]       = useState({ ward: null, bed: null })
+  const [showAssignModal, setShowAssignModal]   = useState(false)
+  const [showBedAI, setShowBedAI]               = useState(false)
+  const [assignTarget, setAssignTarget]         = useState({ ward: null, bed: null })
   const [patientSearch, setPatientSearch]     = useState('')
   const [assignPatient, setAssignPatient]     = useState(null)
   const [assignDates, setAssignDates]         = useState({
@@ -359,14 +365,13 @@ const Wards = () => {
       resetWardForm()
       fetchWards()
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Operation failed')
+      toast.error(err.response?.data?.message || err.message || 'Operation failed')
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDeleteWard = async (wardId) => {
-    if (!window.confirm('Delete this ward? All beds must be empty first.')) return
     try {
       await wardService.deleteWard(wardId)
       toast.success('Ward deleted')
@@ -417,8 +422,15 @@ const Wards = () => {
   const handleDischarge = async () => {
     setSubmitting(true)
     try {
-      await wardService.dischargeBed(dischargeTarget.ward._id, { bedId: dischargeTarget.bed._id })
-      toast.success(`Patient discharged from bed ${dischargeTarget.bed.bedNumber}`)
+      const res = await wardService.dischargeBed(dischargeTarget.ward._id, { bedId: dischargeTarget.bed._id })
+      const bill = res?.wardBill || res?.data?.wardBill
+      if (bill) {
+        const days  = bill.items?.[0]?.quantity || 1
+        const total = bill.totalAmount || 0
+        toast.success(`Patient discharged from ${dischargeTarget.bed.bedNumber} · Ward bill ₹${total.toLocaleString()} (${days} day${days !== 1 ? 's' : ''}) auto-generated`)
+      } else {
+        toast.success(`Patient discharged from bed ${dischargeTarget.bed.bedNumber}`)
+      }
       setShowDischargeModal(false)
       fetchWards()
     } catch (err) {
@@ -467,10 +479,10 @@ const Wards = () => {
   }, [allBeds, wardFilter, statusFilter])
 
   // ── Style helpers ────────────────────────────────────────────────
-  const inp = `w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all
+  const inp = `w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200
     ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
   const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
-  const card = `border rounded-2xl ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`
+  const card = `border rounded-xl ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`
 
   // ════════════════════════════════════════════════════════════════
   return (
@@ -487,7 +499,7 @@ const Wards = () => {
         {canManage && user?.role === 'Admin' && (
           <button
             onClick={() => { resetWardForm(); setShowWardModal(true) }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
           >
             <Plus className="w-4 h-4" />
             Add Ward
@@ -495,19 +507,18 @@ const Wards = () => {
         )}
       </div>
 
-      {/* ── Stats ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Beds"    value={totalBeds}          icon={Bed}      color="from-blue-600 to-cyan-500"    />
-        <StatCard title="Occupied"      value={occupiedBeds}       icon={Users}    color="from-red-500 to-rose-500"     />
-        <StatCard title="Available"     value={freeBeds}           icon={Activity} color="from-emerald-600 to-teal-500" />
-        <StatCard title="Occupancy"     value={`${occupancyPct}%`} icon={BarChart3} color="from-violet-600 to-purple-500" />
-      </div>
+      <PageLayout leftPanel={
+        <div className="space-y-3">
+          <StatCard title="Total Beds" value={totalBeds}          icon={Bed}      iconBg="bg-blue-50 text-[#2E86DE]"       />
+          <StatCard title="Occupied"   value={occupiedBeds}       icon={Users}    iconBg="bg-red-50 text-red-600"          />
+          <StatCard title="Available"  value={freeBeds}           icon={Activity} iconBg="bg-emerald-50 text-emerald-600"  />
+          <StatCard title="Occupancy"  value={`${occupancyPct}%`} icon={BarChart3} iconBg="bg-violet-50 text-violet-600"  />
+        </div>
+      }>
 
       {/* ── Ward Cards ───────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex items-center justify-center h-32">
-          <div className="w-8 h-8 rounded-full border-[3px] border-blue-100 border-t-blue-600 animate-spin" />
-        </div>
+        <SkeletonDashboard />
       ) : wards.length === 0 ? (
         <div className={`${card} p-12 text-center`}>
           <Bed className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -515,7 +526,7 @@ const Wards = () => {
           {user?.role === 'Admin' && (
             <button
               onClick={() => { resetWardForm(); setShowWardModal(true) }}
-              className="mt-4 px-5 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+              className="mt-4 px-5 py-2 bg-[#2E86DE] text-white text-sm rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200"
             >Add First Ward</button>
           )}
         </div>
@@ -528,7 +539,7 @@ const Wards = () => {
               canManage={canManage}
               darkMode={darkMode}
               onEdit={openEditWard}
-              onDelete={handleDeleteWard}
+              onDelete={setConfirmDeleteWard}
               onAllocate={openAssignModal}
               onRelease={openDischargeModal}
             />
@@ -554,7 +565,7 @@ const Wards = () => {
               <select
                 value={wardFilter}
                 onChange={e => setWardFilter(e.target.value)}
-                className={`px-3 py-1.5 rounded-lg border text-xs ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'} focus:ring-2 focus:ring-blue-500`}
+                className={`px-3 py-1.5 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300'}`}
               >
                 <option value="all">All Wards</option>
                 {wards.map(w => <option key={w._id} value={w._id}>{w.wardName}</option>)}
@@ -566,7 +577,7 @@ const Wards = () => {
                     key={val}
                     onClick={() => setStatusFilter(val)}
                     className={`px-3 py-1.5 transition ${statusFilter === val
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#2E86DE] text-white'
                       : darkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                   >{label}</button>
                 ))}
@@ -626,6 +637,8 @@ const Wards = () => {
           </div>
         </div>
       )}
+
+      </PageLayout>
 
       {/* ════════════════════════════════════════════════════════════
           MODALS
@@ -706,13 +719,13 @@ const Wards = () => {
               className={inp} />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
             <button onClick={() => { setShowWardModal(false); resetWardForm() }}
-              className={`px-5 py-2 rounded-xl border text-sm transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+              className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
               Cancel
             </button>
             <button onClick={handleSaveWard} disabled={submitting}
-              className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50">
+              className="px-5 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all disabled:opacity-50">
               {submitting ? 'Saving…' : editingWard ? 'Update Ward' : 'Create Ward'}
             </button>
           </div>
@@ -738,9 +751,12 @@ const Wards = () => {
               </p>
               <p className="text-xs text-gray-400">{assignTarget.ward?.wardName} · {assignTarget.ward?.wardType}</p>
             </div>
-            <span className="ml-auto px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-semibold">
-              Available
-            </span>
+            <button
+              onClick={() => setShowBedAI(true)}
+              className="ml-auto flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/50 transition"
+            >
+              <Sparkles className="w-3 h-3" /> AI Recommendation
+            </button>
           </div>
 
           {/* Patient search */}
@@ -782,7 +798,7 @@ const Wards = () => {
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition border-b last:border-b-0
                         ${darkMode ? 'border-gray-700' : 'border-gray-100'}
                         ${isSelected
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[#2E86DE] text-white'
                           : isAlreadyAssigned
                           ? darkMode ? 'bg-gray-800/50 opacity-40 cursor-not-allowed' : 'bg-gray-50 opacity-40 cursor-not-allowed'
                           : darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
@@ -845,13 +861,13 @@ const Wards = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-1">
+          <div className="flex justify-end gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             <button onClick={() => setShowAssignModal(false)}
-              className={`px-5 py-2 rounded-xl border text-sm transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+              className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
               Cancel
             </button>
             <button onClick={handleAssign} disabled={!assignPatient || submitting}
-              className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-50">
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all disabled:opacity-50">
               {submitting ? 'Assigning…' : 'Assign to Bed'}
             </button>
           </div>
@@ -902,11 +918,11 @@ const Wards = () => {
 
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowDischargeModal(false)}
-                className={`px-5 py-2 rounded-xl border text-sm transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
                 Cancel
               </button>
               <button onClick={handleDischarge} disabled={submitting}
-                className="px-5 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:from-orange-600 hover:to-red-700 transition disabled:opacity-50">
+                className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl shadow-sm transition-all disabled:opacity-50">
                 {submitting ? 'Discharging…' : 'Discharge Patient'}
               </button>
             </div>
@@ -914,6 +930,16 @@ const Wards = () => {
         )}
       </Modal>
 
+      <ConfirmDialog
+        isOpen={!!confirmDeleteWard}
+        onClose={() => setConfirmDeleteWard(null)}
+        onConfirm={() => handleDeleteWard(confirmDeleteWard)}
+        title="Delete Ward"
+        message="This will permanently delete the ward. All beds must be empty before deletion."
+        confirmLabel="Delete Ward"
+      />
+
+      <BedAllocationAgent open={showBedAI} onClose={() => setShowBedAI(false)} />
     </div>
   )
 }

@@ -4,13 +4,19 @@ import {
   ChevronRight, ChevronLeft, User, Stethoscope, CheckCircle2, IndianRupee,
   AlertCircle, Search, X
 } from 'lucide-react'
+import TimeStamp from '../components/common/TimeStamp'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/common/Modal'
+import ConfirmDialog from '../components/common/ConfirmDialog'
+import { SkeletonTable } from '../components/common/SkeletonCard'
 import * as appointmentService from '../services/appointmentService'
 import * as patientService from '../services/patientService'
 import * as doctorService from '../services/doctorService'
 import { toast } from 'react-toastify'
+import CardPagination, { paginateData } from '../components/common/CardPagination'
+import PageLayout from '../components/common/PageLayout'
+import StatCard from '../components/common/StatCard'
 
 const drName = (name) => `Dr. ${(name || '').replace(/^Dr\.?\s*/i, '').trim()}`
 
@@ -74,6 +80,18 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
   const [submitting, setSubmitting] = useState(false)
   const [availableSlots, setAvailableSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [aiPriority, setAiPriority] = useState(null)
+
+  // AI: suggest priority from symptoms text
+  useEffect(() => {
+    const s = (booking.symptoms || '').toLowerCase()
+    if (!s.trim()) { setAiPriority(null); return }
+    const emergency = ['chest pain', 'can\'t breathe', 'cannot breathe', 'unconscious', 'heart attack', 'stroke', 'seizure', 'severe bleeding', 'not breathing']
+    const urgent    = ['breathlessness', 'breathing difficulty', 'high fever', 'vomiting blood', 'blood in stool', 'severe pain', 'chest pressure', 'chest tightness', 'left arm pain']
+    if (emergency.some(k => s.includes(k))) { setAiPriority('Emergency'); return }
+    if (urgent.some(k => s.includes(k)))    { setAiPriority('Urgent'); return }
+    setAiPriority('Normal')
+  }, [booking.symptoms])
 
   // Patient search state
   const [patientQuery, setPatientQuery] = useState('')
@@ -84,10 +102,10 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
   const searchTimer = useRef(null)
   const suggestionRef = useRef(null)
 
-  const inp = `w-full px-4 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
-    darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+  const inp = `w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${
+    darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'
   }`
-  const lbl = `block text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`
+  const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
 
   // Click-outside to close suggestions
   useEffect(() => {
@@ -195,8 +213,11 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
         symptoms: booking.symptoms,
       }
       if (!isPatient) payload.patient = booking.patientId
-      await appointmentService.createAppointment(payload)
-      toast.success('Appointment booked successfully!')
+      const res = await appointmentService.createAppointment(payload)
+      const notifMsg = res?.notificationSent
+        ? (res.notificationMock ? ' · Email notification queued (mock)' : ' · Confirmation email sent')
+        : ''
+      toast.success(`Appointment booked successfully!${notifMsg}`)
       setBooking(EMPTY_BOOKING)
       onClose()
       onSuccess()
@@ -469,7 +490,23 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
               </select>
             </div>
             <div>
-              <label className={lbl}>Priority</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Priority</label>
+                {aiPriority && aiPriority !== booking.priority && (
+                  <button
+                    type="button"
+                    onClick={() => setBooking(b => ({ ...b, priority: aiPriority }))}
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition ${
+                      aiPriority === 'Emergency' ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400' :
+                      aiPriority === 'Urgent'    ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                   'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}
+                    title="Apply AI suggestion"
+                  >
+                    AI: {aiPriority} ↑
+                  </button>
+                )}
+              </div>
               <select
                 value={booking.priority}
                 onChange={e => setBooking(b => ({ ...b, priority: e.target.value }))}
@@ -511,7 +548,7 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
       <div className="flex justify-between mt-6">
         <button
           onClick={booking.step === 1 ? handleClose : back}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg border text-sm font-medium transition ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium transition ${
             darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
@@ -523,7 +560,7 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
           <button
             onClick={next}
             disabled={!canNext()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:from-blue-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold shadow-[0_2px_8px_rgba(46,134,222,0.35)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
           >
             Next
             <ChevronRight className="w-4 h-4" />
@@ -532,7 +569,7 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 transition"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm disabled:opacity-50 transition-all duration-200"
           >
             {submitting ? 'Booking…' : 'Confirm Booking'}
             <CheckCircle2 className="w-4 h-4" />
@@ -550,6 +587,108 @@ const SummaryRow = ({ label, value, darkMode }) => (
   </div>
 )
 
+// ─── Appointment Card ─────────────────────────────────────────
+const AppointmentCard = ({ apt, isPatient, canManage, onComplete, onCancel, darkMode }) => {
+  const patient  = apt.patient?.userId?.name || apt.patient?.patientId || 'Patient'
+  const patInit  = patient.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const doctor   = (apt.doctor?.userId?.name || '').replace(/^Dr\.?\s*/i, '').trim() || 'Doctor'
+  const docInit  = doctor.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const spec     = apt.doctor?.specialization || ''
+  const dateStr  = apt.appointmentDate
+    ? new Date(apt.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—'
+  const timeStr  = apt.timeSlot?.startTime || '—'
+  const timeEnd  = apt.timeSlot?.endTime   || ''
+  const isActive = !['Completed', 'Cancelled'].includes(apt.status)
+
+  return (
+    <div className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200
+      ${darkMode
+        ? 'bg-gray-800 border-gray-700/60 hover:border-gray-600'
+        : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:shadow-md hover:border-gray-200'}`}>
+
+      {/* ID + status badge */}
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[11px] text-gray-400">{apt.appointmentId}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLOR[apt.status] || STATUS_COLOR.Scheduled}`}>
+          {apt.status}
+        </span>
+      </div>
+
+      {/* Doctor row */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-[#2E86DE] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          {docInit}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`font-semibold text-sm truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dr. {doctor}</p>
+          <p className="text-xs text-gray-400 truncate">{spec || 'General'}</p>
+        </div>
+        {!isPatient && (
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0
+            ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+            {patInit}
+          </div>
+        )}
+      </div>
+
+      {!isPatient && (
+        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          Patient: <span className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{patient}</span>
+        </p>
+      )}
+
+      {/* Date / time / type */}
+      <div className={`flex items-center justify-between pt-2.5 border-t
+        ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+        <TimeStamp
+          date={apt.appointmentDate
+            ? (() => {
+                const d = new Date(apt.appointmentDate)
+                if (apt.timeSlot?.startTime) {
+                  const [hh, mm] = apt.timeSlot.startTime.split(':')
+                  d.setHours(parseInt(hh, 10), parseInt(mm, 10), 0, 0)
+                }
+                return d
+              })()
+            : null}
+          showTime={!!apt.timeSlot?.startTime}
+          showRel={isActive}
+          compact={false}
+        />
+        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium flex-shrink-0
+          ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+          {apt.type}
+        </span>
+      </div>
+
+      {/* Actions */}
+      {isActive && (
+        <div className="flex items-center gap-2">
+          {canManage && (
+            <button
+              onClick={() => onComplete(apt._id)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
+                bg-emerald-50 text-emerald-700 hover:bg-emerald-100
+                dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+            >
+              <CheckCircle className="w-3.5 h-3.5" /> Complete
+            </button>
+          )}
+          <button
+            onClick={() => onCancel(apt._id)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
+              bg-red-50 text-red-700 hover:bg-red-100
+              dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+          >
+            <XCircle className="w-3.5 h-3.5" /> Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Appointments page ───────────────────────────────────
 const Appointments = () => {
   const { darkMode } = useTheme()
@@ -564,8 +703,12 @@ const Appointments = () => {
   const [showBooking, setShowBooking] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [dateFilter, setDateFilter] = useState('all')
+  const [cancelTarget, setCancelTarget] = useState(null) // { id }
+  const [cancelReason, setCancelReason] = useState('')
+  const [page, setPage]                 = useState(1)
 
-  const card = `border rounded-2xl transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-sm'}`
+  const card = `border rounded-xl transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`
   const textCls = darkMode ? 'text-white' : 'text-gray-900'
 
   const fetchAll = useCallback(async () => {
@@ -588,20 +731,23 @@ const Appointments = () => {
 
   const handleStatusUpdate = async (id, status) => {
     try {
-      await appointmentService.updateAppointmentStatus(id, status)
-      toast.success(status === 'Completed' ? 'Marked as Completed — bill auto-generated' : `Marked as ${status}`)
+      const res = await appointmentService.updateAppointmentStatus(id, status)
+      let msg = status === 'Completed' ? 'Marked as Completed — bill auto-generated' : `Marked as ${status}`
+      if (res?.notificationSent) msg += res.notificationMock ? ' · Email queued (mock)' : ' · Email sent to patient'
+      toast.success(msg)
       fetchAll()
     } catch {
       toast.error('Failed to update status')
     }
   }
 
-  const handleCancel = async (id) => {
-    const reason = window.prompt('Cancellation reason (optional):') ?? null
-    if (reason === null) return // user pressed Cancel on prompt
+  const handleCancel = async () => {
+    if (!cancelTarget) return
     try {
-      await appointmentService.cancelAppointment(id, reason || 'Cancelled by user')
+      await appointmentService.cancelAppointment(cancelTarget.id, cancelReason || 'Cancelled by user')
       toast.success('Appointment cancelled')
+      setCancelTarget(null)
+      setCancelReason('')
       fetchAll()
     } catch {
       toast.error('Failed to cancel appointment')
@@ -614,154 +760,153 @@ const Appointments = () => {
     const docName = apt.doctor?.userId?.name || ''
     const matchSearch = !search || [patName, docName, apt.appointmentId].some(s => s.toLowerCase().includes(search.toLowerCase()))
     const matchStatus = !statusFilter || apt.status === statusFilter
-    return matchSearch && matchStatus
+
+    let matchDate = true
+    if (dateFilter !== 'all' && apt.appointmentDate) {
+      const d = new Date(apt.appointmentDate)
+      const now = new Date()
+      if (dateFilter === 'today') {
+        matchDate = d.toDateString() === now.toDateString()
+      } else if (dateFilter === 'week') {
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay()); start.setHours(0,0,0,0)
+        const end   = new Date(start); end.setDate(start.getDate() + 7)
+        matchDate = d >= start && d < end
+      } else if (dateFilter === 'month') {
+        matchDate = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      }
+    }
+
+    return matchSearch && matchStatus && matchDate
   })
 
-  const getStatusBadge = (status) => (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLOR[status] || STATUS_COLOR.Scheduled}`}>
-      {status}
-    </span>
+  const todayStr       = new Date().toDateString()
+  const todayCount     = appointments.filter(a => a.appointmentDate && new Date(a.appointmentDate).toDateString() === todayStr).length
+  const scheduledCount = appointments.filter(a => ['Scheduled', 'Confirmed', 'In-Progress'].includes(a.status)).length
+  const completedCount = appointments.filter(a => a.status === 'Completed').length
+  const pageItems      = paginateData(filtered, page)
+
+  const leftPanel = (
+    <div className="space-y-3">
+      <StatCard title="Total"     value={appointments.length} icon={CalendarIcon}  iconBg="bg-blue-50 text-[#2E86DE]"
+        onClick={() => { setDateFilter('all'); setStatusFilter(''); setSearch(''); setPage(1) }} />
+      <StatCard title="Today"     value={todayCount}          icon={Clock}         iconBg="bg-amber-50 text-amber-600"
+        onClick={() => { setDateFilter(dateFilter === 'today' ? 'all' : 'today'); setPage(1) }} />
+      <StatCard title="Active"    value={scheduledCount}      icon={AlertCircle}   iconBg="bg-orange-50 text-orange-600"
+        onClick={() => { setStatusFilter(statusFilter === 'Scheduled' ? '' : 'Scheduled'); setPage(1) }} />
+      <StatCard title="Completed" value={completedCount}      icon={CheckCircle}   iconBg="bg-emerald-50 text-emerald-600"
+        onClick={() => { setStatusFilter(statusFilter === 'Completed' ? '' : 'Completed'); setPage(1) }} />
+    </div>
   )
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+
+      {/* ── Page header ─────────────────────────────────────── */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className={`text-2xl font-bold ${textCls}`}>
             {isPatient ? 'My Appointments' : 'Appointments'}
           </h1>
-          <p className="text-gray-400 text-sm mt-0.5">
+          <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {isPatient ? 'Your upcoming and past appointments' : 'Manage all patient appointments'}
           </p>
         </div>
         <button
           onClick={() => setShowBooking(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 hover:shadow-lg transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
         >
           <Plus className="w-4 h-4" />
           Book Appointment
         </button>
       </div>
 
-      {/* Filters */}
-      <div className={`${card} p-4 flex flex-wrap gap-3`}>
-        <div className={`flex items-center gap-2 flex-1 min-w-[200px] px-3 py-2 rounded-lg border ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
-          <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Search patient, doctor, ID…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className={`bg-transparent text-sm outline-none flex-1 ${darkMode ? 'text-white placeholder-gray-500' : 'text-gray-900'}`}
-          />
+      <PageLayout leftPanel={leftPanel}>
+
+      {/* ── Filters ─────────────────────────────────────────── */}
+      <div className={`${card} p-4 space-y-3`}>
+        <div className="flex flex-wrap gap-3">
+          <div className={`flex items-center gap-2 flex-1 min-w-[200px] px-3 py-2 rounded-lg border ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search patient, doctor, ID…"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              className={`bg-transparent text-sm outline-none flex-1 ${darkMode ? 'text-white placeholder-gray-500' : 'text-gray-900'}`}
+            />
+            {search && <button onClick={() => { setSearch(''); setPage(1) }} className="text-gray-400 hover:text-gray-600 transition"><X className="w-3.5 h-3.5" /></button>}
+          </div>
+          <select
+            value={statusFilter}
+            onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
+            className={`px-3 py-2 rounded-lg border text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200 text-gray-700'}`}
+          >
+            <option value="">All statuses</option>
+            {['Scheduled', 'Confirmed', 'In-Progress', 'Completed', 'Cancelled', 'No-Show'].map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <span className={`text-sm px-3 py-2 rounded-lg font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+          </span>
         </div>
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          className={`px-3 py-2 rounded-lg border text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200 text-gray-700'}`}
-        >
-          <option value="">All statuses</option>
-          {['Scheduled', 'Confirmed', 'In-Progress', 'Completed', 'Cancelled', 'No-Show'].map(s => (
-            <option key={s} value={s}>{s}</option>
+        <div className="flex flex-wrap gap-2 items-center">
+          <CalendarIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          {[
+            { key: 'all',   label: 'All dates'  },
+            { key: 'today', label: 'Today'      },
+            { key: 'week',  label: 'This week'  },
+            { key: 'month', label: 'This month' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setDateFilter(key)}
+              className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
+                dateFilter === key
+                  ? 'bg-[#2E86DE] text-white shadow-sm'
+                  : darkMode
+                    ? 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {label}
+            </button>
           ))}
-        </select>
-        <span className={`text-sm px-3 py-2 rounded-lg font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          {filtered.length} record{filtered.length !== 1 ? 's' : ''}
-        </span>
+        </div>
       </div>
 
-      {/* Table */}
-      <div className={`${card} overflow-hidden`}>
-        {loading ? (
-          <div className="py-16 text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">Loading appointments…</p>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="py-16 text-center">
+      {/* ── Appointment cards ───────────────────────────────── */}
+      {loading ? <SkeletonTable rows={6} cols={6} /> : (
+        filtered.length === 0 ? (
+          <div className={`${card} py-16 text-center`}>
             <CalendarIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className={`font-semibold ${textCls}`}>No appointments found</p>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
               {search || statusFilter ? 'Try adjusting your filters' : 'Click "Book Appointment" to get started'}
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'bg-gray-700/50 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
-                  <th className="px-5 py-3 text-left">ID</th>
-                  {!isPatient && <th className="px-5 py-3 text-left">Patient</th>}
-                  <th className="px-5 py-3 text-left">Doctor</th>
-                  <th className="px-5 py-3 text-left">Date & Time</th>
-                  <th className="px-5 py-3 text-left">Type</th>
-                  <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                {filtered.map(apt => (
-                  <tr key={apt._id} className={`transition-colors ${darkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/80'}`}>
-                    <td className="px-5 py-3.5">
-                      <span className="font-mono text-xs text-gray-500">{apt.appointmentId}</span>
-                    </td>
-                    {!isPatient && (
-                      <td className="px-5 py-3.5">
-                        <p className={`font-medium text-sm ${textCls}`}>{apt.patient?.userId?.name || '—'}</p>
-                        <p className="text-xs text-gray-400">{apt.patient?.patientId}</p>
-                      </td>
-                    )}
-                    <td className="px-5 py-3.5">
-                      <p className={`font-medium text-sm ${textCls}`}>{apt.doctor?.userId?.name ? drName(apt.doctor.userId.name) : '—'}</p>
-                      <p className="text-xs text-gray-400">{apt.doctor?.specialization}</p>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <p className={`text-sm ${textCls}`}>
-                        {apt.appointmentDate ? new Date(apt.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
-                      </p>
-                      <p className="text-xs text-gray-400">{apt.timeSlot?.startTime} – {apt.timeSlot?.endTime}</p>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{apt.type}</span>
-                    </td>
-                    <td className="px-5 py-3.5">{getStatusBadge(apt.status)}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
-                        {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
-                          <>
-                            {canManage && (
-                              <button
-                                onClick={() => handleStatusUpdate(apt._id, 'Completed')}
-                                title="Mark Completed"
-                                className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleCancel(apt._id)}
-                              title="Cancel"
-                              className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {(apt.status === 'Completed' || apt.status === 'Cancelled') && (
-                          <span className="text-xs text-gray-400 px-2">—</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {pageItems.map(apt => (
+                <AppointmentCard
+                  key={apt._id}
+                  apt={apt}
+                  isPatient={isPatient}
+                  canManage={canManage}
+                  onComplete={id => handleStatusUpdate(id, 'Completed')}
+                  onCancel={id => { setCancelTarget({ id }); setCancelReason('') }}
+                  darkMode={darkMode}
+                />
+              ))}
+            </div>
+            <CardPagination total={filtered.length} page={page} onPage={p => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+          </>
+        )
+      )}
 
-      {/* Booking Wizard */}
+      </PageLayout>
+
       <BookingWizard
         isOpen={showBooking}
         onClose={() => setShowBooking(false)}
@@ -770,6 +915,26 @@ const Appointments = () => {
         onSuccess={fetchAll}
         darkMode={darkMode}
       />
+
+      <ConfirmDialog
+        isOpen={!!cancelTarget}
+        onClose={() => { setCancelTarget(null); setCancelReason('') }}
+        onConfirm={handleCancel}
+        title="Cancel Appointment"
+        message="Please provide a reason for cancellation (optional)."
+        confirmLabel="Cancel Appointment"
+        confirmClass="bg-red-600 hover:bg-red-700"
+        iconClass="text-orange-500"
+      >
+        <textarea
+          value={cancelReason}
+          onChange={e => setCancelReason(e.target.value)}
+          rows={2}
+          placeholder="Reason (e.g. patient request, scheduling conflict…)"
+          className={`w-full px-3 py-2 rounded-lg border text-sm resize-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition
+            ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`}
+        />
+      </ConfirmDialog>
     </div>
   )
 }

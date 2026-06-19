@@ -29,6 +29,9 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
     'Vaccination'
   ]
 
+  const inp = `w-full px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+  const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -56,7 +59,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Patient Selection */}
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <User className="w-4 h-4 inline mr-2" />
             Patient *
           </label>
@@ -64,9 +67,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             name="patientId"
             value={formData.patientId}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             required
           >
             <option value="">Select Patient</option>
@@ -80,7 +81,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
 
         {/* Doctor Selection */}
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <User className="w-4 h-4 inline mr-2" />
             Doctor *
           </label>
@@ -88,9 +89,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             name="doctorId"
             value={formData.doctorId}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             required
           >
             <option value="">Select Doctor</option>
@@ -104,7 +103,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
 
         {/* Date Selection */}
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <Calendar className="w-4 h-4 inline mr-2" />
             Date *
           </label>
@@ -114,16 +113,14 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             value={formData.date}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             required
           />
         </div>
 
         {/* Time Selection */}
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <Clock className="w-4 h-4 inline mr-2" />
             Time *
           </label>
@@ -131,9 +128,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             name="time"
             value={formData.time}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             required
           >
             <option value="">Select Time</option>
@@ -147,7 +142,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
 
         {/* Appointment Type */}
         <div className="md:col-span-2">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             <FileText className="w-4 h-4 inline mr-2" />
             Appointment Type *
           </label>
@@ -155,9 +150,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             required
           >
             <option value="">Select Type</option>
@@ -171,7 +164,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
 
         {/* Reason */}
         <div className="md:col-span-2">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Reason for Visit
           </label>
           <input
@@ -179,25 +172,21 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
             name="reason"
             value={formData.reason}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             placeholder="Brief description of the visit reason"
           />
         </div>
 
         {/* Notes */}
         <div className="md:col-span-2">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Additional Notes
           </label>
           <textarea
             name="notes"
             value={formData.notes}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             rows="3"
             placeholder="Any additional information..."
           />
@@ -218,7 +207,7 @@ const BookAppointment = ({ onSubmit, onCancel, doctors, patients }) => {
                 onClick={() => setFormData(prev => ({ ...prev, time: slot }))}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                   formData.time === slot
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[#2E86DE] text-white'
                     : darkMode
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

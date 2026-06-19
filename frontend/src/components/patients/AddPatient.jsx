@@ -16,6 +16,9 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
     medicalHistory: ''
   })
 
+  const inp = `w-full px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
+  const lbl = `block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -41,7 +44,7 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Full Name *
           </label>
           <input
@@ -49,16 +52,14 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             placeholder="John Doe"
             required
           />
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Email *
           </label>
           <input
@@ -66,16 +67,14 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             placeholder="john.doe@example.com"
             required
           />
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Phone *
           </label>
           <input
@@ -83,16 +82,14 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             placeholder="+1234567890"
             required
           />
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Date of Birth
           </label>
           <input
@@ -100,23 +97,19 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
             name="dateOfBirth"
             value={formData.dateOfBirth}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           />
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Gender
           </label>
           <select
             name="gender"
             value={formData.gender}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           >
             <option value="">Select Gender</option>
             <option value="male">Male</option>
@@ -126,16 +119,14 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Blood Group
           </label>
           <select
             name="bloodGroup"
             value={formData.bloodGroup}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
           >
             <option value="">Select Blood Group</option>
             <option value="A+">A+</option>
@@ -150,23 +141,21 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
         </div>
 
         <div className="md:col-span-2">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Address
           </label>
           <textarea
             name="address"
             value={formData.address}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             rows="2"
             placeholder="Enter full address"
           />
         </div>
 
         <div>
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Emergency Contact
           </label>
           <input
@@ -174,24 +163,20 @@ const AddPatient = ({ onSubmit, onCancel, initialData = null }) => {
             name="emergencyContact"
             value={formData.emergencyContact}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             placeholder="+1234567890"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <label className={lbl}>
             Medical History (Optional)
           </label>
           <textarea
             name="medicalHistory"
             value={formData.medicalHistory}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={inp}
             rows="3"
             placeholder="Enter any relevant medical history..."
           />

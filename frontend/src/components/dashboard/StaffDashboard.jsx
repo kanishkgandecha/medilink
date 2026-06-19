@@ -9,7 +9,7 @@ const GenericStaffDashboard = ({ subRole, links }) => (
   <div className="space-y-6">
     <div>
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{subRole} Dashboard</h1>
-      <p className="text-sm text-gray-500 mt-0.5">Welcome back. Use the sidebar or quick links below to navigate.</p>
+      <p className="text-sm text-gray-500 mt-0.5">Welcome back. Use the navigation bar or quick links below.</p>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {links.map(({ label, path, description }) => (

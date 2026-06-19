@@ -6,6 +6,7 @@ const BillingList = ({ bills, onViewInvoice, onDownloadInvoice }) => {
   const { darkMode } = useTheme()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const inp = `px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
@@ -38,17 +39,13 @@ const BillingList = ({ bills, onViewInvoice, onDownloadInvoice }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by bill ID or patient name..."
-            className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
-              darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-            } focus:ring-2 focus:ring-blue-500`}
+            className={`w-full pl-10 pr-4 ${inp}`}
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-          } focus:ring-2 focus:ring-blue-500`}
+          className={inp}
         >
           <option value="all">All Status</option>
           <option value="paid">Paid</option>
@@ -130,7 +127,7 @@ const BillingList = ({ bills, onViewInvoice, onDownloadInvoice }) => {
             <div className="flex space-x-2">
               <button
                 onClick={() => onViewInvoice(bill)}
-                className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-sm shadow-[0_2px_8px_rgba(46,134,222,0.3)]"
               >
                 <Eye className="w-4 h-4" />
                 <span>View</span>

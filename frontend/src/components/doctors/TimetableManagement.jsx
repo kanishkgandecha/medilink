@@ -16,6 +16,7 @@ const TimetableManagement = ({ doctorId, currentTimetable, onSave }) => {
   })
 
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+  const inp = `w-full px-3 py-2 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`
 
   const toggleDay = (day) => {
     setTimetable(prev => ({
@@ -79,7 +80,7 @@ const TimetableManagement = ({ doctorId, currentTimetable, onSave }) => {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center space-x-2 px-4 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200"
         >
           <Save className="w-5 h-5" />
           <span>Save Changes</span>
@@ -127,9 +128,7 @@ const TimetableManagement = ({ doctorId, currentTimetable, onSave }) => {
                       type="time"
                       value={timetable[day].startTime}
                       onChange={(e) => updateTime(day, 'startTime', e.target.value)}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                      } focus:ring-2 focus:ring-blue-500`}
+                      className={inp}
                     />
                   </div>
                   <div>
@@ -138,9 +137,7 @@ const TimetableManagement = ({ doctorId, currentTimetable, onSave }) => {
                       type="time"
                       value={timetable[day].endTime}
                       onChange={(e) => updateTime(day, 'endTime', e.target.value)}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                      } focus:ring-2 focus:ring-blue-500`}
+                      className={inp}
                     />
                   </div>
                 </div>
@@ -162,17 +159,13 @@ const TimetableManagement = ({ doctorId, currentTimetable, onSave }) => {
                         type="time"
                         value={brk.start}
                         onChange={(e) => updateBreak(day, index, 'start', e.target.value)}
-                        className={`px-2 py-1 rounded border text-sm ${
-                          darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                        } focus:ring-2 focus:ring-blue-500`}
+                        className={`px-2 py-1 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                       />
                       <input
                         type="time"
                         value={brk.end}
                         onChange={(e) => updateBreak(day, index, 'end', e.target.value)}
-                        className={`px-2 py-1 rounded border text-sm ${
-                          darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
-                        } focus:ring-2 focus:ring-blue-500`}
+                        className={`px-2 py-1 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                       />
                     </div>
                   </div>

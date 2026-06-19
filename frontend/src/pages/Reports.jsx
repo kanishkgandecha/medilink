@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, Users, Calendar, DollarSign, Activity } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import PageLayout from '../components/common/PageLayout'
+import StatCard from '../components/common/StatCard'
 import * as reportService from '../services/reportService'
 import { toast } from 'react-toastify'
 import {
@@ -45,7 +47,7 @@ const Reports = () => {
   const [revenueData, setRevenueData] = useState([])
   const [appointmentData, setAppointmentData] = useState([])
 
-  const card = `border rounded-xl p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`
+  const card = `border rounded-xl p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`
   const text = darkMode ? 'text-white' : 'text-gray-800'
   const gridStroke = darkMode ? '#374151' : '#e5e7eb'
   const axisStroke = darkMode ? '#9ca3af' : '#6b7280'
@@ -117,21 +119,6 @@ const Reports = () => {
     }
   }
 
-  const StatCard = ({ label, value, icon: Icon, color, prefix = '' }) => (
-    <div className={card}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-500 font-medium">{label}</p>
-          <h3 className={`text-2xl font-bold mt-1 ${text}`}>
-            {prefix}{typeof value === 'number' ? value.toLocaleString() : value}
-          </h3>
-        </div>
-        <div className={`p-3 ${color} rounded-lg`}>
-          <Icon className="w-6 h-6" />
-        </div>
-      </div>
-    </div>
-  )
 
   return (
     <div className="space-y-6">
@@ -143,7 +130,7 @@ const Reports = () => {
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
-          className={`px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all
+          className={`px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200
             ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
         >
           <option value="week">Last 7 Days</option>
@@ -153,13 +140,14 @@ const Reports = () => {
         </select>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard label="Total Patients"      value={summary.totalPatients}     icon={Users}     color="bg-green-100 dark:bg-green-900/30 text-green-600" />
-        <StatCard label="Active Doctors"      value={summary.totalDoctors}      icon={Activity}  color="bg-blue-100 dark:bg-blue-900/30 text-blue-600" />
-        <StatCard label="Appointments Today"  value={summary.appointmentsToday} icon={Calendar}  color="bg-purple-100 dark:bg-purple-900/30 text-purple-600" />
-        <StatCard label="Revenue (Period)"    value={summary.periodRevenue}     icon={DollarSign} color="bg-orange-100 dark:bg-orange-900/30 text-orange-600" prefix="₹" />
-      </div>
+      <PageLayout leftPanel={
+        <div className="space-y-3">
+          <StatCard title="Total Patients"    value={summary.totalPatients}                                        icon={Users}      iconBg="bg-emerald-50 text-emerald-600" />
+          <StatCard title="Active Doctors"    value={summary.totalDoctors}                                         icon={Activity}   iconBg="bg-blue-50 text-[#2E86DE]"      />
+          <StatCard title="Appts Today"       value={summary.appointmentsToday}                                    icon={Calendar}   iconBg="bg-violet-50 text-violet-600"   />
+          <StatCard title="Revenue (Period)"  value={`₹${(summary.periodRevenue || 0).toLocaleString()}`}          icon={DollarSign} iconBg="bg-orange-50 text-orange-600"  />
+        </div>
+      }>
 
       {loading ? (
         <div className="flex items-center justify-center min-h-64">
@@ -208,6 +196,8 @@ const Reports = () => {
           </div>
         </div>
       )}
+
+      </PageLayout>
     </div>
   )
 }
