@@ -121,7 +121,6 @@ const ALL_ITEMS = {
   'lab-technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,        path: '/dashboard'    },
     { id: 'test-reports', label: 'Test Reports', icon: FlaskConical,path: '/test-reports' },
-    { id: 'patients',     label: 'Patients',     icon: Users,       path: '/patients'     },
   ],
   'radiology-technician': [
     { id: 'dashboard',    label: 'Dashboard',       icon: Home,          path: '/dashboard'    },

@@ -47,7 +47,7 @@ export const AUTHENTICATED_ROLE_KEYS = [
 
 export const ROUTE_ROLES = {
   doctors: ['admin', 'doctor', 'patient', 'nurse', 'receptionist'],
-  patients: ['admin', 'doctor', 'patient', 'nurse', 'receptionist', 'lab-technician', 'ward-manager'],
+  patients: ['admin', 'doctor', 'patient', 'nurse', 'receptionist', 'ward-manager'],
   appointments: ['admin', 'doctor', 'patient', 'nurse', 'receptionist'],
   wards: ['admin', 'doctor', 'nurse', 'ward-manager'],
   pharmacy: ['admin', 'pharmacist'],

@@ -71,7 +71,6 @@ const MENUS = {
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'test-reports', label: 'Test Reports', icon: FileText,      path: '/test-reports' },
-    { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
   ],
   'radiology-technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },

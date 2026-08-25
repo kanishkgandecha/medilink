@@ -79,6 +79,41 @@ test('AI endpoints enforce the same role policy advertised by the UI', async () 
   assert.equal(billingChat.response.status, 200);
 });
 
+test('diagnostic staff receive modality-scoped queues without general patient access', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `diagnostic-patient-${suffix}`, role: 'Patient' });
+  const lab = await createUser({ suffix: `diagnostic-lab-${suffix}`, role: 'Staff', subRole: 'LabTechnician' });
+  const radiology = await createUser({ suffix: `diagnostic-radiology-${suffix}`, role: 'Staff', subRole: 'RadiologyTechnician' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-DIAGNOSTIC-${suffix}`,
+    labReports: { create: [
+      { testName: 'CBC', testType: 'Blood Test', status: 'Pending' },
+      { testName: 'Chest X-Ray', testType: 'X-Ray', status: 'Completed' },
+    ] },
+  } });
+
+  const labWorkspace = await api('/api/patients/diagnostic-workspace', { token: lab.token });
+  assert.equal(labWorkspace.response.status, 200);
+  assert.ok(labWorkspace.json.data.recentReports.every((report) => report.testType !== 'X-Ray'));
+  assert.equal('email' in labWorkspace.json.data.patients[0], false);
+  assert.equal('phone' in labWorkspace.json.data.patients[0], false);
+
+  const createdImagingReport = await api(`/api/patients/${patient.id}/lab-report`, {
+    token: radiology.token,
+    method: 'POST',
+    body: { testName: 'Follow-up MRI', testType: 'MRI Scan', status: 'Verified', result: 'Recorded imaging result' },
+  });
+  assert.equal(createdImagingReport.response.status, 200);
+
+  const radiologyRecords = await api(`/api/patients/diagnostic-workspace/${patient.id}`, { token: radiology.token });
+  assert.equal(radiologyRecords.response.status, 200);
+  assert.deepEqual(new Set(radiologyRecords.json.data.labReports.map((report) => report.testType)), new Set(['X-Ray', 'MRI Scan']));
+
+  const broadPatientList = await api('/api/patients', { token: lab.token });
+  assert.equal(broadPatientList.response.status, 403);
+});
+
 test.after(async () => {
   if (fixtureWardIds.length) {
     await prisma.ward.deleteMany({ where: { id: { in: fixtureWardIds } } });

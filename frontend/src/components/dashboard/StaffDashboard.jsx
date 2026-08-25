@@ -5,6 +5,8 @@ import NurseDashboard from './NurseDashboard'
 import ReceptionistDashboard from './ReceptionistDashboard'
 import PharmacistDashboard from './PharmacistDashboard'
 import { getUserRoleKey } from '../../config/rolePolicy'
+import DiagnosticStaffDashboard from './DiagnosticStaffDashboard'
+import BillingStaffDashboard from './BillingStaffDashboard'
 
 const GenericStaffDashboard = ({ subRole, links }) => (
   <div className="space-y-6">
@@ -39,33 +41,10 @@ const StaffDashboard = () => {
     case 'pharmacist':
       return <PharmacistDashboard />
     case 'lab-technician':
-      return (
-        <GenericStaffDashboard
-          subRole="Lab Technician"
-          links={[
-            { label: 'Test Reports', path: '/test-reports', description: 'View and upload patient lab reports' },
-            { label: 'Patients', path: '/patients', description: 'Browse patient records' },
-          ]}
-        />
-      )
     case 'radiology-technician':
-      return (
-        <GenericStaffDashboard
-          subRole="Radiology Technician"
-          links={[
-            { label: 'Test Reports', path: '/test-reports', description: 'Review assigned imaging reports and patient results' },
-          ]}
-        />
-      )
+      return <DiagnosticStaffDashboard />
     case 'billing-staff':
-      return (
-        <GenericStaffDashboard
-          subRole="Billing Staff"
-          links={[
-            { label: 'Billing', path: '/billing', description: 'Manage invoices, payments, and billing records' },
-          ]}
-        />
-      )
+      return <BillingStaffDashboard />
     case 'ward-manager':
       return (
         <GenericStaffDashboard
