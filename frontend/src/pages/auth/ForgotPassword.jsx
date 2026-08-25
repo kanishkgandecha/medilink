@@ -48,7 +48,7 @@ const LeftPanel = () => (
       </div>
 
       <div className="flex gap-6 pt-2">
-        {[['500+', 'Patients'], ['50+', 'Doctors'], ['99%', 'Uptime']].map(([val, label]) => (
+        {[['Role', 'Scoped'], ['Safe', 'Validated'], ['Audit', 'Traceable']].map(([val, label]) => (
           <div key={label}>
             <p className="text-white text-xl font-bold leading-none">{val}</p>
             <p className="text-blue-300 text-xs mt-1">{label}</p>
