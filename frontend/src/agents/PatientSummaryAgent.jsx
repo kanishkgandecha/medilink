@@ -3,6 +3,7 @@ import { ClipboardList, X, Loader2, Sparkles, AlertTriangle, User, Calendar, Pil
 import { toast } from 'react-toastify'
 import { getPatientSummary } from '../services/aiService'
 import api from '../services/api'
+import SourceDisclosure from '../components/ai/SourceDisclosure'
 
 const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
   const [patientId, setPatientId] = useState(propPatientId || '')
@@ -123,6 +124,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
 
           {!loading && result && (
             <>
+              <SourceDisclosure result={result} />
               {/* Overview */}
               <div className="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-900 p-4">
                 <div className="flex items-center gap-2 mb-2">

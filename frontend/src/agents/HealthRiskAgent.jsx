@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Activity, X, Loader2, AlertTriangle, CheckCircle2, TrendingUp, RotateCcw, ArrowRight, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { assessHealthRisk } from '../services/aiService'
+import SourceDisclosure from '../components/ai/SourceDisclosure'
 
 // ─── Risk scoring ─────────────────────────────────────────────────────────────
 const CHRONIC_CONDITIONS = [
@@ -101,7 +102,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
       const ai = res?.data || res
       const risk = getRiskLevel(ai.riskScore)
       setResult({ totalScore: ai.riskScore, riskFactors: ai.riskFactors, lifestyle: ai.lifestyle, urgentActions: ai.urgentActions,
-        _degraded: ai._degraded, scoringMethod: ai.scoringMethod, scoringFormula: ai.scoringFormula, ...risk })
+        _source: ai._source, _degraded: ai._degraded, scoringMethod: ai.scoringMethod, scoringFormula: ai.scoringFormula, ...risk })
       setStep(3)
     } catch {
       // fallback to local calculation
@@ -111,7 +112,8 @@ const HealthRiskAgent = ({ open, onClose }) => {
       const symptomRisk = ACUTE_SYMPTOMS.filter(s => symptoms.includes(s.id)).reduce((s, c) => s + c.riskPoints, 0)
       const totalScore = Math.min(100, ageRisk + chronicRisk + symptomRisk)
       const risk = getRiskLevel(totalScore)
-      setResult({ totalScore, ageRisk, chronicRisk, symptomRisk, ...risk })
+      setResult({ totalScore, ageRisk, chronicRisk, symptomRisk, _source: 'local-rules', _degraded: true,
+        scoringMethod: 'local deterministic fallback', scoringFormula: 'capped sum of displayed points', ...risk })
       setStep(3)
     } finally {
       setLoading(false)
@@ -136,7 +138,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
           <div className="flex items-center gap-3">
             <Activity className="w-5 h-5 text-white" />
             <h2 className="font-bold text-white text-base">Health Risk Predictor</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">AI Powered</span>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Transparent Rules</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
             <X className="w-5 h-5" />
@@ -228,7 +230,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Select any symptoms you are currently experiencing. This helps predict acute risk.
+                Select current symptoms to calculate the displayed screening score. This does not predict an outcome or provide a diagnosis.
               </p>
               <div className="grid grid-cols-1 gap-2">
                 {ACUTE_SYMPTOMS.map(s => (
@@ -257,6 +259,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
           {/* Step 3: Result */}
           {step === 3 && result && (
             <div className="space-y-5">
+              <SourceDisclosure result={result} />
               {result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. This score was produced by the documented rules engine.

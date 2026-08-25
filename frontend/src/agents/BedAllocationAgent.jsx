@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { BedDouble, X, Loader2, Sparkles, AlertTriangle, CheckCircle2, Clock, RotateCcw, Building2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { allocateBed } from '../services/aiService'
+import SourceDisclosure from '../components/ai/SourceDisclosure'
 
 const URGENCY_OPTIONS = ['Routine', 'Moderate', 'High', 'Critical', 'Emergency']
 const PRIORITY_STYLE = {
@@ -49,8 +50,8 @@ const BedAllocationAgent = ({ open, onClose }) => {
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-sky-600 to-blue-600 flex-shrink-0">
           <div className="flex items-center gap-3">
             <BedDouble className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">AI Bed Allocation</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">LLM Powered</span>
+            <h2 className="font-bold text-white text-base">Bed Placement Advisory</h2>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Live Records + Rules</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
         </div>
@@ -59,7 +60,7 @@ const BedAllocationAgent = ({ open, onClose }) => {
           {!result ? (
             <>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Enter patient condition and urgency. The AI will assess available wards and recommend the most appropriate bed placement.
+                Compare the entered condition with currently unoccupied bed records. A ward manager must confirm the assignment.
               </p>
 
               {/* Condition */}
@@ -121,6 +122,7 @@ const BedAllocationAgent = ({ open, onClose }) => {
             </>
           ) : (
             <>
+              <SourceDisclosure result={result} />
               {result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. This advisory uses current unoccupied bed records and deterministic placement rules.

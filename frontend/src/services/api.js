@@ -43,11 +43,19 @@ api.interceptors.response.use(
     }
 
     if (status === 429) {
-      error.message = 'Too many requests. Please wait a moment before trying again.'
+      const retryAfter = error.response.headers?.['retry-after']
+      const code = error.response.data?.code
+      error.message = code === 'AI_CONCURRENCY_LIMITED'
+        ? 'Two AI requests are already running. Wait for one to finish, then retry.'
+        : `Request limit reached. ${retryAfter ? `Retry after about ${retryAfter} seconds.` : 'Please wait briefly and retry.'}`
     }
 
     if (status === 403) {
       error.message = 'You do not have permission to perform this action.'
+    }
+
+    if (status >= 500) {
+      error.message = 'The service is temporarily unavailable. Your submitted data was not saved; please retry.'
     }
 
     return Promise.reject(error)

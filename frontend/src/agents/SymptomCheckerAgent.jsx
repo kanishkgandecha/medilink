@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import api from '../services/api'
 import { analyzeSymptoms } from '../services/aiService'
+import SourceDisclosure from '../components/ai/SourceDisclosure'
 
 // ─── Condition Knowledge Base ─────────────────────────────────────────────────
 const CONDITIONS = [
@@ -210,7 +211,7 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
           <div className="flex items-center gap-3">
             <Brain className="w-5 h-5 text-white" />
             <h2 className="font-bold text-white text-base">AI Symptom Checker</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">AI Powered</span>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">AI + Safety Rules</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
             <X className="w-5 h-5" />
@@ -294,6 +295,7 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
             </>
           ) : (
             <>
+              <SourceDisclosure result={result} />
               {result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. This result uses a limited rule-based safety screen.

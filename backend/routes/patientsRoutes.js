@@ -20,6 +20,9 @@ const {
   getPatientAppointments,
   getPatientStats,
 } = require('../controllers/patientController');
+const {
+  listClinicalNotes, createClinicalDraft, reviewClinicalNote, amendClinicalNote,
+} = require('../controllers/clinicalNoteController');
 
 router.use(protect);
 
@@ -174,5 +177,27 @@ router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Tech
   body('remarks').optional({ nullable: true }).isLength({ max: 2000 }),
   validate,
 ], addLabReport);
+
+// Generated/record-derived content remains a separate unverified draft until a doctor confirms it.
+router.get('/:id/clinical-notes', requirePatientAccess('Admin', 'Doctor', 'Nurse'), listClinicalNotes);
+router.post('/:id/clinical-notes/drafts', requirePatientAccess('Doctor', 'Nurse'), [
+  body('title').isString().trim().isLength({ min: 3, max: 200 }),
+  body('content').isString().trim().isLength({ min: 10, max: 12000 }),
+  body('source').isIn(['ai', 'record-derived']),
+  body('sourceAgent').optional().isString().trim().isLength({ max: 100 }),
+  validate,
+], createClinicalDraft);
+router.post('/:id/clinical-notes/:noteId/review', authorize('Doctor'), requirePatientAccess('Doctor'), [
+  body('confirmed').custom((value) => value === true).withMessage('Explicit clinician confirmation is required'),
+  body('content').isString().trim().isLength({ min: 10, max: 12000 }),
+  body('amendmentNote').optional().isString().trim().isLength({ max: 500 }),
+  validate,
+], reviewClinicalNote);
+router.post('/:id/clinical-notes/:noteId/amend', authorize('Doctor'), requirePatientAccess('Doctor'), [
+  body('confirmed').custom((value) => value === true).withMessage('Explicit clinician confirmation is required'),
+  body('content').isString().trim().isLength({ min: 10, max: 12000 }),
+  body('amendmentNote').isString().trim().isLength({ min: 3, max: 500 }),
+  validate,
+], amendClinicalNote);
 
 module.exports = router;

@@ -20,8 +20,8 @@ async function verifyCatalog() {
   }
   const tables = await prisma.$queryRaw`
     SELECT tablename FROM pg_tables
-    WHERE schemaname = 'public' AND tablename IN ('AiAuditEvent', 'ClinicalAuditEvent')`;
-  if (tables.length !== 2) throw new Error('Missing audit tables');
+    WHERE schemaname = 'public' AND tablename IN ('AiAuditEvent', 'ClinicalAuditEvent', 'ClinicalNote', 'ClinicalNoteVersion')`;
+  if (tables.length !== 4) throw new Error('Missing audit or clinical governance tables');
 }
 
 async function verifyActiveSlotConstraint() {
@@ -54,8 +54,8 @@ async function main() {
   await verifyCatalog();
   await verifyActiveSlotConstraint();
   const migrationRows = await prisma.$queryRaw`SELECT migration_name, finished_at FROM "_prisma_migrations" WHERE finished_at IS NOT NULL`;
-  if (migrationRows.length < 5) throw new Error('Not all expected migrations are recorded as complete');
-  console.log(`Database integrity verified: ${migrationRows.length} migrations, audit tables, idempotency indexes, bed constraints, and active-slot uniqueness.`);
+  if (migrationRows.length < 6) throw new Error('Not all expected migrations are recorded as complete');
+  console.log(`Database integrity verified: ${migrationRows.length} migrations, audit/governance tables, idempotency indexes, bed constraints, and active-slot uniqueness.`);
 }
 
 main().finally(() => prisma.$disconnect());

@@ -59,6 +59,8 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
           callback: a.type === 'callback' ? () => { onClose(); onOpenSymptomChecker?.() } : undefined,
         })),
         urgent: ai.urgent || false,
+        source: ai._source || 'rules',
+        degraded: Boolean(ai._degraded),
       }
       setMessages(prev => [...prev, botMsg])
       setHistory([...newHistory, { role: 'assistant', content: ai.reply }])
@@ -100,8 +102,8 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
             <div>
               <p className="text-white text-sm font-bold leading-none">MediBot</p>
               <div className="flex items-center gap-1 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-blue-100 text-[10px]">AI Assistant · Powered by LLM</p>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <p className="text-blue-100 text-[10px]">Guidance assistant · AI with rules fallback</p>
               </div>
             </div>
           </div>
@@ -134,6 +136,11 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
                 }`}>
                   {msg.text}
                 </div>
+                {msg.from === 'bot' && msg.source && (
+                  <p className="px-1 text-[9px] text-gray-400">
+                    {msg.source === 'llm' ? 'External AI + safety rules' : 'Deterministic guidance'}{msg.degraded ? ' · degraded mode' : ''}
+                  </p>
+                )}
                 {msg.actions?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pl-0.5">
                     {msg.actions.map((action, i) => (
