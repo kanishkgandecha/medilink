@@ -41,6 +41,10 @@ const createUser = async ({ suffix, role }) => {
 
 test.before(async () => {
   await prisma.$connect();
+  // Recover only stale fixtures left by an interrupted prior integration run.
+  await prisma.clinicalNote.deleteMany({ where: { createdBy: { email: { startsWith: 'integration-' } } } });
+  await prisma.ward.deleteMany({ where: { wardNumber: { startsWith: 'IT-WARD-' } } });
+  await prisma.user.deleteMany({ where: { email: { startsWith: 'integration-' } } });
   server = await new Promise((resolve) => {
     const instance = app.listen(0, '127.0.0.1', () => resolve(instance));
   });
@@ -52,6 +56,9 @@ test.after(async () => {
     await prisma.ward.deleteMany({ where: { id: { in: fixtureWardIds } } });
   }
   if (fixtureUserIds.length) {
+    await prisma.clinicalNote.deleteMany({ where: {
+      OR: [{ createdById: { in: fixtureUserIds } }, { patient: { userId: { in: fixtureUserIds } } }],
+    } });
     await prisma.user.deleteMany({ where: { id: { in: fixtureUserIds } } });
   }
   await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
@@ -146,6 +153,67 @@ test('appointment booking is idempotent and rejects a competing active slot', as
   });
   assert.equal(conflict.response.status, 409);
   assert.equal(conflict.json.code, 'slot_conflict');
+});
+
+test('AI-derived clinical notes require doctor confirmation and preserve every version', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patient = await createUser({ suffix: `note-patient-${suffix}`, role: 'Patient' });
+  const nurse = await createUser({ suffix: `note-nurse-${suffix}`, role: 'Nurse' });
+  const doctor = await createUser({ suffix: `note-doctor-${suffix}`, role: 'Doctor' });
+  const profile = await prisma.patient.create({ data: {
+    userId: patient.user.id, patientId: `IT-NOTE-${suffix}`, allergies: [],
+  } });
+  const draftContent = 'AI-derived draft content requiring independent clinician verification.';
+  const draft = await api(`/api/patients/${profile.id}/clinical-notes/drafts`, {
+    token: nurse.token, method: 'POST', body: {
+      title: 'Generated patient summary', content: draftContent,
+      source: 'ai', sourceAgent: 'patient_summary',
+    },
+  });
+  assert.equal(draft.response.status, 201);
+  assert.equal(draft.json.data.status, 'Draft');
+  assert.equal(draft.json.data.versions[0].clinicallyConfirmed, false);
+  assert.equal(draft.json.data.versions[0].isAiGenerated, true);
+  const noteId = draft.json.data.id;
+
+  const unconfirmed = await api(`/api/patients/${profile.id}/clinical-notes/${noteId}/review`, {
+    token: doctor.token, method: 'POST', body: { confirmed: false, content: draftContent },
+  });
+  assert.equal(unconfirmed.response.status, 400);
+
+  const nurseReview = await api(`/api/patients/${profile.id}/clinical-notes/${noteId}/review`, {
+    token: nurse.token, method: 'POST', body: { confirmed: true, content: draftContent },
+  });
+  assert.equal(nurseReview.response.status, 403);
+
+  const reviewedContent = 'Clinician-reviewed summary based on the source records and independent assessment.';
+  const reviewed = await api(`/api/patients/${profile.id}/clinical-notes/${noteId}/review`, {
+    token: doctor.token, method: 'POST', body: {
+      confirmed: true, content: reviewedContent, amendmentNote: 'Verified against source records',
+    },
+  });
+  assert.equal(reviewed.response.status, 200);
+  assert.equal(reviewed.json.data.status, 'Reviewed');
+  assert.equal(reviewed.json.data.currentVersion, 2);
+  assert.equal(reviewed.json.data.versions.length, 2);
+  assert.equal(reviewed.json.data.versions[1].clinicallyConfirmed, true);
+
+  const amendedContent = `${reviewedContent} Follow-up information was added.`;
+  const amended = await api(`/api/patients/${profile.id}/clinical-notes/${noteId}/amend`, {
+    token: doctor.token, method: 'POST', body: {
+      confirmed: true, content: amendedContent, amendmentNote: 'Added follow-up information',
+    },
+  });
+  assert.equal(amended.response.status, 200);
+  assert.equal(amended.json.data.currentVersion, 3);
+  assert.deepEqual(amended.json.data.versions.map((item) => item.content),
+    [draftContent, reviewedContent, amendedContent]);
+
+  const events = await prisma.clinicalAuditEvent.findMany({
+    where: { patientId: profile.id, recordType: 'ClinicalNote', recordId: noteId },
+    orderBy: { createdAt: 'asc' },
+  });
+  assert.deepEqual(events.map((event) => event.action), ['DRAFT_CREATED', 'CLINICIAN_REVIEWED', 'AMENDED']);
 });
 
 test('AI degrades safely, exposes admin-only reliability, and rate limits per user', async () => {

@@ -52,7 +52,7 @@ enum MedicalStatus {
 
 enum AppointmentType {
   Consultation
-  Follow_up   @map("Follow-up")
+  Follow_up    @map("Follow-up")
   Emergency
   Surgery
 }
@@ -102,7 +102,7 @@ enum PaymentMethod {
   Cash
   Card
   UPI
-  Net_Banking  @map("Net Banking")
+  Net_Banking @map("Net Banking")
   Insurance
   Online
   Other
@@ -183,38 +183,41 @@ enum WardGender {
 // ── Models ──────────────────────────────────────────────────────────
 
 model User {
-  id                 String    @id @default(uuid())
-  legacyMongoId      String?   @unique
-  name               String
-  email              String    @unique
-  password           String
-  role               Role      @default(Patient)
-  subRole            SubRole?
-  phone              String
-  street             String?
-  city               String?
-  state              String?
-  zipCode            String?
-  country            String?
-  dateOfBirth        DateTime?
-  gender             Gender?
-  avatar             String    @default("")
-  isActive           Boolean   @default(true)
-  resetPasswordToken String?
+  id                  String    @id @default(uuid())
+  legacyMongoId       String?   @unique
+  name                String
+  email               String    @unique
+  password            String
+  role                Role      @default(Patient)
+  subRole             SubRole?
+  phone               String
+  street              String?
+  city                String?
+  state               String?
+  zipCode             String?
+  country             String?
+  dateOfBirth         DateTime?
+  gender              Gender?
+  avatar              String    @default("")
+  isActive            Boolean   @default(true)
+  resetPasswordToken  String?
   resetPasswordExpire DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @default(now()) @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @default(now()) @updatedAt
 
   // Relations
-  doctor             Doctor?
-  patient            Patient?
-  staff              Staff?          @relation("StaffUser")
-  supervisedStaff    Staff[]         @relation("SupervisedStaff")
-  createdAppointments Appointment[]  @relation("CreatedAppointments")
-  generatedBills     Billing[]       @relation("GeneratedBills")
-  dispensedMedicines PrescriptionMedicine[] @relation("DispensedMedicines")
-  wardNurseInCharge  Ward[]          @relation("WardNurseInCharge")
-  aiAuditEvents      AiAuditEvent[]
+  doctor                Doctor?
+  patient               Patient?
+  staff                 Staff?                 @relation("StaffUser")
+  supervisedStaff       Staff[]                @relation("SupervisedStaff")
+  createdAppointments   Appointment[]          @relation("CreatedAppointments")
+  generatedBills        Billing[]              @relation("GeneratedBills")
+  dispensedMedicines    PrescriptionMedicine[] @relation("DispensedMedicines")
+  wardNurseInCharge     Ward[]                 @relation("WardNurseInCharge")
+  aiAuditEvents         AiAuditEvent[]
+  clinicalNotesCreated  ClinicalNote[]         @relation("ClinicalNoteCreator")
+  clinicalNotesReviewed ClinicalNote[]         @relation("ClinicalNoteReviewer")
+  clinicalNoteVersions  ClinicalNoteVersion[]  @relation("ClinicalNoteVersionAuthor")
 
   @@index([email])
   @@index([legacyMongoId])
@@ -256,38 +259,39 @@ model Doctor {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
-  appointments    Appointment[]
-  prescriptions   Prescription[]
+  appointments  Appointment[]
+  prescriptions Prescription[]
 
   @@index([licenseNumber])
   @@index([legacyMongoId])
 }
 
 model Patient {
-  id                 String   @id @default(uuid())
-  legacyMongoId      String?  @unique
-  userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  patientId          String   @unique
-  bloodGroup         BloodGroup?
-  emergencyContact   Json?
-  allergies          String[]
-  insuranceInfo      Json?
-  archivedAt         DateTime?
-  archiveReason      String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @default(now()) @updatedAt
+  id               String      @id @default(uuid())
+  legacyMongoId    String?     @unique
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientId        String      @unique
+  bloodGroup       BloodGroup?
+  emergencyContact Json?
+  allergies        String[]
+  insuranceInfo    Json?
+  archivedAt       DateTime?
+  archiveReason    String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @default(now()) @updatedAt
 
-  medicalHistory     MedicalHistory[]
-  currentMedications CurrentMedication[]
-  labReports         LabReport[]
-  imagingData        ImagingData[]
-  admissionHistory   AdmissionHistory[]
-  appointments       Appointment[]
-  prescriptions      Prescription[]
-  billings           Billing[]
-  beds               Bed[]
+  medicalHistory      MedicalHistory[]
+  currentMedications  CurrentMedication[]
+  labReports          LabReport[]
+  imagingData         ImagingData[]
+  admissionHistory    AdmissionHistory[]
+  appointments        Appointment[]
+  prescriptions       Prescription[]
+  billings            Billing[]
+  beds                Bed[]
   clinicalAuditEvents ClinicalAuditEvent[]
+  clinicalNotes       ClinicalNote[]
 
   @@index([patientId])
   @@index([userId])
@@ -326,6 +330,45 @@ model ClinicalAuditEvent {
 
   @@index([patientId, createdAt])
   @@index([recordType, recordId])
+}
+
+model ClinicalNote {
+  id             String                @id @default(uuid())
+  patientId      String
+  patient        Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  title          String
+  status         String                @default("Draft")
+  source         String
+  sourceAgent    String?
+  createdById    String
+  createdBy      User                  @relation("ClinicalNoteCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedById   String?
+  reviewedBy     User?                 @relation("ClinicalNoteReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt     DateTime?
+  currentVersion Int                   @default(1)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @default(now()) @updatedAt
+  versions       ClinicalNoteVersion[]
+
+  @@index([patientId, createdAt])
+  @@index([status, reviewedAt])
+}
+
+model ClinicalNoteVersion {
+  id                  String       @id @default(uuid())
+  clinicalNoteId      String
+  clinicalNote        ClinicalNote @relation(fields: [clinicalNoteId], references: [id], onDelete: Cascade)
+  version             Int
+  content             String
+  amendmentNote       String?
+  isAiGenerated       Boolean      @default(false)
+  clinicallyConfirmed Boolean      @default(false)
+  createdById         String
+  createdBy           User         @relation("ClinicalNoteVersionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt           DateTime     @default(now())
+
+  @@unique([clinicalNoteId, version])
+  @@index([clinicalNoteId, createdAt])
 }
 
 model CurrentMedication {
@@ -411,7 +454,7 @@ model Appointment {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @default(now()) @updatedAt
 
-  billings         Billing[]           @relation("AppointmentBilling")
+  billings Billing[] @relation("AppointmentBilling")
 
   @@index([doctorId, appointmentDate, startTime])
   @@index([patientId, appointmentDate])
@@ -421,34 +464,34 @@ model Appointment {
 }
 
 model Billing {
-  id                   String          @id @default(uuid())
-  legacyMongoId        String?         @unique
-  billNumber           String?         @unique
-  sourceKey            String?         @unique
+  id                   String         @id @default(uuid())
+  legacyMongoId        String?        @unique
+  billNumber           String?        @unique
+  sourceKey            String?        @unique
   patientId            String
-  patient              Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  billDate             DateTime        @default(now())
-  billType             BillType        @default(Other)
+  patient              Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  billDate             DateTime       @default(now())
+  billType             BillType       @default(Other)
   subtotal             Float
-  discount             Float           @default(0)
-  tax                  Float           @default(0)
+  discount             Float          @default(0)
+  tax                  Float          @default(0)
   totalAmount          Float
-  amountPaid           Float           @default(0)
+  amountPaid           Float          @default(0)
   balance              Float
-  paymentStatus        PaymentStatus   @default(Unpaid)
+  paymentStatus        PaymentStatus  @default(Unpaid)
   paymentMethod        PaymentMethod?
   insuranceClaim       Json?
   createdByRole        Role?
   generatedById        String?
-  generatedBy          User?           @relation("GeneratedBills", fields: [generatedById], references: [id], onDelete: SetNull)
+  generatedBy          User?          @relation("GeneratedBills", fields: [generatedById], references: [id], onDelete: SetNull)
   relatedAppointmentId String?
-  relatedAppointment   Appointment?    @relation("AppointmentBilling", fields: [relatedAppointmentId], references: [id], onDelete: SetNull)
+  relatedAppointment   Appointment?   @relation("AppointmentBilling", fields: [relatedAppointmentId], references: [id], onDelete: SetNull)
   notes                String?
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @default(now()) @updatedAt
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @default(now()) @updatedAt
 
-  items                BillingItem[]
-  payments             BillingPayment[]
+  items    BillingItem[]
+  payments BillingPayment[]
 
   @@index([billNumber])
   @@index([patientId])
@@ -535,8 +578,8 @@ model Prescription {
   notes          String?
   createdAt      DateTime           @default(now())
 
-  appointment    Appointment?       @relation("AppointmentPrescription")
-  medicines      PrescriptionMedicine[]
+  appointment Appointment?           @relation("AppointmentPrescription")
+  medicines   PrescriptionMedicine[]
 
   @@index([prescriptionId])
   @@index([legacyMongoId])
@@ -603,7 +646,7 @@ model Ward {
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
 
-  beds            Bed[]
+  beds Bed[]
 
   @@index([wardNumber])
   @@index([legacyMongoId])
