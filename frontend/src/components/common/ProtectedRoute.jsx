@@ -5,6 +5,7 @@ import TopNav from './TopNav'
 import BottomNav from './BottomNav'
 import Loader from './Loader'
 import { useTheme } from '../../context/ThemeContext'
+import { hasAnyRole } from '../../config/rolePolicy'
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
@@ -19,12 +20,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (
-    allowedRoles &&
-    !allowedRoles.includes(user.role) &&
-    !(user.subRole && allowedRoles.includes(user.subRole))
-  ) {
-    return <Navigate to="/dashboard" replace />
+  if (allowedRoles && !hasAnyRole(user, allowedRoles)) {
+    return <Navigate to="/access-denied" replace state={{ from: location }} />
   }
 
   return (

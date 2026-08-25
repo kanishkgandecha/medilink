@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import { getUserRoleKey } from '../../config/rolePolicy'
 
 // ── Primary nav items per role (max 4 — 5th slot is always "More") ────────────
 const PRIMARY = {
@@ -47,12 +48,22 @@ const PRIMARY = {
     { id: 'pharmacy',     label: 'Medicines', icon: Pill,       path: '/pharmacy'     },
     { id: 'prescriptions',label: 'Rx',        icon: FileText,   path: '/prescriptions'},
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'dashboard',    label: 'Home',     icon: Home,        path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,    path: '/ai-agents'    },
     { id: 'test-reports', label: 'Reports',  icon: FlaskConical,path: '/test-reports' },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'dashboard',    label: 'Home',     icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'test-reports', label: 'Imaging',  icon: FlaskConical,  path: '/test-reports' },
+  ],
+  'billing-staff': [
+    { id: 'dashboard',    label: 'Home',     icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'billing',      label: 'Billing',  icon: DollarSign,    path: '/billing'      },
+  ],
+  'ward-manager': [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,   path: '/ai-agents'    },
     { id: 'wards',        label: 'Wards',    icon: Bed,        path: '/wards'        },
@@ -107,12 +118,20 @@ const ALL_ITEMS = {
     { id: 'prescriptions',label: 'Prescriptions',icon: FileText,   path: '/prescriptions'},
     { id: 'billing',      label: 'Billing',      icon: DollarSign, path: '/billing'      },
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,        path: '/dashboard'    },
     { id: 'test-reports', label: 'Test Reports', icon: FlaskConical,path: '/test-reports' },
     { id: 'patients',     label: 'Patients',     icon: Users,       path: '/patients'     },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'dashboard',    label: 'Dashboard',       icon: Home,          path: '/dashboard'    },
+    { id: 'test-reports', label: 'Imaging Reports', icon: FlaskConical,  path: '/test-reports' },
+  ],
+  'billing-staff': [
+    { id: 'dashboard',    label: 'Dashboard',    icon: Home,       path: '/dashboard'    },
+    { id: 'billing',      label: 'Billing',      icon: DollarSign, path: '/billing'      },
+  ],
+  'ward-manager': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,       path: '/dashboard'    },
     { id: 'wards',        label: 'Wards & Beds', icon: Bed,        path: '/wards'        },
     { id: 'patients',     label: 'Patients',     icon: Users,      path: '/patients'     },
@@ -127,14 +146,10 @@ const BottomNav = () => {
   const location    = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const userRole    = user?.role?.toLowerCase() || 'patient'
-  const userSubRole = user?.subRole?.toLowerCase() || ''
-  const menuKey     = userRole === 'staff'
-    ? (userSubRole && PRIMARY[userSubRole] ? userSubRole : 'patient')
-    : userRole
+  const menuKey = getUserRoleKey(user)
 
-  const primaryItems = PRIMARY[menuKey] || PRIMARY.patient
-  const allItems     = ALL_ITEMS[menuKey] || ALL_ITEMS.patient
+  const primaryItems = PRIMARY[menuKey] || []
+  const allItems     = ALL_ITEMS[menuKey] || []
 
   const barBg = darkMode
     ? 'bg-gray-800/95 border-gray-700/80'

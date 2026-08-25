@@ -13,6 +13,7 @@ import { changePassword } from '../../services/authService'
 import { toast } from 'react-toastify'
 import logoLight from '../../assets/logo/logo-icon-bg-light.png'
 import logoDark  from '../../assets/logo/logo-icon-bg-dark.png'
+import { getUserRoleKey, ROLE_LABELS } from '../../config/rolePolicy'
 
 // ── Role → nav items ─────────────────────────────────────────────────────────
 const MENUS = {
@@ -66,13 +67,23 @@ const MENUS = {
     { id: 'prescriptions',label: 'Prescriptions',icon: FileText,      path: '/prescriptions'},
     { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'test-reports', label: 'Test Reports', icon: FileText,      path: '/test-reports' },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'test-reports', label: 'Imaging Reports', icon: FlaskConical, path: '/test-reports' },
+  ],
+  'billing-staff': [
+    { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
+  ],
+  'ward-manager': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'wards',        label: 'Wards & Beds', icon: Bed,           path: '/wards'        },
@@ -118,10 +129,16 @@ const ROLE_NOTIFS = {
     { id: 'r1', title: '8 check-ins today',      desc: '3 patients pending arrival',          time: '20m ago', color: 'blue'   },
     { id: 'r2', title: 'Slot freed up',            desc: '1 appointment was cancelled',        time: '1h ago',  color: 'orange' },
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'l1', title: '3 tests pending',        desc: 'Reports awaiting processing',         time: '10m ago', color: 'blue'  },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'rt1', title: 'Imaging queue', desc: 'Review assigned imaging reports', time: 'Now', color: 'blue' },
+  ],
+  'billing-staff': [
+    { id: 'b1', title: 'Billing workspace', desc: 'Review invoices and payment status', time: 'Now', color: 'emerald' },
+  ],
+  'ward-manager': [
     { id: 'w1', title: 'Ward A at capacity',     desc: 'No beds available — divert patients', time: '30m ago', color: 'red'   },
     { id: 'w2', title: '2 discharges scheduled',  desc: 'Beds free after 2 PM',               time: '1h ago',  color: 'teal'  },
   ],
@@ -160,14 +177,10 @@ const TopNav = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const userRole    = user?.role?.toLowerCase()    || 'patient'
-  const userSubRole = user?.subRole?.toLowerCase() || ''
-  const menuKey     = userRole === 'staff'
-    ? (userSubRole && MENUS[userSubRole] ? userSubRole : 'patient')
-    : userRole
-  const items = MENUS[menuKey] || MENUS.patient
+  const menuKey = getUserRoleKey(user)
+  const items = MENUS[menuKey] || []
 
-  const roleKey        = (user?.subRole || user?.role || '').toLowerCase()
+  const roleKey        = menuKey
   const allNotifs      = ROLE_NOTIFS[roleKey] || FALLBACK_NOTIFS
   const visibleNotifs  = allNotifs.filter(n => !dismissed.includes(n.id))
   const notifCount     = visibleNotifs.length
@@ -207,7 +220,7 @@ const TopNav = () => {
   }
 
   const initials    = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'
-  const displayRole = user?.subRole || user?.role || 'Staff'
+  const displayRole = ROLE_LABELS[menuKey] || user?.subRole || user?.role || 'Staff'
   const logo        = darkMode ? logoDark : logoLight
 
   const inputCls = `w-full px-4 py-2.5 rounded-xl border text-sm pr-10

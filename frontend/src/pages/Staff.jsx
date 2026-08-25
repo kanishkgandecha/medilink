@@ -10,7 +10,7 @@ import { SkeletonDashboard } from '../components/common/SkeletonCard'
 import * as staffService from '../services/staffService'
 import { toast } from 'react-toastify'
 
-const SUB_ROLES = ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Ward Manager']
+const SUB_ROLES = ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Radiology Technician', 'Billing Staff', 'Ward Manager']
 
 const EMPTY_FORM = {
   name: '',
@@ -32,6 +32,8 @@ const ROLE_COLOURS = {
   'Receptionist':    'bg-blue-100 text-blue-700',
   'Pharmacist':      'bg-purple-100 text-purple-700',
   'Lab Technician':  'bg-yellow-100 text-yellow-700',
+  'Radiology Technician': 'bg-cyan-100 text-cyan-700',
+  'Billing Staff': 'bg-violet-100 text-violet-700',
   'Ward Manager':    'bg-orange-100 text-orange-700'
 }
 

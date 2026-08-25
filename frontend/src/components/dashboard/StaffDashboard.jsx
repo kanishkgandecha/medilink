@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import NurseDashboard from './NurseDashboard'
 import ReceptionistDashboard from './ReceptionistDashboard'
 import PharmacistDashboard from './PharmacistDashboard'
+import { getUserRoleKey } from '../../config/rolePolicy'
 
 const GenericStaffDashboard = ({ subRole, links }) => (
   <div className="space-y-6">
@@ -28,7 +29,7 @@ const GenericStaffDashboard = ({ subRole, links }) => (
 
 const StaffDashboard = () => {
   const { user } = useAuth()
-  const sub = (user?.subRole || user?.role || '').toLowerCase()
+  const sub = getUserRoleKey(user)
 
   switch (sub) {
     case 'nurse':
@@ -37,7 +38,7 @@ const StaffDashboard = () => {
       return <ReceptionistDashboard />
     case 'pharmacist':
       return <PharmacistDashboard />
-    case 'lab technician':
+    case 'lab-technician':
       return (
         <GenericStaffDashboard
           subRole="Lab Technician"
@@ -47,7 +48,25 @@ const StaffDashboard = () => {
           ]}
         />
       )
-    case 'ward manager':
+    case 'radiology-technician':
+      return (
+        <GenericStaffDashboard
+          subRole="Radiology Technician"
+          links={[
+            { label: 'Test Reports', path: '/test-reports', description: 'Review assigned imaging reports and patient results' },
+          ]}
+        />
+      )
+    case 'billing-staff':
+      return (
+        <GenericStaffDashboard
+          subRole="Billing Staff"
+          links={[
+            { label: 'Billing', path: '/billing', description: 'Manage invoices, payments, and billing records' },
+          ]}
+        />
+      )
+    case 'ward-manager':
       return (
         <GenericStaffDashboard
           subRole="Ward Manager"

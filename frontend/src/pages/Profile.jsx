@@ -23,7 +23,10 @@ const AVATAR_PRESETS = [
 const ROLE_AVATAR_DEFAULT = {
   Doctor: 'blue', Patient: 'emerald', Nurse: 'violet',
   Pharmacist: 'cyan', Admin: 'indigo', Receptionist: 'rose',
-  Staff: 'amber', 'Lab Technician': 'red', 'Ward Manager': 'indigo',
+  Staff: 'amber', 'Lab Technician': 'red', LabTechnician: 'red',
+  'Radiology Technician': 'cyan', RadiologyTechnician: 'cyan',
+  'Billing Staff': 'violet', BillingStaff: 'violet',
+  'Ward Manager': 'indigo', WardManager: 'indigo',
 }
 
 const ROLE_BADGE = {
@@ -35,7 +38,13 @@ const ROLE_BADGE = {
   Receptionist:     'bg-rose-100   text-rose-700    dark:bg-rose-900/30   dark:text-rose-300',
   Staff:            'bg-amber-100  text-amber-700   dark:bg-amber-900/30  dark:text-amber-300',
   'Lab Technician': 'bg-red-100    text-red-700     dark:bg-red-900/30    dark:text-red-300',
+  LabTechnician:    'bg-red-100    text-red-700     dark:bg-red-900/30    dark:text-red-300',
+  'Radiology Technician': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+  RadiologyTechnician: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+  'Billing Staff': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+  BillingStaff: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
   'Ward Manager':   'bg-indigo-100 text-indigo-700  dark:bg-indigo-900/30 dark:text-indigo-300',
+  WardManager:      'bg-indigo-100 text-indigo-700  dark:bg-indigo-900/30 dark:text-indigo-300',
 }
 
 const EMPTY_ADDR = { street: '', city: '', state: '', zipCode: '', country: '' }

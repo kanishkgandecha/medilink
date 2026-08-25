@@ -220,11 +220,13 @@ const Billing = () => {
 
   const isPatient     = user?.role === 'Patient'
   const isPharmacist  = user?.role === 'Pharmacist' || user?.subRole === 'Pharmacist'
+  const isBillingStaff = user?.subRole === 'BillingStaff' || user?.subRole === 'Billing Staff'
   const canCreateBill = ['Admin','Receptionist'].includes(user?.role) ||
                         ['Admin','Receptionist'].includes(user?.subRole) ||
-                        isPharmacist
+                        isPharmacist || isBillingStaff
   const canManageAll  = ['Admin','Receptionist'].includes(user?.role) ||
-                        ['Admin','Receptionist'].includes(user?.subRole)
+                        ['Admin','Receptionist'].includes(user?.subRole) ||
+                        isBillingStaff
 
   // ── State ────────────────────────────────────────────────────
   const [bills, setBills]           = useState([])
