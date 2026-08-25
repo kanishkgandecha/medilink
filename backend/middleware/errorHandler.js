@@ -6,7 +6,14 @@ const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Mongoose bad ObjectId
+  if (err.code === 'P2002') {
+    return res.status(409).json({ success: false, message: 'A record with those unique details already exists' });
+  }
+  if (err.code === 'P2025') {
+    return res.status(404).json({ success: false, message: 'Resource not found' });
+  }
+
+  // Legacy Mongoose compatibility
   if (err.name === 'CastError') {
     error.message = 'Resource not found';
     return res.status(404).json({ message: error.message });
@@ -25,8 +32,10 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ message: error.message });
   }
 
-  res.status(error.statusCode || 500).json({
-    message: error.message || 'Server Error'
+  const status = error.statusCode || 500;
+  res.status(status).json({
+    success: false,
+    message: status >= 500 && process.env.NODE_ENV === 'production' ? 'Internal server error' : (error.message || 'Server Error')
   });
 };
 

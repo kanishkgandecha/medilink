@@ -22,7 +22,7 @@ const AGENT_TABS = [
   {
     id: 'symptom-checker',
     name: 'Symptom Checker',
-    description: 'AI-driven triage & specialist recommendation',
+    description: 'Safety-screened symptom guidance and specialist matching',
     icon: Stethoscope,
     color: 'from-blue-500 to-cyan-500',
     badge: 'Popular',
@@ -154,7 +154,7 @@ const AIAgents = () => {
               Hospital Intelligence & Clinical AI Agents
             </h1>
             <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
-              Automated symptom triage, real-time bed allocation optimization, clinical report summaries, and predictive risk scoring powered by MediLink AI.
+              Safety-screened guidance, record-grounded summaries, current bed/doctor lookups, and transparent rules-based risk scoring. All clinical outputs require professional review.
             </p>
           </div>
         </div>

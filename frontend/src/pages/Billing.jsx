@@ -4,7 +4,6 @@ import {
   CheckCircle, Clock, Trash2, User, Calendar, Pill,
   Stethoscope, FlaskConical, Receipt, IndianRupee, Search, AlertTriangle, Printer, X, Bed
 } from 'lucide-react'
-import { generateBillPdf } from '../utils/generateBillPdf'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import TableComponent from '../components/common/TableComponent'
@@ -16,6 +15,11 @@ import api from '../services/api'
 import CardPagination, { paginateData } from '../components/common/CardPagination'
 import PageLayout from '../components/common/PageLayout'
 import TimeStamp from '../components/common/TimeStamp'
+
+const downloadBillPdf = async (bill) => {
+  const { generateBillPdf } = await import('../utils/generateBillPdf')
+  return generateBillPdf(bill)
+}
 
 // ─── Constants ────────────────────────────────────────────────
 const BILL_TYPES = ['Consultation', 'Pharmacy', 'Test', 'Ward', 'Other']
@@ -167,7 +171,7 @@ const BillCard = ({ bill, canManageAll, canDelete, onView, onPayment, onInsuranc
           <Eye className="w-3.5 h-3.5" /> Invoice
         </button>
         <button
-          onClick={() => generateBillPdf(bill)}
+          onClick={() => downloadBillPdf(bill)}
           className="flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           title="Download PDF"
         >
@@ -1276,7 +1280,7 @@ const Billing = () => {
             Close
           </button>
           <button
-            onClick={() => selectedBill && generateBillPdf(selectedBill)}
+            onClick={() => selectedBill && downloadBillPdf(selectedBill)}
             className="flex items-center gap-2 px-5 py-2 text-sm border border-[#2E86DE] text-[#2E86DE] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition"
           >
             <Download className="w-4 h-4" />Download PDF

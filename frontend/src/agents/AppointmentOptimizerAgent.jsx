@@ -3,6 +3,7 @@ import { CalendarCheck, X, Loader2, Sparkles, User, Stethoscope, RotateCcw, Arro
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { optimizeAppointment } from '../services/aiService'
+import SourceDisclosure from '../components/ai/SourceDisclosure'
 
 const URGENCY_STYLE = {
   Emergency: { badge: 'bg-red-600 text-white', text: 'text-red-600 dark:text-red-400', label: 'Go to Emergency immediately' },
@@ -77,7 +78,7 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
           <div className="flex items-center gap-3">
             <CalendarCheck className="w-5 h-5 text-white" />
             <h2 className="font-bold text-white text-base">Appointment Optimizer</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">LLM Powered</span>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Records + Rules</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
         </div>
@@ -86,7 +87,7 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
           {!result ? (
             <>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Describe your symptoms and our AI will find the best available doctor — matched by specialization and lowest workload.
+                Match symptoms to active doctors using specialization and current workload. Appointment availability is confirmed only during booking.
               </p>
 
               {/* Quick symptom chips */}
@@ -127,6 +128,7 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
             </>
           ) : (
             <>
+              <SourceDisclosure result={result} />
               {result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. Doctor matching uses current MediLink records and deterministic rules.

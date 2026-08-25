@@ -3,7 +3,7 @@ const router = express.Router();
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect } = require('../middleware/auth');
-const { uploadAvatar } = require('../middleware/upload');
+const { uploadAvatar, validateAvatarSignature } = require('../middleware/upload');
 const {
   register,
   login,
@@ -68,6 +68,6 @@ router.post('/avatar', protect, (req, res, next) => {
     if (err) return res.status(400).json({ success: false, message: err.message });
     next();
   });
-}, uploadAvatarImage);
+}, validateAvatarSignature, uploadAvatarImage);
 
 module.exports = router;
