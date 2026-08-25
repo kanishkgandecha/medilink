@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Sparkles, Stethoscope, BedDouble, HeartPulse, FileText,
-  Calendar, UserCheck, Bot, ArrowRight, Activity, Zap
+  Calendar, UserCheck, Bot
 } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import PageLayout from '../components/common/PageLayout'
+import { getUserRoleKey } from '../config/rolePolicy'
 
 // Import all AI Agent components
 import {
@@ -26,7 +28,7 @@ const AGENT_TABS = [
     icon: Stethoscope,
     color: 'from-blue-500 to-cyan-500',
     badge: 'Popular',
-    type: 'page',
+    allowedRoles: ['admin', 'doctor', 'patient', 'nurse', 'receptionist'],
   },
   {
     id: 'bed-allocation',
@@ -35,7 +37,7 @@ const AGENT_TABS = [
     icon: BedDouble,
     color: 'from-emerald-500 to-teal-500',
     badge: 'Hospital Ops',
-    type: 'modal',
+    allowedRoles: ['admin', 'doctor', 'nurse', 'ward-manager'],
   },
   {
     id: 'health-risk',
@@ -44,7 +46,7 @@ const AGENT_TABS = [
     icon: HeartPulse,
     color: 'from-rose-500 to-pink-500',
     badge: 'Rules Engine',
-    type: 'page',
+    allowedRoles: ['admin', 'doctor', 'patient'],
   },
   {
     id: 'report-analyzer',
@@ -53,7 +55,7 @@ const AGENT_TABS = [
     icon: FileText,
     color: 'from-amber-500 to-orange-500',
     badge: 'Diagnostics',
-    type: 'modal',
+    allowedRoles: ['admin', 'doctor', 'patient', 'lab-technician', 'radiology-technician'],
   },
   {
     id: 'appointment-optimizer',
@@ -62,7 +64,7 @@ const AGENT_TABS = [
     icon: Calendar,
     color: 'from-purple-500 to-indigo-500',
     badge: 'Scheduling',
-    type: 'modal',
+    allowedRoles: ['admin', 'doctor', 'patient', 'receptionist'],
   },
   {
     id: 'patient-summary',
@@ -71,7 +73,7 @@ const AGENT_TABS = [
     icon: UserCheck,
     color: 'from-sky-500 to-blue-600',
     badge: 'EHR Intelligence',
-    type: 'modal',
+    allowedRoles: ['admin', 'doctor', 'patient', 'nurse'],
   },
   {
     id: 'medibot',
@@ -80,66 +82,37 @@ const AGENT_TABS = [
     icon: Bot,
     color: 'from-teal-500 to-emerald-600',
     badge: '24/7 AI',
-    type: 'page',
+    allowedRoles: ['admin', 'doctor', 'patient', 'nurse', 'receptionist', 'pharmacist', 'lab-technician', 'radiology-technician', 'billing-staff', 'ward-manager'],
   },
 ]
 
 const AIAgents = () => {
   const { darkMode } = useTheme()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const activeTabParam = searchParams.get('tab') || 'symptom-checker'
-  const [activeTab, setActiveTab] = useState(activeTabParam)
-
-  const [activeModal, setActiveModal] = useState(null)
+  const roleKey = getUserRoleKey(user)
+  const availableAgents = AGENT_TABS.filter((agent) => agent.allowedRoles.includes(roleKey))
+  const activeTab = searchParams.get('tab')
+  const activeDefinition = AGENT_TABS.find((agent) => agent.id === activeTab)
 
   useEffect(() => {
-    if (activeTabParam !== activeTab) {
-      setActiveTab(activeTabParam)
+    if (!activeTab) return
+    if (!activeDefinition) {
+      setSearchParams({}, { replace: true })
+      return
     }
-  }, [activeTabParam])
+    if (!activeDefinition.allowedRoles.includes(roleKey)) {
+      navigate('/access-denied', { replace: true, state: { from: location } })
+    }
+  }, [activeTab, activeDefinition, location, navigate, roleKey, setSearchParams])
 
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId)
     setSearchParams({ tab: tabId })
-    const targetDef = AGENT_TABS.find(t => t.id === tabId)
-    if (targetDef?.type === 'modal') {
-      setActiveModal(tabId)
-    } else {
-      setActiveModal(null)
-    }
   }
 
-  const renderActiveAgentPage = () => {
-    switch (activeTab) {
-      case 'symptom-checker':
-        return <SymptomCheckerAgent />
-      case 'health-risk':
-        return <HealthRiskAgent />
-      case 'medibot':
-        return <MediBotAgent />
-      default:
-        // For modal agent types selected as tabs, show an interactive starter card
-        const currentDef = AGENT_TABS.find(t => t.id === activeTab) || AGENT_TABS[0]
-        const Icon = currentDef.icon
-        return (
-          <div className={`p-8 rounded-2xl border text-center max-w-2xl mx-auto my-8 ${
-            darkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white border-gray-200 shadow-sm'
-          }`}>
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-tr ${currentDef.color} flex items-center justify-center text-white mx-auto mb-4 shadow-lg`}>
-              <Icon size={32} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">{currentDef.name}</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">{currentDef.description}</p>
-            <button
-              onClick={() => setActiveModal(currentDef.id)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md transition-transform active:scale-95"
-            >
-              <Zap size={18} /> Launch {currentDef.name}
-            </button>
-          </div>
-        )
-    }
-  }
+  const closeAgent = () => setSearchParams({}, { replace: true })
 
   return (
     <PageLayout title="AI Intelligence Suite">
@@ -161,7 +134,7 @@ const AIAgents = () => {
 
         {/* Agent Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {AGENT_TABS.map((tab) => {
+          {availableAgents.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
             return (
@@ -190,27 +163,43 @@ const AIAgents = () => {
           })}
         </div>
 
-        {/* Active Agent Main View */}
-        <div className="mt-4">
-          {renderActiveAgentPage()}
+        <div className={`mt-4 rounded-2xl border p-8 text-center ${
+          darkMode ? 'border-gray-700 bg-gray-800/80' : 'border-gray-200 bg-white shadow-sm'
+        }`}>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Choose a clinical intelligence tool</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+            Only tools approved for your role are shown. Select one above to open its guided workflow.
+          </p>
         </div>
 
-        {/* Modals for Modal-based AI Agents */}
+        <SymptomCheckerAgent
+          open={activeTab === 'symptom-checker'}
+          onClose={closeAgent}
+        />
         <BedAllocationAgent
-          open={activeModal === 'bed-allocation'}
-          onClose={() => setActiveModal(null)}
+          open={activeTab === 'bed-allocation'}
+          onClose={closeAgent}
+        />
+        <HealthRiskAgent
+          open={activeTab === 'health-risk'}
+          onClose={closeAgent}
         />
         <ReportAnalysisAgent
-          open={activeModal === 'report-analyzer'}
-          onClose={() => setActiveModal(null)}
+          open={activeTab === 'report-analyzer'}
+          onClose={closeAgent}
         />
         <AppointmentOptimizerAgent
-          open={activeModal === 'appointment-optimizer'}
-          onClose={() => setActiveModal(null)}
+          open={activeTab === 'appointment-optimizer'}
+          onClose={closeAgent}
         />
         <PatientSummaryAgent
-          open={activeModal === 'patient-summary'}
-          onClose={() => setActiveModal(null)}
+          open={activeTab === 'patient-summary'}
+          onClose={closeAgent}
+        />
+        <MediBotAgent
+          open={activeTab === 'medibot'}
+          onClose={closeAgent}
+          onOpenSymptomChecker={() => handleTabChange('symptom-checker')}
         />
       </div>
     </PageLayout>

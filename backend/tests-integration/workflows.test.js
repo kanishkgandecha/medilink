@@ -27,13 +27,14 @@ const api = async (path, { token, method = 'GET', body } = {}) => {
   return { response, json: await response.json() };
 };
 
-const createUser = async ({ suffix, role }) => {
+const createUser = async ({ suffix, role, subRole }) => {
   const user = await prisma.user.create({ data: {
     name: `Integration ${role}`,
     email: `integration-${suffix}@medilink.invalid`,
     password: 'integration-test-only',
     phone: `IT-${suffix}`,
     role,
+    subRole: subRole || null,
   } });
   fixtureUserIds.push(user.id);
   return { user, token: generateToken(user) };
@@ -49,6 +50,33 @@ test.before(async () => {
     const instance = app.listen(0, '127.0.0.1', () => resolve(instance));
   });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
+});
+
+test('AI endpoints enforce the same role policy advertised by the UI', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const pharmacist = await createUser({ suffix: `ai-pharmacist-${suffix}`, role: 'Staff', subRole: 'Pharmacist' });
+  const receptionist = await createUser({ suffix: `ai-reception-${suffix}`, role: 'Staff', subRole: 'Receptionist' });
+  const billing = await createUser({ suffix: `ai-billing-${suffix}`, role: 'Staff', subRole: 'BillingStaff' });
+
+  const pharmacistRisk = await api('/api/ai/health-risk', {
+    token: pharmacist.token, method: 'POST', body: { age: 40 },
+  });
+  assert.equal(pharmacistRisk.response.status, 403);
+
+  const receptionistBed = await api('/api/ai/bed-allocation', {
+    token: receptionist.token, method: 'POST', body: { condition: 'routine observation' },
+  });
+  assert.equal(receptionistBed.response.status, 403);
+
+  const billingSymptoms = await api('/api/ai/symptom-analysis', {
+    token: billing.token, method: 'POST', body: { symptoms: 'headache' },
+  });
+  assert.equal(billingSymptoms.response.status, 403);
+
+  const billingChat = await api('/api/ai/chat', {
+    token: billing.token, method: 'POST', body: { message: 'Open billing' },
+  });
+  assert.equal(billingChat.response.status, 200);
 });
 
 test.after(async () => {
