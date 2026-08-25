@@ -1,115 +1,91 @@
-const User = require('../models/User');
-const Patient = require('../models/Patient');
-const Doctor = require('../models/Doctor');
-const Staff = require('../models/Staff');
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const sendEmail = require('../utils/email');
 const crypto = require('crypto');
-const logger = require('../utils/logger'); // ensure logger exists
+const logger = require('../utils/logger');
+const { matchPassword, hashPassword, generateToken, getResetPasswordToken } = require('../utils/userHelpers');
 
 const register = async (req, res, next) => {
   try {
-    // Extract ALL fields from request body
-    const { 
-      name, 
-      email, 
-      password, 
-      role, 
-      phone, 
-      dateOfBirth, 
-      gender, 
-      address 
-    } = req.body;
+    const { name, email, password, phone, dateOfBirth, gender, address } = req.body;
 
-    // Basic server-side validation
     if (!name || !email || !password || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: name, email, password, and phone are required'
+        message: 'Missing required fields: name, email, password, and phone are required',
       });
     }
 
-    // Check for duplicate email
-    const existing = await User.findOne({ email: email.toLowerCase() });
+    const existing = await prisma.user.findFirst({
+      where: { email: email.toLowerCase() },
+    });
+
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: 'Email already registered' 
+        message: 'Email already registered',
       });
     }
 
-    // Create user — role is always Patient on self-registration (Admin assigns roles)
-    const userData = {
-      name,
-      email: email.toLowerCase(),
-      password,
-      role: 'Patient',
-      phone
-    };
+    const hashedPassword = await hashPassword(password);
 
-    if (dateOfBirth) userData.dateOfBirth = dateOfBirth;
-    if (gender) userData.gender = gender;
-    if (address) userData.address = address;
+    let street = address?.street || null;
+    let city = address?.city || null;
+    let state = address?.state || null;
+    let zipCode = address?.zipCode || null;
+    let country = address?.country || null;
 
-    const user = await User.create(userData);
+    const patientId = `PT${Date.now().toString(36).toUpperCase()}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          name,
+          email: email.toLowerCase(),
+          password: hashedPassword,
+          role: 'Patient',
+          phone,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          gender: gender || null,
+          street,
+          city,
+          state,
+          zipCode,
+          country,
+        },
+      });
 
-    // Auto-create Patient profile so they appear in the patients list immediately
-    try {
-      // Use timestamp + random suffix to guarantee uniqueness even under concurrent registrations
-      const ts = Date.now().toString().slice(-6);
-      const rand = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-      const patientId = `PT${ts}${rand}`;
-      await Patient.create({ userId: user._id, patientId });
-    } catch (profileErr) {
-      logger.error('Patient profile auto-create failed for user', user._id, ':', profileErr.message);
-      // Non-fatal — profile missing is recoverable; user can log in, admin can diagnose
-    }
+      await tx.patient.create({ data: { userId: createdUser.id, patientId } });
+      return createdUser;
+    });
 
-    // Generate token for immediate login (optional)
-    const token = user.generateToken();
+    const token = generateToken(user);
 
-    // Remove sensitive fields for response
     const userResponse = {
-      id: user._id,
+      id: user.id,
+      _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       phone: user.phone,
       dateOfBirth: user.dateOfBirth,
       gender: user.gender,
-      address: user.address,
-      isActive: user.isActive
+      address: { street, city, state, zipCode, country },
+      isActive: user.isActive,
     };
 
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       user: userResponse,
-      token // Include token if you want auto-login after registration
+      token,
     });
   } catch (err) {
     logger.error('Registration error:', err.message);
 
-    if (err.name === 'ValidationError') {
-      const errors = Object.values(err.errors).map(e => ({
-        field: e.path,
-        message: e.message
-      }));
-      return res.status(400).json({ success: false, message: 'Validation error', errors });
-    }
-
-    if (err.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: 'Email or phone already registered' 
-      });
-    }
-
-    // Return generic 500 for other errors
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }
 };
@@ -119,15 +95,17 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Please provide email and password' 
+        message: 'Please provide email and password',
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await prisma.user.findFirst({
+      where: { email: email.toLowerCase() },
+    });
 
-    if (!user || !(await user.matchPassword(password))) {
+    if (!user || !(await matchPassword(password, user.password))) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
@@ -135,13 +113,14 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Account is deactivated. Contact admin.' });
     }
 
-    const token = user.generateToken();
-    
+    const token = generateToken(user);
+
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
+        _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -149,8 +128,14 @@ const login = async (req, res) => {
         phone: user.phone,
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
-        address: user.address
-      }
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+      },
     });
   } catch (err) {
     logger.error('Login error:', err.message);
@@ -159,50 +144,56 @@ const login = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+  const genericResponse = {
+    success: true,
+    message: 'If an account exists for that email, password reset instructions will be sent.',
+  };
+
   try {
-    const user = await User.findOne({ email: req.body.email.toLowerCase() });
+    const user = await prisma.user.findFirst({
+      where: { email: req.body.email.toLowerCase() },
+    });
 
-    if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'No user found with that email' 
-      });
-    }
+    if (!user) return res.status(200).json(genericResponse);
 
-    const resetToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
+    const { rawToken, resetPasswordToken, resetPasswordExpire } = getResetPasswordToken();
 
-    // Updated reset URL to match frontend route
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken,
+        resetPasswordExpire,
+      },
+    });
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${rawToken}`;
     const message = `You requested a password reset. Please use this link to reset your password:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email.`;
 
     try {
       await sendEmail({
         email: user.email,
         subject: 'Password Reset Request - MediCare HMS',
-        message
+        message,
       });
 
-      res.status(200).json({ 
-        success: true, 
-        message: 'Password reset email sent' 
-      });
+      return res.status(200).json(genericResponse);
     } catch (emailErr) {
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpire = undefined;
-      await user.save({ validateBeforeSave: false });
-      
-      console.error('❌ Email error:', emailErr);
-      return res.status(500).json({ 
-        success: false,
-        message: 'Email could not be sent. Please try again later.' 
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetPasswordToken: null,
+          resetPasswordExpire: null,
+        },
       });
+
+      logger.error('Password reset email delivery failed:', emailErr.message);
+      return res.status(200).json(genericResponse);
     }
   } catch (err) {
-    console.error('❌ Forgot password error:', err);
-    return res.status(500).json({ 
+    logger.error('Forgot password error:', err.message);
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error' 
+      message: 'Internal server error',
     });
   }
 };
@@ -214,55 +205,65 @@ const resetPassword = async (req, res) => {
       .update(req.params.resettoken)
       .digest('hex');
 
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken,
+        resetPasswordExpire: { gt: new Date() },
+      },
     });
 
     if (!user) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid or expired reset token' 
+        message: 'Invalid or expired reset token',
       });
     }
 
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
+    const hashedPassword = await hashPassword(req.body.password);
 
-    const token = user.generateToken();
-    
-    res.status(200).json({ 
-      success: true, 
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpire: null,
+      },
+    });
+
+    const token = generateToken(updatedUser);
+
+    res.status(200).json({
+      success: true,
       message: 'Password reset successful',
-      token 
+      token,
     });
   } catch (err) {
     console.error('❌ Reset password error:', err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error' 
+      message: 'Internal server error',
     });
   }
 };
 
 const verifyToken = async (req, res) => {
   try {
-    // req.user is set by the auth middleware
-    const user = await User.findById(req.user.id);
-    
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+    });
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'User not found' 
+        message: 'User not found',
       });
     }
 
     res.status(200).json({
       success: true,
       user: {
-        id: user._id,
+        id: user.id,
+        _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -270,75 +271,99 @@ const verifyToken = async (req, res) => {
         phone: user.phone,
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
-        address: user.address
-      }
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+      },
     });
   } catch (err) {
     console.error('❌ Verify token error:', err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error' 
+      message: 'Internal server error',
     });
   }
 };
 
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+    });
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'User not found' 
+        message: 'User not found',
       });
     }
 
-    res.status(200).json({ 
-      success: true, 
-      data: user 
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json({
+      success: true,
+      data: {
+        ...userWithoutPassword,
+        _id: user.id,
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+      },
     });
   } catch (err) {
     console.error('❌ Get me error:', err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error' 
+      message: 'Internal server error',
     });
   }
 };
 
 const updatePassword = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('+password');
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+    });
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'User not found' 
+        message: 'User not found',
       });
     }
 
-    if (!(await user.matchPassword(req.body.currentPassword))) {
-      return res.status(401).json({ 
+    if (!(await matchPassword(req.body.currentPassword, user.password))) {
+      return res.status(401).json({
         success: false,
-        message: 'Current password is incorrect' 
+        message: 'Current password is incorrect',
       });
     }
 
-    user.password = req.body.newPassword;
-    await user.save();
+    const hashedPassword = await hashPassword(req.body.newPassword);
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
 
-    const token = user.generateToken();
-    
-    res.status(200).json({ 
+    const token = generateToken(updatedUser);
+
+    res.status(200).json({
       success: true,
       message: 'Password updated successfully',
-      token 
+      token,
     });
   } catch (err) {
     console.error('❌ Update password error:', err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error' 
+      message: 'Internal server error',
     });
   }
 };
@@ -346,28 +371,53 @@ const updatePassword = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { name, phone, dateOfBirth, gender, address, avatar } = req.body;
-    const updates = {};
-    if (name)                      updates.name        = name;
-    if (phone)                     updates.phone       = phone;
-    if (dateOfBirth)               updates.dateOfBirth = dateOfBirth;
-    if (gender)                    updates.gender      = gender;
-    if (address !== undefined)     updates.address     = address;
-    if (avatar  !== undefined)     updates.avatar      = avatar;
+    const data = {};
+    if (name) data.name = name;
+    if (phone) data.phone = phone;
+    if (dateOfBirth) data.dateOfBirth = new Date(dateOfBirth);
+    if (gender) data.gender = gender;
+    if (avatar !== undefined) data.avatar = avatar;
+    if (address !== undefined) {
+      data.street = address.street || null;
+      data.city = address.city || null;
+      data.state = address.state || null;
+      data.zipCode = address.zipCode || null;
+      data.country = address.country || null;
+    }
 
-    const user = await User.findByIdAndUpdate(req.user.id, updates, {
-      new: true, runValidators: true
+    const targetUser = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
     });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (!targetUser) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const user = await prisma.user.update({
+      where: { id: targetUser.id },
+      data,
+    });
 
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
       user: {
-        id: user._id, name: user.name, email: user.email,
-        role: user.role, subRole: user.subRole,
-        phone: user.phone, dateOfBirth: user.dateOfBirth,
-        gender: user.gender, address: user.address, avatar: user.avatar
-      }
+        id: user.id,
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        subRole: user.subRole,
+        phone: user.phone,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+        avatar: user.avatar,
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+      },
     });
   } catch (err) {
     logger.error('Update profile error:', err.message);
@@ -377,29 +427,53 @@ const updateProfile = async (req, res) => {
 
 const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+    });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     let roleProfile = null;
     if (user.role === 'Doctor') {
-      roleProfile = await Doctor.findOne({ userId: user._id }).lean();
+      roleProfile = await prisma.doctor.findFirst({ where: { userId: user.id } });
     } else if (user.role === 'Patient') {
-      roleProfile = await Patient.findOne({ userId: user._id }).lean();
+      roleProfile = await prisma.patient.findFirst({
+        where: { userId: user.id },
+        include: {
+          medicalHistory: { where: { isVoided: false } },
+          currentMedications: true,
+          labReports: true,
+          imagingData: true,
+          admissionHistory: true,
+        },
+      });
     } else if (['Staff', 'Nurse', 'Receptionist', 'Pharmacist'].includes(user.role)) {
-      roleProfile = await Staff.findOne({ userId: user._id }).lean();
+      roleProfile = await prisma.staff.findFirst({ where: { userId: user.id } });
     }
 
     res.status(200).json({
       success: true,
       user: {
-        id: user._id, name: user.name, email: user.email,
-        role: user.role, subRole: user.subRole,
-        phone: user.phone, dateOfBirth: user.dateOfBirth,
-        gender: user.gender, address: user.address,
-        avatar: user.avatar, isActive: user.isActive,
-        createdAt: user.createdAt
+        id: user.id,
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        subRole: user.subRole,
+        phone: user.phone,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+        avatar: user.avatar,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
       },
-      roleProfile
+      roleProfile: roleProfile ? { ...roleProfile, _id: roleProfile.id } : null,
     });
   } catch (err) {
     logger.error('Get my profile error:', err.message);
@@ -415,12 +489,21 @@ const uploadAvatarImage = async (req, res) => {
 
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
-    await User.findByIdAndUpdate(req.user.id, { avatar: avatarUrl });
+    const targetUser = await prisma.user.findFirst({
+      where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+    });
+
+    if (targetUser) {
+      await prisma.user.update({
+        where: { id: targetUser.id },
+        data: { avatar: avatarUrl },
+      });
+    }
 
     res.status(200).json({
       success: true,
       message: 'Avatar uploaded successfully',
-      avatarUrl
+      avatarUrl,
     });
   } catch (err) {
     logger.error('Avatar upload error:', err.message);
@@ -438,5 +521,5 @@ module.exports = {
   updatePassword,
   updateProfile,
   getMyProfile,
-  uploadAvatarImage
+  uploadAvatarImage,
 };

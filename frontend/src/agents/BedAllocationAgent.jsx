@@ -121,6 +121,11 @@ const BedAllocationAgent = ({ open, onClose }) => {
             </>
           ) : (
             <>
+              {result._degraded && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
+                  External AI is unavailable. This advisory uses current unoccupied bed records and deterministic placement rules.
+                </div>
+              )}
               {/* Priority banner */}
               <div className={`rounded-xl border p-4 flex items-center gap-3 ${pStyle?.bg} border-transparent`}>
                 <PIcon className={`w-5 h-5 flex-shrink-0 ${pStyle?.color}`} />
@@ -187,7 +192,7 @@ const BedAllocationAgent = ({ open, onClose }) => {
               )}
 
               <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ Final bed assignment must be confirmed by a nurse or ward manager.
+                ⚕️ Advisory only. Live beds checked {result.liveDataCheckedAt ? new Date(result.liveDataCheckedAt).toLocaleString() : 'recently'}; final assignment must be confirmed by authorized staff and availability is rechecked during assignment.
               </p>
 
               <button

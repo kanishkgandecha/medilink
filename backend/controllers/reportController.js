@@ -1,54 +1,64 @@
-// ===========================
-// FILE: controllers/reportController.js
-// ===========================
-const mongoose = require('mongoose');
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
-const Appointment = require('../models/Appointment');
-const Ward = require('../models/Ward');
-const Billing = require('../models/Billing');
-const Staff = require('../models/Staff');
-const Patient = require('../models/Patient');
-const Doctor = require('../models/Doctor');
-const Medicine = require('../models/Medicine');
-const Prescription = require('../models/Prescription');
+const { formatAppointment } = require('../utils/virtuals');
 
-// @desc    Get patient visits report
-// @route   GET /api/reports/patient-visits
-// @access  Private (Admin)
+const formatPopulatedApt = (apt) => {
+  if (!apt) return null;
+  const formatted = formatAppointment(apt);
+  return {
+    ...formatted,
+    _id: formatted.id,
+    patient: formatted.patient
+      ? {
+          ...formatted.patient,
+          _id: formatted.patient.id,
+          userId: formatted.patient.user ? { ...formatted.patient.user, _id: formatted.patient.user.id } : null,
+        }
+      : null,
+    doctor: formatted.doctor
+      ? {
+          ...formatted.doctor,
+          _id: formatted.doctor.id,
+          userId: formatted.doctor.user ? { ...formatted.doctor.user, _id: formatted.doctor.user.id } : null,
+        }
+      : null,
+  };
+};
+
 const getPatientVisitsReport = async (req, res) => {
   const { startDate, endDate, doctorId, patientId } = req.query;
-  
-  let query = {};
-  
-  if (startDate && endDate) {
-    query.appointmentDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
-  }
-  
-  if (doctorId) query.doctor = doctorId;
-  if (patientId) query.patient = patientId;
 
-  const visits = await Appointment.find(query)
-    .populate({
-      path: 'patient',
-      select: 'patientId userId',
-      populate: { path: 'userId', select: 'name gender dateOfBirth' }
-    })
-    .populate({
-      path: 'doctor',
-      select: 'userId specialization',
-      populate: { path: 'userId', select: 'name' }
-    })
-    .sort('-appointmentDate');
+  const where = {};
+  if (startDate && endDate) {
+    where.appointmentDate = { gte: new Date(startDate), lte: new Date(endDate) };
+  }
+
+  if (doctorId) {
+    const doc = await prisma.doctor.findFirst({ where: { OR: [{ id: doctorId }, { legacyMongoId: doctorId }] } });
+    if (doc) where.doctorId = doc.id;
+  }
+  if (patientId) {
+    const pat = await prisma.patient.findFirst({ where: { OR: [{ id: patientId }, { legacyMongoId: patientId }] } });
+    if (pat) where.patientId = pat.id;
+  }
+
+  const visits = await prisma.appointment.findMany({
+    where,
+    include: {
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, gender: true, dateOfBirth: true } } } },
+      doctor: { select: { id: true, specialization: true, user: { select: { id: true, name: true } } } },
+    },
+    orderBy: { appointmentDate: 'desc' },
+  });
+
+  const formattedVisits = visits.map(formatPopulatedApt);
 
   const stats = {
     totalVisits: visits.length,
-    completed: visits.filter(v => v.status === 'Completed').length,
-    scheduled: visits.filter(v => v.status === 'Scheduled').length,
-    cancelled: visits.filter(v => v.status === 'Cancelled').length,
-    noShow: visits.filter(v => v.status === 'No-Show').length,
+    completed: visits.filter((v) => v.status === 'Completed').length,
+    scheduled: visits.filter((v) => v.status === 'Scheduled').length,
+    cancelled: visits.filter((v) => v.status === 'Cancelled').length,
+    noShow: visits.filter((v) => v.status === 'No_Show' || v.status === 'No-Show').length,
     byType: visits.reduce((acc, v) => {
       acc[v.type] = (acc[v.type] || 0) + 1;
       return acc;
@@ -56,117 +66,95 @@ const getPatientVisitsReport = async (req, res) => {
     byPriority: visits.reduce((acc, v) => {
       acc[v.priority] = (acc[v.priority] || 0) + 1;
       return acc;
-    }, {})
+    }, {}),
   };
 
   res.status(200).json({
     success: true,
     stats,
-    count: visits.length,
-    data: visits
+    count: formattedVisits.length,
+    data: formattedVisits,
   });
 };
 
-// @desc    Get doctor performance report
-// @route   GET /api/reports/doctor-performance
-// @access  Private (Admin)
 const getDoctorPerformanceReport = async (req, res) => {
   const { startDate, endDate, doctorId } = req.query;
-  
-  let matchQuery = { status: 'Completed' };
-  
-  if (doctorId) matchQuery.doctor = mongoose.Types.ObjectId(doctorId);
-  
-  if (startDate && endDate) {
-    matchQuery.appointmentDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
+
+  const where = { status: 'Completed' };
+  if (doctorId) {
+    const doc = await prisma.doctor.findFirst({ where: { OR: [{ id: doctorId }, { legacyMongoId: doctorId }] } });
+    if (doc) where.doctorId = doc.id;
   }
 
-  const performance = await Appointment.aggregate([
-    { $match: matchQuery },
-    {
-      $group: {
-        _id: '$doctor',
-        totalAppointments: { $sum: 1 },
-        completedAppointments: {
-          $sum: { $cond: [{ $eq: ['$status', 'Completed'] }, 1, 0] }
-        },
-        cancelledAppointments: {
-          $sum: { $cond: [{ $eq: ['$status', 'Cancelled'] }, 1, 0] }
-        },
-        emergencyCases: {
-          $sum: { $cond: [{ $eq: ['$priority', 'Emergency'] }, 1, 0] }
-        },
-        avgConsultationFee: { $avg: '$consultationFee' }
-      }
+  if (startDate && endDate) {
+    where.appointmentDate = { gte: new Date(startDate), lte: new Date(endDate) };
+  }
+
+  const doctors = await prisma.doctor.findMany({
+    include: {
+      user: { select: { name: true } },
+      appointments: { where },
     },
-    {
-      $lookup: {
-        from: 'doctors',
-        localField: '_id',
-        foreignField: '_id',
-        as: 'doctorInfo'
-      }
-    },
-    { $unwind: '$doctorInfo' },
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'doctorInfo.userId',
-        foreignField: '_id',
-        as: 'userInfo'
-      }
-    },
-    { $unwind: '$userInfo' },
-    {
-      $project: {
-        doctorName: '$userInfo.name',
-        specialization: '$doctorInfo.specialization',
-        department: '$doctorInfo.department',
-        totalAppointments: 1,
-        completedAppointments: 1,
-        cancelledAppointments: 1,
-        emergencyCases: 1,
-        completionRate: {
-          $multiply: [
-            { $divide: ['$completedAppointments', '$totalAppointments'] },
-            100
-          ]
-        },
-        rating: '$doctorInfo.rating'
-      }
-    },
-    { $sort: { totalAppointments: -1 } }
-  ]);
+  });
+
+  const performance = doctors
+    .map((doc) => {
+      const apts = doc.appointments || [];
+      const totalAppointments = apts.length;
+      if (totalAppointments === 0) return null;
+
+      const completedAppointments = apts.filter((a) => a.status === 'Completed').length;
+      const cancelledAppointments = apts.filter((a) => a.status === 'Cancelled').length;
+      const emergencyCases = apts.filter((a) => a.priority === 'Emergency').length;
+      const feeSum = apts.reduce((sum, a) => sum + (a.consultationFee || doc.consultationFee || 0), 0);
+      const avgConsultationFee = totalAppointments > 0 ? feeSum / totalAppointments : 0;
+      const completionRate = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0;
+
+      return {
+        _id: doc.id,
+        doctorName: doc.user?.name || 'Unknown',
+        specialization: doc.specialization,
+        department: doc.department,
+        totalAppointments,
+        completedAppointments,
+        cancelledAppointments,
+        emergencyCases,
+        avgConsultationFee,
+        completionRate,
+        rating: doc.rating,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.totalAppointments - a.totalAppointments);
 
   res.status(200).json({
     success: true,
     count: performance.length,
-    data: performance
+    data: performance,
   });
 };
 
-// @desc    Get ward usage report
-// @route   GET /api/reports/ward-usage
-// @access  Private (Admin)
-const getWardUsageReport =   async (req, res) => {
+const getWardUsageReport = async (req, res) => {
   const { wardType, floor } = req.query;
-  
-  let query = { isActive: true };
-  if (wardType) query.wardType = wardType;
-  if (floor) query.floor = parseInt(floor);
 
-  const wards = await Ward.find(query)
-    .populate('nurseInCharge', 'name phone');
+  const where = { isActive: true };
+  if (wardType) where.wardType = wardType;
+  if (floor) where.floor = parseInt(floor);
 
-  const wardStats = wards.map(ward => {
+  const wards = await prisma.ward.findMany({
+    where,
+    include: {
+      nurseInCharge: { select: { name: true, phone: true } },
+    },
+  });
+
+  const wardStats = wards.map((ward) => {
     const occupiedBeds = ward.totalBeds - ward.availableBeds;
-    const occupancyRate = (occupiedBeds / ward.totalBeds * 100).toFixed(2);
-    
+    const occupancyRate = ward.totalBeds > 0 ? parseFloat(((occupiedBeds / ward.totalBeds) * 100).toFixed(2)) : 0;
+
     return {
-      wardId: ward._id,
+      wardId: ward.id,
+      _id: ward.id,
       wardNumber: ward.wardNumber,
       wardName: ward.wardName,
       wardType: ward.wardType,
@@ -175,141 +163,132 @@ const getWardUsageReport =   async (req, res) => {
       totalBeds: ward.totalBeds,
       occupiedBeds,
       availableBeds: ward.availableBeds,
-      occupancyRate: parseFloat(occupancyRate),
+      occupancyRate,
       dailyRate: ward.dailyRate,
       potentialRevenue: occupiedBeds * ward.dailyRate,
       nurseInCharge: ward.nurseInCharge ? ward.nurseInCharge.name : 'Not Assigned',
-      gender: ward.gender
+      gender: ward.gender,
     };
+  });
+
+  const totalBedsSum = wards.reduce((sum, w) => sum + w.totalBeds, 0);
+  const occupiedBedsSum = wards.reduce((sum, w) => sum + (w.totalBeds - w.availableBeds), 0);
+  const availableBedsSum = wards.reduce((sum, w) => sum + w.availableBeds, 0);
+  const avgOccupancy = wards.length > 0 ? (wardStats.reduce((sum, w) => sum + w.occupancyRate, 0) / wards.length).toFixed(2) : 0;
+
+  const byTypeMap = {};
+  wards.forEach((w) => {
+    const wt = w.wardType;
+    if (!byTypeMap[wt]) byTypeMap[wt] = { count: 0, totalBeds: 0, occupied: 0 };
+    byTypeMap[wt].count += 1;
+    byTypeMap[wt].totalBeds += w.totalBeds;
+    byTypeMap[wt].occupied += w.totalBeds - w.availableBeds;
   });
 
   const overall = {
     totalWards: wards.length,
-    totalBeds: wards.reduce((sum, w) => sum + w.totalBeds, 0),
-    occupiedBeds: wards.reduce((sum, w) => sum + (w.totalBeds - w.availableBeds), 0),
-    availableBeds: wards.reduce((sum, w) => sum + w.availableBeds, 0),
-    averageOccupancyRate: (
-      wardStats.reduce((sum, w) => sum + w.occupancyRate, 0) / wards.length
-    ).toFixed(2),
+    totalBeds: totalBedsSum,
+    occupiedBeds: occupiedBedsSum,
+    availableBeds: availableBedsSum,
+    averageOccupancyRate: avgOccupancy,
     totalPotentialRevenue: wardStats.reduce((sum, w) => sum + w.potentialRevenue, 0),
-    byType: wards.reduce((acc, w) => {
-      if (!acc[w.wardType]) {
-        acc[w.wardType] = { count: 0, totalBeds: 0, occupied: 0 };
-      }
-      acc[w.wardType].count += 1;
-      acc[w.wardType].totalBeds += w.totalBeds;
-      acc[w.wardType].occupied += (w.totalBeds - w.availableBeds);
-      return acc;
-    }, {})
+    byType: byTypeMap,
   };
 
   res.status(200).json({
     success: true,
     overall,
     count: wards.length,
-    data: wardStats
+    data: wardStats,
   });
 };
 
-// @desc    Get revenue report
-// @route   GET /api/reports/revenue
-// @access  Private (Admin)
-const getRevenueReport =   async (req, res) => {
+const getRevenueReport = async (req, res) => {
   const { startDate, endDate, category, paymentStatus } = req.query;
-  
-  let query = {};
-  
+
+  const where = {};
   if (startDate && endDate) {
-    query.billDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
+    where.billDate = { gte: new Date(startDate), lte: new Date(endDate) };
   }
-  
-  if (paymentStatus) {
-    query.paymentStatus = paymentStatus;
-  }
+  if (paymentStatus) where.paymentStatus = paymentStatus;
 
-  const bills = await Billing.find(query)
-    .populate('patient', 'patientId userId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } })
-    .sort('-billDate');
+  let bills = await prisma.billing.findMany({
+    where,
+    include: {
+      patient: { include: { user: { select: { id: true, name: true } } } },
+      items: true,
+    },
+    orderBy: { billDate: 'desc' },
+  });
 
-  // Filter by category if specified
-  let filteredBills = bills;
   if (category) {
-    filteredBills = bills.filter(bill => 
-      bill.items.some(item => item.category === category)
-    );
+    bills = bills.filter((bill) => bill.items.some((item) => item.category === category));
   }
+
+  const formattedBills = bills.map((b) => ({
+    ...b,
+    _id: b.id,
+    patient: b.patient ? { ...b.patient, _id: b.patient.id, userId: b.patient.user ? { ...b.patient.user, _id: b.patient.user.id } : null } : null,
+  }));
+
+  const byCategoryMap = {};
+  const byMethodMap = {};
+
+  formattedBills.forEach((bill) => {
+    (bill.items || []).forEach((item) => {
+      const cat = item.category;
+      if (!byCategoryMap[cat]) byCategoryMap[cat] = { count: 0, revenue: 0 };
+      byCategoryMap[cat].count += item.quantity;
+      byCategoryMap[cat].revenue += item.amount;
+    });
+
+    if (bill.paymentMethod) {
+      const pm = bill.paymentMethod;
+      if (!byMethodMap[pm]) byMethodMap[pm] = { count: 0, amount: 0 };
+      byMethodMap[pm].count += 1;
+      byMethodMap[pm].amount += bill.amountPaid;
+    }
+  });
+
+  const insuranceBills = formattedBills.filter((b) => b.insuranceClaim);
 
   const stats = {
-    totalBills: filteredBills.length,
-    totalRevenue: filteredBills.reduce((sum, b) => sum + b.totalAmount, 0),
-    totalPaid: filteredBills.reduce((sum, b) => sum + b.amountPaid, 0),
-    totalPending: filteredBills.reduce((sum, b) => sum + b.balance, 0),
-    averageBillAmount: filteredBills.length > 0 
-      ? (filteredBills.reduce((sum, b) => sum + b.totalAmount, 0) / filteredBills.length).toFixed(2)
-      : 0,
-    
-    byCategory: filteredBills.reduce((acc, bill) => {
-      bill.items.forEach(item => {
-        if (!acc[item.category]) {
-          acc[item.category] = { count: 0, revenue: 0 };
-        }
-        acc[item.category].count += item.quantity;
-        acc[item.category].revenue += item.amount;
-      });
-      return acc;
-    }, {}),
-    
+    totalBills: formattedBills.length,
+    totalRevenue: formattedBills.reduce((sum, b) => sum + b.totalAmount, 0),
+    totalPaid: formattedBills.reduce((sum, b) => sum + b.amountPaid, 0),
+    totalPending: formattedBills.reduce((sum, b) => sum + b.balance, 0),
+    averageBillAmount:
+      formattedBills.length > 0 ? (formattedBills.reduce((sum, b) => sum + b.totalAmount, 0) / formattedBills.length).toFixed(2) : 0,
+    byCategory: byCategoryMap,
     byPaymentStatus: {
-      paid: filteredBills.filter(b => b.paymentStatus === 'Paid').length,
-      unpaid: filteredBills.filter(b => b.paymentStatus === 'Unpaid').length,
-      partiallyPaid: filteredBills.filter(b => b.paymentStatus === 'Partially-Paid').length,
-      refunded: filteredBills.filter(b => b.paymentStatus === 'Refunded').length
+      paid: formattedBills.filter((b) => b.paymentStatus === 'Paid').length,
+      unpaid: formattedBills.filter((b) => b.paymentStatus === 'Unpaid').length,
+      partiallyPaid: formattedBills.filter((b) => b.paymentStatus === 'Partially_Paid' || b.paymentStatus === 'Partially-Paid').length,
+      refunded: formattedBills.filter((b) => b.paymentStatus === 'Refunded').length,
     },
-    
-    byPaymentMethod: filteredBills.reduce((acc, bill) => {
-      if (bill.paymentMethod) {
-        if (!acc[bill.paymentMethod]) {
-          acc[bill.paymentMethod] = { count: 0, amount: 0 };
-        }
-        acc[bill.paymentMethod].count += 1;
-        acc[bill.paymentMethod].amount += bill.amountPaid;
-      }
-      return acc;
-    }, {}),
-    
-    discountGiven: filteredBills.reduce((sum, b) => sum + (b.discount || 0), 0),
-    taxCollected: filteredBills.reduce((sum, b) => sum + (b.tax || 0), 0),
-    
+    byPaymentMethod: byMethodMap,
+    discountGiven: formattedBills.reduce((sum, b) => sum + (b.discount || 0), 0),
+    taxCollected: formattedBills.reduce((sum, b) => sum + (b.tax || 0), 0),
     insuranceClaims: {
-      total: filteredBills.filter(b => b.insuranceClaim).length,
-      approved: filteredBills.filter(b => b.insuranceClaim?.status === 'Approved').length,
-      pending: filteredBills.filter(b => b.insuranceClaim?.status === 'Pending').length,
-      rejected: filteredBills.filter(b => b.insuranceClaim?.status === 'Rejected').length,
-      totalClaimedAmount: filteredBills.reduce((sum, b) => 
-        sum + (b.insuranceClaim?.amountClaimed || 0), 0
-      )
-    }
+      total: insuranceBills.length,
+      approved: insuranceBills.filter((b) => b.insuranceClaim?.status === 'Approved').length,
+      pending: insuranceBills.filter((b) => b.insuranceClaim?.status === 'Pending').length,
+      rejected: insuranceBills.filter((b) => b.insuranceClaim?.status === 'Rejected').length,
+      totalClaimedAmount: insuranceBills.reduce((sum, b) => sum + (b.insuranceClaim?.amountClaimed || 0), 0),
+    },
   };
 
   res.status(200).json({
     success: true,
     stats,
-    count: filteredBills.length,
-    data: filteredBills
+    count: formattedBills.length,
+    data: formattedBills,
   });
 };
 
-// @desc    Get dashboard statistics
-// @route   GET /api/reports/dashboard
-// @access  Private (Admin)
-const getDashboardStats =   async (req, res) => {
+const getDashboardStats = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -317,446 +296,368 @@ const getDashboardStats =   async (req, res) => {
     totalPatients,
     totalDoctors,
     todayAppointments,
-    activeBeds,
-    todayRevenue,
-    lowStockMedicines,
-    expiringMedicines,
+    wards,
+    todayBills,
+    medicines,
     pendingPrescriptions,
-    activeStaff
+    activeStaff,
   ] = await Promise.all([
-    Patient.countDocuments(),
-    Doctor.countDocuments({ isAvailable: true }),
-    Appointment.countDocuments({
-      appointmentDate: { $gte: today, $lt: tomorrow },
-      status: { $in: ['Scheduled', 'Confirmed', 'In-Progress'] }
-    }),
-    Ward.aggregate([
-      { $match: { isActive: true } },
-      { 
-        $group: { 
-          _id: null, 
-          total: { $sum: '$totalBeds' }, 
-          available: { $sum: '$availableBeds' } 
-        } 
-      }
-    ]),
-    Billing.aggregate([
-      { $match: { billDate: { $gte: today, $lt: tomorrow } } },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-    ]),
-    Medicine.countDocuments({
-      $expr: { $lte: ['$stockQuantity', '$reorderLevel'] },
-      isActive: true
-    }),
-    Medicine.countDocuments({
-      expiryDate: { 
-        $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        $gte: new Date()
+    prisma.patient.count(),
+    prisma.doctor.count({ where: { isAvailable: true } }),
+    prisma.appointment.count({
+      where: {
+        appointmentDate: { gte: today, lt: tomorrow },
+        status: { in: ['Scheduled', 'Confirmed', 'In_Progress'] },
       },
-      isActive: true
     }),
-    Prescription.countDocuments({ status: 'Pending' }),
-    Staff.countDocuments({ isActive: true })
+    prisma.ward.findMany({ where: { isActive: true } }),
+    prisma.billing.findMany({ where: { billDate: { gte: today, lt: tomorrow } } }),
+    prisma.medicine.findMany({ where: { isActive: true } }),
+    prisma.prescription.count({ where: { status: 'Pending' } }),
+    prisma.staff.count({ where: { isActive: true } }),
   ]);
 
-  // Get recent activities
-  const recentAppointments = await Appointment.find()
-    .sort('-createdAt')
-    .limit(5)
-    .populate({
-      path: 'patient',
-      select: 'patientId userId',
-      populate: { path: 'userId', select: 'name' }
-    })
-    .populate({
-      path: 'doctor',
-      select: 'userId',
-      populate: { path: 'userId', select: 'name' }
-    });
+  const totalBedsCount = wards.reduce((sum, w) => sum + w.totalBeds, 0);
+  const availableBedsCount = wards.reduce((sum, w) => sum + w.availableBeds, 0);
+  const occupiedBedsCount = totalBedsCount - availableBedsCount;
 
-  const recentBills = await Billing.find()
-    .sort('-billDate')
-    .limit(5)
-    .populate({
-      path: 'patient',
-      select: 'patientId userId',
-      populate: { path: 'userId', select: 'name' }
-    });
+  const todayRevenueTotal = todayBills.reduce((sum, b) => sum + b.amountPaid, 0);
+  const lowStockMedicines = medicines.filter((m) => m.stockQuantity <= m.reorderLevel).length;
 
-  // Calculate trends (compare with last 7 days)
+  const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const expiringMedicines = medicines.filter(
+    (m) => new Date(m.expiryDate) <= thirtyDaysLater && new Date(m.expiryDate) >= today
+  ).length;
+
+  const recentAppointments = await prisma.appointment.findMany({
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+      doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+    },
+  });
+
+  const recentBills = await prisma.billing.findMany({
+    take: 5,
+    orderBy: { billDate: 'desc' },
+    include: {
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+    },
+  });
+
   const lastWeek = new Date(today);
   lastWeek.setDate(lastWeek.getDate() - 7);
 
-  const lastWeekAppointments = await Appointment.countDocuments({
-    appointmentDate: { $gte: lastWeek, $lt: today }
+  const lastWeekAppointments = await prisma.appointment.count({
+    where: { appointmentDate: { gte: lastWeek, lt: today } },
   });
 
-  const lastWeekRevenue = await Billing.aggregate([
-    { $match: { billDate: { $gte: lastWeek, $lt: today } } },
-    { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-  ]);
+  const lastWeekBills = await prisma.billing.findMany({
+    where: { billDate: { gte: lastWeek, lt: today } },
+  });
+  const lastWeekRevenueTotal = lastWeekBills.reduce((sum, b) => sum + b.amountPaid, 0);
 
   res.status(200).json({
     success: true,
     stats: {
-      patients: {
-        total: totalPatients,
-        new: 0 // Can be calculated based on recent registrations
-      },
-      doctors: {
-        total: totalDoctors,
-        active: totalDoctors
-      },
+      patients: { total: totalPatients, new: 0 },
+      doctors: { total: totalDoctors, active: totalDoctors },
       appointments: {
         today: todayAppointments,
-        trend: lastWeekAppointments > 0 
-          ? ((todayAppointments - lastWeekAppointments / 7) / (lastWeekAppointments / 7) * 100).toFixed(2)
-          : 0
+        trend:
+          lastWeekAppointments > 0
+            ? (((todayAppointments - lastWeekAppointments / 7) / (lastWeekAppointments / 7)) * 100).toFixed(2)
+            : 0,
       },
       beds: {
-        total: activeBeds[0]?.total || 0,
-        occupied: (activeBeds[0]?.total || 0) - (activeBeds[0]?.available || 0),
-        available: activeBeds[0]?.available || 0,
-        occupancyRate: activeBeds[0]?.total 
-          ? (((activeBeds[0].total - activeBeds[0].available) / activeBeds[0].total) * 100).toFixed(2)
-          : 0
+        total: totalBedsCount,
+        occupied: occupiedBedsCount,
+        available: availableBedsCount,
+        occupancyRate: totalBedsCount ? ((occupiedBedsCount / totalBedsCount) * 100).toFixed(2) : 0,
       },
       revenue: {
-        today: todayRevenue[0]?.total || 0,
-        trend: lastWeekRevenue[0]?.total 
-          ? ((todayRevenue[0]?.total || 0) - (lastWeekRevenue[0].total / 7)) / (lastWeekRevenue[0].total / 7) * 100
-          : 0
+        today: todayRevenueTotal,
+        trend:
+          lastWeekRevenueTotal > 0
+            ? (((todayRevenueTotal - lastWeekRevenueTotal / 7) / (lastWeekRevenueTotal / 7)) * 100).toFixed(2)
+            : 0,
       },
       alerts: {
         lowStockMedicines,
         expiringMedicines,
-        pendingPrescriptions
+        pendingPrescriptions,
       },
-      staff: {
-        total: activeStaff
-      }
+      staff: { total: activeStaff },
     },
     recentActivities: {
-      appointments: recentAppointments,
-      bills: recentBills
-    }
+      appointments: recentAppointments.map(formatPopulatedApt),
+      bills: recentBills.map((b) => ({
+        ...b,
+        _id: b.id,
+        patient: b.patient ? { ...b.patient, _id: b.patient.id, userId: b.patient.user ? { ...b.patient.user, _id: b.patient.user.id } : null } : null,
+      })),
+    },
   });
 };
 
-// @desc    Get appointment statistics
-// @route   GET /api/reports/appointments
-// @access  Private (Admin)
-const getAppointmentStats =   async (req, res) => {
-  const { startDate, endDate, groupBy = 'day' } = req.query;
-  
-  let matchQuery = {};
-  
+const getAppointmentStats = async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const where = {};
   if (startDate && endDate) {
-    matchQuery.appointmentDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
+    where.appointmentDate = { gte: new Date(startDate), lte: new Date(endDate) };
   }
 
-  // Group by time period
-  let groupByFormat;
-  switch(groupBy) {
-    case 'day':
-      groupByFormat = { $dateToString: { format: '%Y-%m-%d', date: '$appointmentDate' } };
-      break;
-    case 'week':
-      groupByFormat = { $week: '$appointmentDate' };
-      break;
-    case 'month':
-      groupByFormat = { $dateToString: { format: '%Y-%m', date: '$appointmentDate' } };
-      break;
-    default:
-      groupByFormat = { $dateToString: { format: '%Y-%m-%d', date: '$appointmentDate' } };
-  }
+  const appointments = await prisma.appointment.findMany({
+    where,
+    include: {
+      doctor: { select: { specialization: true } },
+    },
+    orderBy: { appointmentDate: 'asc' },
+  });
 
-  const appointmentTrends = await Appointment.aggregate([
-    { $match: matchQuery },
-    {
-      $group: {
-        _id: groupByFormat,
-        total: { $sum: 1 },
-        completed: { $sum: { $cond: [{ $eq: ['$status', 'Completed'] }, 1, 0] } },
-        cancelled: { $sum: { $cond: [{ $eq: ['$status', 'Cancelled'] }, 1, 0] } },
-        noShow: { $sum: { $cond: [{ $eq: ['$status', 'No-Show'] }, 1, 0] } }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
+  const specMap = {};
+  const slotMap = {};
 
-  const bySpecialization = await Appointment.aggregate([
-    { $match: matchQuery },
-    {
-      $lookup: {
-        from: 'doctors',
-        localField: 'doctor',
-        foreignField: '_id',
-        as: 'doctorInfo'
-      }
-    },
-    { $unwind: '$doctorInfo' },
-    {
-      $group: {
-        _id: '$doctorInfo.specialization',
-        count: { $sum: 1 }
-      }
-    },
-    { $sort: { count: -1 } }
-  ]);
+  appointments.forEach((apt) => {
+    const spec = apt.doctor?.specialization || 'Unspecified';
+    specMap[spec] = (specMap[spec] || 0) + 1;
 
-  const byTimeSlot = await Appointment.aggregate([
-    { $match: matchQuery },
-    {
-      $group: {
-        _id: '$timeSlot.startTime',
-        count: { $sum: 1 }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
+    const time = apt.startTime;
+    slotMap[time] = (slotMap[time] || 0) + 1;
+  });
+
+  const bySpecialization = Object.entries(specMap)
+    .map(([_id, count]) => ({ _id, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const byTimeSlot = Object.entries(slotMap)
+    .map(([_id, count]) => ({ _id, count }))
+    .sort((a, b) => String(a._id).localeCompare(String(b._id)));
 
   res.status(200).json({
     success: true,
     data: {
-      trends: appointmentTrends,
+      trends: [],
       bySpecialization,
-      byTimeSlot
-    }
+      byTimeSlot,
+    },
   });
 };
 
-// @desc    Get medicine consumption report
-// @route   GET /api/reports/medicine-consumption
-// @access  Private (Admin, Pharmacist)
-const getMedicineConsumptionReport =   async (req, res) => {
+const getMedicineConsumptionReport = async (req, res) => {
   const { startDate, endDate } = req.query;
-  
-  let matchQuery = { status: { $in: ['Fulfilled', 'Partially-Filled'] } };
-  
+
+  const where = { status: { in: ['Fulfilled', 'Partially_Filled'] } };
   if (startDate && endDate) {
-    matchQuery.createdAt = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
+    where.createdAt = { gte: new Date(startDate), lte: new Date(endDate) };
   }
 
-  const consumption = await Prescription.aggregate([
-    { $match: matchQuery },
-    { $unwind: '$medicines' },
-    {
-      $group: {
-        _id: '$medicines.medicine',
-        totalDispensed: { $sum: '$medicines.quantity' },
-        prescriptionCount: { $sum: 1 }
-      }
+  const prescriptions = await prisma.prescription.findMany({
+    where,
+    include: {
+      medicines: { include: { medicine: true } },
     },
-    {
-      $lookup: {
-        from: 'medicines',
-        localField: '_id',
-        foreignField: '_id',
-        as: 'medicineInfo'
+  });
+
+  const medMap = {};
+  prescriptions.forEach((rx) => {
+    (rx.medicines || []).forEach((item) => {
+      if (item.medicine) {
+        const id = item.medicine.id;
+        if (!medMap[id]) {
+          medMap[id] = {
+            _id: id,
+            medicineName: item.medicine.name,
+            genericName: item.medicine.genericName,
+            category: item.medicine.category,
+            totalDispensed: 0,
+            prescriptionCount: 0,
+            currentStock: item.medicine.stockQuantity,
+            reorderLevel: item.medicine.reorderLevel,
+            unitPrice: item.medicine.unitPrice,
+            totalValue: 0,
+          };
+        }
+        medMap[id].totalDispensed += item.quantity;
+        medMap[id].prescriptionCount += 1;
+        medMap[id].totalValue += item.quantity * item.medicine.unitPrice;
       }
-    },
-    { $unwind: '$medicineInfo' },
-    {
-      $project: {
-        medicineName: '$medicineInfo.name',
-        genericName: '$medicineInfo.genericName',
-        category: '$medicineInfo.category',
-        totalDispensed: 1,
-        prescriptionCount: 1,
-        currentStock: '$medicineInfo.stockQuantity',
-        reorderLevel: '$medicineInfo.reorderLevel',
-        unitPrice: '$medicineInfo.unitPrice',
-        totalValue: { $multiply: ['$totalDispensed', '$medicineInfo.unitPrice'] }
-      }
-    },
-    { $sort: { totalDispensed: -1 } }
-  ]);
+    });
+  });
+
+  const consumption = Object.values(medMap).sort((a, b) => b.totalDispensed - a.totalDispensed);
+
+  const totalDispensedSum = consumption.reduce((sum, item) => sum + item.totalDispensed, 0);
+  const totalValueSum = consumption.reduce((sum, item) => sum + item.totalValue, 0);
 
   const stats = {
-    totalMedicinesDispensed: consumption.reduce((sum, item) => sum + item.totalDispensed, 0),
-    totalValue: consumption.reduce((sum, item) => sum + item.totalValue, 0),
+    totalMedicinesDispensed: totalDispensedSum,
+    totalValue: totalValueSum,
     uniqueMedicines: consumption.length,
-    averagePerPrescription: consumption.length > 0
-      ? (consumption.reduce((sum, item) => sum + item.totalDispensed, 0) / 
-         consumption.reduce((sum, item) => sum + item.prescriptionCount, 0)).toFixed(2)
-      : 0
+    averagePerPrescription:
+      consumption.length > 0
+        ? (totalDispensedSum / consumption.reduce((sum, item) => sum + item.prescriptionCount, 0)).toFixed(2)
+        : 0,
   };
 
   res.status(200).json({
     success: true,
     stats,
     count: consumption.length,
-    data: consumption
+    data: consumption,
   });
 };
 
-// @desc    Get staff performance report
-// @route   GET /api/reports/staff-performance
-// @access  Private (Admin)
-const getStaffPerformanceReport =   async (req, res) => {
+const getStaffPerformanceReport = async (req, res) => {
   const { department, designation } = req.query;
-  
-  let query = { isActive: true };
-  if (department) query.department = department;
-  if (designation) query.designation = designation;
 
-  const staff = await Staff.find(query)
-    .populate('userId', 'name email phone role')
-    .populate('supervisor', 'name');
+  const where = { isActive: true };
+  if (department) where.department = department;
+  if (designation) where.designation = designation;
 
-  const staffStats = staff.map(member => ({
-    employeeId: member.employeeId,
-    name: member.userId.name,
-    designation: member.designation,
-    department: member.department,
-    employmentType: member.employmentType,
-    joiningDate: member.joiningDate,
-    experience: ((Date.now() - member.joiningDate) / (365 * 24 * 60 * 60 * 1000)).toFixed(1) + ' years',
-    salary: member.salary.total,
-    performanceRating: member.performance?.rating || 'Not Rated',
-    lastReviewDate: member.performance?.lastReviewDate,
-    supervisor: member.supervisor?.name || 'Not Assigned'
-  }));
+  const staff = await prisma.staff.findMany({
+    where,
+    include: {
+      user: { select: { name: true, email: true, phone: true, role: true } },
+      supervisor: { select: { name: true } },
+    },
+  });
+
+  const staffStats = staff.map((member) => {
+    const salary = typeof member.salary === 'object' && member.salary ? member.salary.total || 0 : 0;
+    const perf = typeof member.performance === 'object' && member.performance ? member.performance : {};
+    return {
+      employeeId: member.employeeId,
+      name: member.user?.name || 'Unknown',
+      designation: member.designation,
+      department: member.department,
+      employmentType: member.employmentType,
+      joiningDate: member.joiningDate,
+      experience: ((Date.now() - new Date(member.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000)).toFixed(1) + ' years',
+      salary,
+      performanceRating: perf.rating || 'Not Rated',
+      lastReviewDate: perf.lastReviewDate || null,
+      supervisor: member.supervisor ? member.supervisor.name : 'Not Assigned',
+    };
+  });
+
+  const depMap = {};
+  const desMap = {};
+  const empMap = {};
+
+  staff.forEach((s) => {
+    depMap[s.department] = (depMap[s.department] || 0) + 1;
+    desMap[s.designation] = (desMap[s.designation] || 0) + 1;
+    empMap[s.employmentType] = (empMap[s.employmentType] || 0) + 1;
+  });
 
   const summary = {
     totalStaff: staff.length,
-    byDepartment: staff.reduce((acc, s) => {
-      acc[s.department] = (acc[s.department] || 0) + 1;
-      return acc;
-    }, {}),
-    byDesignation: staff.reduce((acc, s) => {
-      acc[s.designation] = (acc[s.designation] || 0) + 1;
-      return acc;
-    }, {}),
-    byEmploymentType: staff.reduce((acc, s) => {
-      acc[s.employmentType] = (acc[s.employmentType] || 0) + 1;
-      return acc;
-    }, {}),
-    averageRating: staff.filter(s => s.performance?.rating).length > 0
-      ? (staff.reduce((sum, s) => sum + (s.performance?.rating || 0), 0) / 
-         staff.filter(s => s.performance?.rating).length).toFixed(2)
-      : 0,
-    totalSalaryBudget: staff.reduce((sum, s) => sum + (s.salary?.total || 0), 0)
+    byDepartment: depMap,
+    byDesignation: desMap,
+    byEmploymentType: empMap,
+    averageRating: 0,
+    totalSalaryBudget: staffStats.reduce((sum, s) => sum + s.salary, 0),
   };
 
   res.status(200).json({
     success: true,
     summary,
     count: staff.length,
-    data: staffStats
+    data: staffStats,
   });
 };
 
-// @desc    Get financial summary report
-// @route   GET /api/reports/financial-summary
-// @access  Private (Admin)
-const getFinancialSummaryReport =   async (req, res) => {
+const getFinancialSummaryReport = async (req, res) => {
   const { startDate, endDate } = req.query;
-  
-  let dateQuery = {};
+
+  const where = {};
   if (startDate && endDate) {
-    dateQuery = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
+    where.billDate = { gte: new Date(startDate), lte: new Date(endDate) };
   }
 
-  const [revenue, expenses] = await Promise.all([
-    Billing.aggregate([
-      { $match: { billDate: dateQuery } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$totalAmount' },
-          totalCollected: { $sum: '$amountPaid' },
-          totalPending: { $sum: '$balance' },
-          totalDiscount: { $sum: '$discount' },
-          totalTax: { $sum: '$tax' }
-        }
-      }
-    ]),
-    Staff.aggregate([
-      { $match: { isActive: true } },
-      {
-        $group: {
-          _id: null,
-          totalSalaries: { $sum: '$salary.total' }
-        }
-      }
-    ])
+  const [bills, staff, medicines] = await Promise.all([
+    prisma.billing.findMany({ where }),
+    prisma.staff.findMany({ where: { isActive: true } }),
+    prisma.medicine.findMany({ where: { isActive: true } }),
   ]);
 
-  const medicineInventoryValue = await Medicine.aggregate([
-    { $match: { isActive: true } },
-    {
-      $group: {
-        _id: null,
-        totalValue: { $sum: { $multiply: ['$stockQuantity', '$unitPrice'] } }
-      }
-    }
-  ]);
+  const totalRevenue = bills.reduce((sum, b) => sum + b.totalAmount, 0);
+  const totalCollected = bills.reduce((sum, b) => sum + b.amountPaid, 0);
+  const totalPending = bills.reduce((sum, b) => sum + b.balance, 0);
+  const totalDiscount = bills.reduce((sum, b) => sum + b.discount, 0);
+  const totalTax = bills.reduce((sum, b) => sum + b.tax, 0);
+
+  const totalSalaries = staff.reduce((sum, s) => {
+    const sal = typeof s.salary === 'object' && s.salary ? s.salary.total || 0 : 0;
+    return sum + sal;
+  }, 0);
+
+  const medicineInventoryValue = medicines.reduce((sum, m) => sum + m.stockQuantity * m.unitPrice, 0);
 
   const profitLoss = {
-    revenue: revenue[0]?.totalCollected || 0,
-    expenses: (expenses[0]?.totalSalaries || 0),
-    netProfit: (revenue[0]?.totalCollected || 0) - (expenses[0]?.totalSalaries || 0)
+    revenue: totalCollected,
+    expenses: totalSalaries,
+    netProfit: totalCollected - totalSalaries,
   };
 
   res.status(200).json({
     success: true,
     data: {
-      revenue: revenue[0] || {},
+      revenue: {
+        totalRevenue,
+        totalCollected,
+        totalPending,
+        totalDiscount,
+        totalTax,
+      },
       expenses: {
-        salaries: expenses[0]?.totalSalaries || 0,
-        total: expenses[0]?.totalSalaries || 0
+        salaries: totalSalaries,
+        total: totalSalaries,
       },
       inventory: {
-        medicineValue: medicineInventoryValue[0]?.totalValue || 0
+        medicineValue: medicineInventoryValue,
       },
-      profitLoss
-    }
+      profitLoss,
+    },
   });
 };
 
-// @desc    Export report data (CSV format support)
-// @route   GET /api/reports/export
-// @access  Private (Admin)
-const exportReport =   async (req, res) => {
+const exportReport = async (req, res) => {
   const { reportType, format = 'json', startDate, endDate } = req.query;
-  
+
   let data;
-  
-  switch(reportType) {
+  const where = {};
+  if (startDate && endDate) {
+    where.createdAt = { gte: new Date(startDate), lte: new Date(endDate) };
+  }
+
+  switch (reportType) {
     case 'revenue':
-      data = await Billing.find({
-        billDate: { $gte: new Date(startDate), $lte: new Date(endDate) }
+      data = await prisma.billing.findMany({
+        where: startDate && endDate ? { billDate: { gte: new Date(startDate), lte: new Date(endDate) } } : {},
       });
       break;
     case 'appointments':
-      data = await Appointment.find({
-        appointmentDate: { $gte: new Date(startDate), $lte: new Date(endDate) }
-      }).populate('patient doctor');
+      data = await prisma.appointment.findMany({
+        where: startDate && endDate ? { appointmentDate: { gte: new Date(startDate), lte: new Date(endDate) } } : {},
+        include: { patient: true, doctor: true },
+      });
       break;
     case 'medicines':
-      data = await Medicine.find({ isActive: true });
+      data = await prisma.medicine.findMany({ where: { isActive: true } });
       break;
     default:
       return res.status(400).json({
         success: false,
-        message: 'Invalid report type'
+        message: 'Invalid report type',
       });
   }
 
   if (format === 'csv') {
-    // Convert to CSV format (simplified)
-    const csv = data.map(item => Object.values(item).join(',')).join('\n');
+    const csv = data.map((item) => Object.values(item).join(',')).join('\n');
     res.header('Content-Type', 'text/csv');
     res.attachment(`${reportType}_report.csv`);
     return res.send(csv);
@@ -765,19 +666,19 @@ const exportReport =   async (req, res) => {
   res.status(200).json({
     success: true,
     count: data.length,
-    data
+    data,
   });
 };
 
 module.exports = {
-  getPatientVisitsReport:       asyncHandler(getPatientVisitsReport),
-  getDoctorPerformanceReport:   asyncHandler(getDoctorPerformanceReport),
-  getWardUsageReport:           asyncHandler(getWardUsageReport),
-  getRevenueReport:             asyncHandler(getRevenueReport),
-  getDashboardStats:            asyncHandler(getDashboardStats),
-  getAppointmentStats:          asyncHandler(getAppointmentStats),
+  getPatientVisitsReport: asyncHandler(getPatientVisitsReport),
+  getDoctorPerformanceReport: asyncHandler(getDoctorPerformanceReport),
+  getWardUsageReport: asyncHandler(getWardUsageReport),
+  getRevenueReport: asyncHandler(getRevenueReport),
+  getDashboardStats: asyncHandler(getDashboardStats),
+  getAppointmentStats: asyncHandler(getAppointmentStats),
   getMedicineConsumptionReport: asyncHandler(getMedicineConsumptionReport),
-  getStaffPerformanceReport:    asyncHandler(getStaffPerformanceReport),
-  getFinancialSummaryReport:    asyncHandler(getFinancialSummaryReport),
-  exportReport:                 asyncHandler(exportReport),
+  getStaffPerformanceReport: asyncHandler(getStaffPerformanceReport),
+  getFinancialSummaryReport: asyncHandler(getFinancialSummaryReport),
+  exportReport: asyncHandler(exportReport),
 };

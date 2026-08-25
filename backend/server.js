@@ -1,12 +1,14 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
+const prisma = require('./config/prisma');
+const { validateEnvironment } = require('./config/env');
+
+validateEnvironment();
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -20,7 +22,7 @@ const billingRoutes = require('./routes/billingRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const aiRoutes        = require('./routes/aiRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,7 +30,11 @@ const PORT = process.env.PORT || 5000;
 // ── CORS ────────────────────────────────────────────────────
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:5173',
   process.env.FRONTEND_URL,
   'https://medilinkfinal-git-main-kanishks-projects-810056d9.vercel.app',
   'https://medilink-oajt.onrender.com',
@@ -37,7 +43,10 @@ const allowedOrigins = [
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
     return callback(new Error('CORS blocked by server'), false);
   },
   credentials: true,
@@ -54,7 +63,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── Security ─────────────────────────────────────────────────
 app.use(helmet());
-app.use(mongoSanitize());
 
 // General API limiter — skip auth routes (they have their own limiter)
 const limiter = rateLimit({
@@ -84,17 +92,16 @@ app.use((req, _res, next) => {
   next();
 });
 
-// ── MongoDB ──────────────────────────────────────────────────
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => logger.info('MongoDB connected successfully'))
+// ── PostgreSQL / Prisma Connection Check ─────────────────────
+prisma
+  .$connect()
+  .then(() => logger.info('PostgreSQL connected successfully via Prisma'))
   .catch((err) => {
-    logger.error('MongoDB connection error:', err.message);
-    process.exit(1);
+    logger.error('PostgreSQL connection error:', err.message);
   });
 
 // ── Static uploads ──────────────────────────────────────────
-app.use('/uploads', require('express').static(require('path').join(__dirname, 'uploads')));
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
 // ── API Routes ───────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -108,15 +115,19 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboards', dashboardRoutes);
-app.use('/api/ai',        aiRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ── Health & Root ────────────────────────────────────────────
-app.get('/', (_req, res) =>
-  res.status(200).json({ message: 'MediLink API is running', health: '/health' })
-);
-app.get('/health', (_req, res) =>
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
-);
+app.get('/', (_req, res) => res.status(200).json({ message: 'MediLink API is running', health: '/health' }));
+app.get('/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return res.status(200).json({ status: 'ok', database: 'PostgreSQL', timestamp: new Date().toISOString() });
+  } catch (error) {
+    logger.error(`Health check failed: ${error.message}`);
+    return res.status(503).json({ status: 'unavailable', database: 'PostgreSQL', timestamp: new Date().toISOString() });
+  }
+});
 
 // ── 404 Handler (before error handler) ──────────────────────
 app.use((req, res) => {
@@ -132,10 +143,36 @@ const server = app.listen(PORT, () => {
 });
 
 // ── Graceful shutdown ────────────────────────────────────────
+let shuttingDown = false;
+
+const shutdown = (exitCode, signal) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  logger.info(`Shutting down after ${signal}`);
+
+  const forceExit = setTimeout(() => {
+    logger.error('Graceful shutdown timed out');
+    process.exit(exitCode);
+  }, 10000);
+  forceExit.unref();
+
+  server.close(async () => {
+    try {
+      await prisma.$disconnect();
+    } finally {
+      clearTimeout(forceExit);
+      process.exit(exitCode);
+    }
+  });
+};
+
+process.on('SIGTERM', () => shutdown(0, 'SIGTERM'));
+process.on('SIGINT', () => shutdown(0, 'SIGINT'));
+
 process.on('unhandledRejection', (reason) => {
   const msg = reason instanceof Error ? reason.stack : String(reason);
   logger.error(`Unhandled Rejection: ${msg}`);
-  if (!server.listening) server.close(() => process.exit(1));
+  shutdown(1, 'unhandled rejection');
 });
 
 process.on('uncaughtException', (err) => {
@@ -144,5 +181,5 @@ process.on('uncaughtException', (err) => {
     logger.error(`Port ${PORT} is already in use. Stop the existing server process first.`);
     process.exit(1);
   }
-  process.exit(1);
+  shutdown(1, 'uncaught exception');
 });

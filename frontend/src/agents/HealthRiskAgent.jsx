@@ -100,7 +100,8 @@ const HealthRiskAgent = ({ open, onClose }) => {
       })
       const ai = res?.data || res
       const risk = getRiskLevel(ai.riskScore)
-      setResult({ totalScore: ai.riskScore, riskFactors: ai.riskFactors, lifestyle: ai.lifestyle, urgentActions: ai.urgentActions, ...risk })
+      setResult({ totalScore: ai.riskScore, riskFactors: ai.riskFactors, lifestyle: ai.lifestyle, urgentActions: ai.urgentActions,
+        _degraded: ai._degraded, scoringMethod: ai.scoringMethod, scoringFormula: ai.scoringFormula, ...risk })
       setStep(3)
     } catch {
       // fallback to local calculation
@@ -256,6 +257,11 @@ const HealthRiskAgent = ({ open, onClose }) => {
           {/* Step 3: Result */}
           {step === 3 && result && (
             <div className="space-y-5">
+              {result._degraded && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
+                  External AI is unavailable. This score was produced by the documented rules engine.
+                </div>
+              )}
               {/* Risk score */}
               <div className={`rounded-xl border p-5 ${result.bg} ${result.border}`}>
                 <div className="flex items-center gap-3 mb-4">
@@ -297,6 +303,11 @@ const HealthRiskAgent = ({ open, onClose }) => {
 
                 <p className={`text-sm font-semibold mt-3 ${result.color}`}>{result.action}</p>
               </div>
+              {result.scoringFormula && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Transparent rules score: {result.scoringFormula}. This is a screening score, not a diagnosis or validated clinical prediction.
+                </p>
+              )}
 
               {/* Lifestyle tips */}
               <div>

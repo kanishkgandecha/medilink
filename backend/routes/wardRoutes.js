@@ -9,16 +9,13 @@ const {
   getWard,
   updateWard,
   deleteWard,
-  allocateBed,
-  releaseBed,
-  assignBed,
-  dischargeBed
 } = require('../controllers/wardController');
+const { assignBed, dischargeBed } = require('../controllers/wardTransactionController');
 
 router.use(protect);
 
 router.route('/')
-  .get(getWards)
+  .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), getWards)
   .post(authorize('Admin'), [
     body('wardNumber').notEmpty().withMessage('Ward number is required'),
     body('wardName').notEmpty().withMessage('Ward name is required'),
@@ -27,18 +24,37 @@ router.route('/')
   ], createWard);
 
 router.route('/:id')
-  .get(getWard)
+  .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), getWard)
   .put(authorize('Admin'), updateWard)
   .delete(authorize('Admin'), deleteWard);
 
 // Existing: auto-assigns next available bed
-router.post('/:id/allocate', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), allocateBed);
+router.post('/:id/allocate', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), [
+  body('patientId').notEmpty().withMessage('Patient ID is required'),
+  body('admissionDate').optional().isISO8601().withMessage('Admission date is invalid'),
+  body('expectedDischargeDate').optional().isISO8601().withMessage('Expected discharge date is invalid'),
+  validate,
+], assignBed);
 // Existing: release by bedNumber string
-router.post('/:id/release',  authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), releaseBed);
+router.post('/:id/release', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager'), [
+  body('bedNumber').notEmpty().withMessage('Bed number is required'),
+  body('idempotencyKey').isUUID().withMessage('A valid idempotency key is required'),
+  validate,
+], dischargeBed);
 
 // New: assign specific bed by beds._id
-router.post('/:id/assign',   authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), assignBed);
+router.post('/:id/assign', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), [
+  body('patientId').notEmpty().withMessage('Patient ID is required'),
+  body('bedId').notEmpty().withMessage('Bed ID is required'),
+  body('admissionDate').optional().isISO8601().withMessage('Admission date is invalid'),
+  body('expectedDischargeDate').optional().isISO8601().withMessage('Expected discharge date is invalid'),
+  validate,
+], assignBed);
 // New: discharge from specific bed by beds._id
-router.post('/:id/discharge', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), dischargeBed);
+router.post('/:id/discharge', authorize('Admin', 'Nurse', 'Receptionist', 'Ward Manager', 'Doctor'), [
+  body('bedId').notEmpty().withMessage('Bed ID is required'),
+  body('idempotencyKey').isUUID().withMessage('A valid idempotency key is required'),
+  validate,
+], dischargeBed);
 
 module.exports = router;

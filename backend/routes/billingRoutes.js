@@ -3,6 +3,7 @@ const router = express.Router();
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
+const { requireBillAccess } = require('../middleware/billingAccess');
 const {
   createBill,
   getBills,
@@ -37,19 +38,21 @@ router.route('/')
   ], createBill);
 
 router.route('/:id')
-  .get(getBill)
+  .get(requireBillAccess('Admin', 'Receptionist'), getBill)
   .delete(authorize('Admin'), deleteBill);
 
 // Patient self-pay (pays full outstanding balance)
-router.post('/:id/pay', authorize('Patient'), [
-  body('paymentMethod').notEmpty().withMessage('Payment method is required'),
+router.post('/:id/pay', authorize('Patient'), requireBillAccess(), [
+  body('paymentMethod').isIn(['Cash', 'Card', 'UPI', 'Net Banking', 'Insurance', 'Online', 'Other', 'Cheque'])
+    .withMessage('Valid payment method is required'),
   validate
 ], patientPayBill);
 
 // Admin/Receptionist payment recording (supports partial payments)
 router.post('/:id/payment', authorize('Admin', 'Receptionist'), [
   body('amount').isFloat({ min: 0.01 }).withMessage('Valid payment amount is required'),
-  body('paymentMethod').notEmpty().withMessage('Payment method is required'),
+  body('paymentMethod').isIn(['Cash', 'Card', 'UPI', 'Net Banking', 'Insurance', 'Online', 'Other', 'Cheque'])
+    .withMessage('Valid payment method is required'),
   validate
 ], recordPayment);
 

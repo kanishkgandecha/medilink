@@ -1,283 +1,478 @@
-const Doctor = require('../models/Doctor');
-const User = require('../models/User');
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
+const { getPagination } = require('../utils/pagination');
+const { hashPassword } = require('../utils/userHelpers');
+const { formatAppointment } = require('../utils/virtuals');
+const { runSerializableTransaction } = require('../utils/transactions');
+const crypto = require('crypto');
 
 // Get users with role "Doctor" who don't have a doctor profile yet
 exports.getAvailableDoctorUsers = asyncHandler(async (req, res) => {
-  // Get all doctor users
-  const doctorUsers = await User.find({ role: 'Doctor' }).select('_id name email phone');
-  
-  // Get all existing doctor profiles
-  const existingDoctors = await Doctor.find().select('userId');
-  const existingUserIds = existingDoctors.map(d => d.userId.toString());
-  
-  // Filter out users who already have doctor profiles
-  const availableUsers = doctorUsers.filter(user => !existingUserIds.includes(user._id.toString()));
-  
+  const doctorUsers = await prisma.user.findMany({
+    where: { role: 'Doctor', isActive: true },
+    select: { id: true, name: true, email: true, phone: true, legacyMongoId: true },
+  });
+
+  const existingDoctors = await prisma.doctor.findMany({
+    select: { userId: true },
+  });
+  const existingUserIds = new Set(existingDoctors.map((d) => d.userId));
+
+  const availableUsers = doctorUsers
+    .filter((user) => !existingUserIds.has(user.id))
+    .map((u) => ({ ...u, _id: u.id }));
+
   res.status(200).json({
     success: true,
     count: availableUsers.length,
-    data: availableUsers
+    data: availableUsers,
   });
 });
 
 exports.createDoctor = asyncHandler(async (req, res) => {
-  const { userId, name, email, phone, gender, dateOfBirth,
-          specialization, qualification, experience, licenseNumber,
-          department, consultationFee, availability } = req.body;
-
-  let targetUser;
-
-  if (userId) {
-    // Legacy: link an existing User account to a Doctor profile
-    targetUser = await User.findById(userId);
-    if (!targetUser || targetUser.role !== 'Doctor') {
-      return res.status(400).json({ success: false, message: 'Invalid user or not a Doctor role' });
-    }
-  } else {
-    // New: create User + Doctor profile atomically
-    if (!name || !email || !phone) {
-      return res.status(400).json({ success: false, message: 'Name, email and phone are required' });
-    }
-    const duplicate = await User.findOne({
-      $or: [{ email: email.toLowerCase() }, { phone }]
-    });
-    if (duplicate) {
-      const field = duplicate.email === email.toLowerCase() ? 'Email' : 'Phone';
-      return res.status(409).json({ success: false, message: `${field} already registered` });
-    }
-    // password = phone — bcrypt pre-save hook hashes it automatically
-    targetUser = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password: phone,
-      role: 'Doctor',
-      phone,
-      ...(gender && { gender }),
-      ...(dateOfBirth && { dateOfBirth })
-    });
-  }
-
-  const existingDoctor = await Doctor.findOne({ userId: targetUser._id });
-  if (existingDoctor) {
-    return res.status(400).json({ success: false, message: 'Doctor profile already exists for this user' });
-  }
-
-  const finalLicense = licenseNumber || `LIC${Date.now().toString().slice(-8)}`;
-
-  const doctor = await Doctor.create({
-    userId: targetUser._id,
+  const {
+    userId,
+    name,
+    email,
+    phone,
+    gender,
+    dateOfBirth,
     specialization,
-    qualification: qualification || 'MBBS',
-    experience: parseInt(experience) || 0,
-    licenseNumber: finalLicense,
-    department: department || specialization,
-    consultationFee: parseFloat(consultationFee) || 0,
-    availability: availability || []
+    qualification,
+    experience,
+    licenseNumber,
+    department,
+    consultationFee,
+    availability,
+  } = req.body;
+
+  if (!userId && (!name || !email || !phone)) {
+    return res.status(400).json({ success: false, message: 'Name, email and phone are required' });
+  }
+  const hashedPassword = userId ? null : await hashPassword(phone);
+  const finalLicense = licenseNumber || `LIC-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+  const doctor = await runSerializableTransaction(async (tx) => {
+    let targetUser;
+    if (userId) {
+      targetUser = await tx.user.findFirst({ where: { OR: [{ id: userId }, { legacyMongoId: userId }] } });
+      if (!targetUser || targetUser.role !== 'Doctor' || !targetUser.isActive) {
+        const error = new Error('Invalid or inactive user, or user does not have the Doctor role');
+        error.statusCode = 400;
+        throw error;
+      }
+    } else {
+      const normalizedEmail = email.toLowerCase();
+      const duplicate = await tx.user.findFirst({ where: { OR: [{ email: normalizedEmail }, { phone }] } });
+      if (duplicate) {
+        const error = new Error(`${duplicate.email === normalizedEmail ? 'Email' : 'Phone'} already registered`);
+        error.statusCode = 409;
+        throw error;
+      }
+      targetUser = await tx.user.create({ data: { name, email: normalizedEmail, password: hashedPassword,
+        role: 'Doctor', phone, gender: gender || null, dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null } });
+    }
+    if (await tx.doctor.findUnique({ where: { userId: targetUser.id } })) {
+      const error = new Error('Doctor profile already exists for this user');
+      error.statusCode = 409;
+      throw error;
+    }
+    return tx.doctor.create({ data: {
+      userId: targetUser.id,
+      specialization: specialization || 'General',
+      qualification: qualification || 'MBBS',
+      experience: parseInt(experience) || 0,
+      licenseNumber: finalLicense,
+      department: department || specialization || 'General',
+      consultationFee: parseFloat(consultationFee) || 0,
+      availability: availability || [],
+    },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, phone: true, gender: true, dateOfBirth: true },
+      },
+    } });
   });
 
-  await doctor.populate('userId', 'name email phone gender dateOfBirth');
+  const formattedDoctor = {
+    ...doctor,
+    _id: doctor.id,
+    userId: {
+      ...doctor.user,
+      _id: doctor.user.id,
+    },
+  };
 
   res.status(201).json({
     success: true,
     message: 'Doctor created successfully. Default password is the phone number.',
-    data: doctor
+    data: formattedDoctor,
   });
 });
 
 exports.getDoctors = asyncHandler(async (req, res) => {
-  const { specialization, department, isAvailable, search, page = 1, limit = 10 } = req.query;
-  
-  let query = {};
-  
-  if (specialization) query.specialization = specialization;
-  if (department) query.department = department;
-  if (isAvailable) query.isAvailable = isAvailable === 'true';
+  const { specialization, department, isAvailable, search } = req.query;
 
-  // Search functionality
+  const where = { user: { isActive: true } };
+  if (specialization) where.specialization = specialization;
+  if (department) where.department = department;
+  if (isAvailable !== undefined) where.isAvailable = isAvailable === 'true';
+
   if (search) {
-    const users = await User.find({
-      $or: [
-        { name: new RegExp(search, 'i') },
-        { email: new RegExp(search, 'i') }
-      ]
-    }).select('_id');
-    
-    const userIds = users.map(user => user._id);
-    
-    query.$or = [
-      { licenseNumber: new RegExp(search, 'i') },
-      { userId: { $in: userIds } }
+    where.OR = [
+      { licenseNumber: { contains: search, mode: 'insensitive' } },
+      { user: { name: { contains: search, mode: 'insensitive' } } },
+      { user: { email: { contains: search, mode: 'insensitive' } } },
     ];
   }
 
-  const skip = (page - 1) * limit;
+  const { page, limit: take, skip } = getPagination(req.query);
 
-  const doctors = (await Doctor.find(query)
-    .populate('userId', 'name email phone address dateOfBirth gender')
-    .limit(parseInt(limit))
-    .skip(skip)
-    .sort({ createdAt: -1 }))
-    .filter(d => d.userId !== null); // exclude orphaned records
+  const doctors = await prisma.doctor.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          street: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          country: true,
+          dateOfBirth: true,
+          gender: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    take,
+    skip,
+  });
 
-  const total = await Doctor.countDocuments({ ...query, userId: { $ne: null } });
+  const total = await prisma.doctor.count({ where });
 
-  res.status(200).json({ 
-    success: true, 
-    count: doctors.length,
+  const formattedDoctors = doctors.map((d) => ({
+    ...d,
+    _id: d.id,
+    userId: d.user
+      ? {
+          ...d.user,
+          _id: d.user.id,
+          address: {
+            street: d.user.street,
+            city: d.user.city,
+            state: d.user.state,
+            zipCode: d.user.zipCode,
+            country: d.user.country,
+          },
+        }
+      : null,
+  }));
+
+  res.status(200).json({
+    success: true,
+    count: formattedDoctors.length,
     total,
-    page: parseInt(page),
-    pages: Math.ceil(total / limit),
-    data: doctors 
+    page,
+    pages: Math.ceil(total / take),
+    data: formattedDoctors,
   });
 });
 
 exports.getDoctor = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findById(req.params.id)
-    .populate('userId', 'name email phone address dateOfBirth gender');
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          street: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          country: true,
+          dateOfBirth: true,
+          gender: true,
+        },
+      },
+    },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  res.status(200).json({ 
-    success: true, 
-    data: doctor 
+  const formattedDoctor = {
+    ...doctor,
+    _id: doctor.id,
+    userId: doctor.user
+      ? {
+          ...doctor.user,
+          _id: doctor.user.id,
+          address: {
+            street: doctor.user.street,
+            city: doctor.user.city,
+            state: doctor.user.state,
+            zipCode: doctor.user.zipCode,
+            country: doctor.user.country,
+          },
+        }
+      : null,
+  };
+
+  res.status(200).json({
+    success: true,
+    data: formattedDoctor,
   });
 });
 
 exports.updateDoctor = asyncHandler(async (req, res) => {
-  let doctor = await Doctor.findById(req.params.id);
-  
+  let doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  // Prevent updating userId
   delete req.body.userId;
 
-  doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  }).populate('userId', 'name email phone address dateOfBirth gender');
+  const data = {};
+  if (req.body.specialization) data.specialization = req.body.specialization;
+  if (req.body.qualification) data.qualification = req.body.qualification;
+  if (req.body.experience !== undefined) data.experience = parseInt(req.body.experience);
+  if (req.body.licenseNumber) data.licenseNumber = req.body.licenseNumber;
+  if (req.body.department) data.department = req.body.department;
+  if (req.body.consultationFee !== undefined) data.consultationFee = parseFloat(req.body.consultationFee);
+  if (req.body.availability !== undefined) data.availability = req.body.availability;
+  if (req.body.isAvailable !== undefined) data.isAvailable = req.body.isAvailable === true || req.body.isAvailable === 'true';
 
-  res.status(200).json({ 
+  const updatedDoctor = await prisma.doctor.update({
+    where: { id: doctor.id },
+    data,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          street: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          country: true,
+          dateOfBirth: true,
+          gender: true,
+        },
+      },
+    },
+  });
+
+  const formattedDoctor = {
+    ...updatedDoctor,
+    _id: updatedDoctor.id,
+    userId: updatedDoctor.user
+      ? {
+          ...updatedDoctor.user,
+          _id: updatedDoctor.user.id,
+          address: {
+            street: updatedDoctor.user.street,
+            city: updatedDoctor.user.city,
+            state: updatedDoctor.user.state,
+            zipCode: updatedDoctor.user.zipCode,
+            country: updatedDoctor.user.country,
+          },
+        }
+      : null,
+  };
+
+  res.status(200).json({
     success: true,
     message: 'Doctor updated successfully',
-    data: doctor 
+    data: formattedDoctor,
   });
 });
 
 exports.deleteDoctor = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findById(req.params.id);
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  if (doctor.userId) {
-    await User.deleteOne({ _id: doctor.userId });
+  const upcomingAppointment = await prisma.appointment.findFirst({
+    where: { doctorId: doctor.id, appointmentDate: { gte: new Date() }, status: { in: ['Scheduled', 'Confirmed', 'In_Progress'] } },
+    select: { id: true, appointmentDate: true },
+  });
+  if (upcomingAppointment) {
+    return res.status(409).json({
+      success: false,
+      message: 'Doctor has upcoming active appointments. Reassign or cancel them before deactivation.',
+    });
   }
-  await doctor.deleteOne();
+
+  await runSerializableTransaction(async (tx) => {
+    await tx.doctor.update({ where: { id: doctor.id }, data: { isAvailable: false, availability: [] } });
+    await tx.user.update({ where: { id: doctor.userId }, data: { isActive: false } });
+  });
 
   res.status(200).json({
     success: true,
-    message: 'Doctor deleted successfully'
+    message: 'Doctor deactivated successfully; historical records were retained',
   });
 });
 
 exports.updateAvailability = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findByIdAndUpdate(
-    req.params.id,
-    { availability: req.body.availability },
-    { new: true, runValidators: true }
-  ).populate('userId', 'name email phone');
+  const targetDoctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
 
-  if (!doctor) {
-    return res.status(404).json({ 
+  if (!targetDoctor) {
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  res.status(200).json({ 
+  const doctor = await prisma.doctor.update({
+    where: { id: targetDoctor.id },
+    data: { availability: req.body.availability },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, phone: true },
+      },
+    },
+  });
+
+  const formatted = {
+    ...doctor,
+    _id: doctor.id,
+    userId: doctor.user ? { ...doctor.user, _id: doctor.user.id } : null,
+  };
+
+  res.status(200).json({
     success: true,
     message: 'Availability updated successfully',
-    data: doctor 
+    data: formatted,
   });
 });
 
 exports.addOnCallShift = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findById(req.params.id);
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  doctor.onCallShifts.push(req.body);
-  await doctor.save();
+  const existingShifts = Array.isArray(doctor.onCallShifts) ? doctor.onCallShifts : [];
+  existingShifts.push(req.body);
 
-  res.status(200).json({ 
+  const updated = await prisma.doctor.update({
+    where: { id: doctor.id },
+    data: { onCallShifts: existingShifts },
+  });
+
+  res.status(200).json({
     success: true,
     message: 'On-call shift added successfully',
-    data: doctor 
+    data: { ...updated, _id: updated.id },
   });
 });
 
-// Get doctor's schedule/availability
 exports.getDoctorSchedule = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findById(req.params.id)
-    .populate('userId', 'name email')
-    .select('availability onCallShifts');
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    select: {
+      id: true,
+      availability: true,
+      onCallShifts: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  res.status(200).json({ 
-    success: true, 
-    data: doctor 
+  res.status(200).json({
+    success: true,
+    data: {
+      ...doctor,
+      _id: doctor.id,
+      userId: doctor.user ? { ...doctor.user, _id: doctor.user.id } : null,
+    },
   });
 });
 
-// Get doctor's appointments
 exports.getDoctorAppointments = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findById(req.params.id);
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'Doctor not found' 
+      message: 'Doctor not found',
     });
   }
 
-  const Appointment = require('../models/Appointment');
-  const appointments = await Appointment.find({ doctor: req.params.id })
-    .populate({
-      path: 'patient',
-      select: 'patientId userId',
-      populate: { path: 'userId', select: 'name phone' }
-    })
-    .sort({ appointmentDate: -1 });
+  const appointments = await prisma.appointment.findMany({
+    where: { doctorId: doctor.id },
+    include: {
+      patient: {
+        select: {
+          id: true,
+          patientId: true,
+          user: { select: { id: true, name: true, phone: true } },
+        },
+      },
+    },
+    orderBy: { appointmentDate: 'desc' },
+  });
 
-  res.status(200).json({ 
-    success: true, 
-    count: appointments.length,
-    data: appointments 
+  const formatted = appointments.map((a) => {
+    const fmt = formatAppointment(a);
+    return {
+      ...fmt,
+      _id: fmt.id,
+      patient: fmt.patient
+        ? {
+            ...fmt.patient,
+            _id: fmt.patient.id,
+            userId: fmt.patient.user ? { ...fmt.patient.user, _id: fmt.patient.user.id } : null,
+          }
+        : null,
+    };
+  });
+
+  res.status(200).json({
+    success: true,
+    count: formatted.length,
+    data: formatted,
   });
 });

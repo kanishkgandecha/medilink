@@ -1,8 +1,7 @@
 'use strict';
 const { callLLM } = require('../llmClient');
 const { APPOINTMENT_OPTIMIZER, DISCLAIMER } = require('../promptTemplates');
-const Doctor = require('../../../models/Doctor');
-const Appointment = require('../../../models/Appointment');
+const prisma = require('../../../config/prisma');
 
 const DEPT_MAP = [
   { keywords: ['chest', 'cardiac', 'heart', 'palpitation', 'bp', 'blood pressure'], dept: 'Cardiology', specs: ['cardiologist', 'cardiology'] },
@@ -15,22 +14,29 @@ const DEPT_MAP = [
 ];
 
 const URGENCY_KEYWORDS = {
-  Emergency: ['chest pain', 'can\'t breathe', 'unconscious', 'heart attack', 'stroke', 'seizure', 'severe bleeding', 'not breathing'],
+  Emergency: ['chest pain', "can't breathe", 'unconscious', 'heart attack', 'stroke', 'seizure', 'severe bleeding', 'not breathing'],
   Urgent: ['breathlessness', 'high fever', 'vomiting blood', 'blood in stool', 'severe pain', 'chest pressure'],
 };
 
 function detectDept(symptoms) {
   const lower = symptoms.toLowerCase();
   for (const { keywords, dept, specs } of DEPT_MAP) {
-    if (keywords.some(k => lower.includes(k))) return { dept, specs };
+    if (keywords.some((k) => lower.includes(k))) return { dept, specs };
   }
   return { dept: 'General Medicine', specs: ['general physician', 'general medicine'] };
+}
+
+function departmentRule(department) {
+  const normalized = String(department || '').toLowerCase();
+  return DEPT_MAP.find((entry) =>
+    entry.dept.toLowerCase() === normalized || entry.specs.some((spec) => normalized.includes(spec))
+  );
 }
 
 function detectUrgency(symptoms) {
   const lower = symptoms.toLowerCase();
   for (const [level, kws] of Object.entries(URGENCY_KEYWORDS)) {
-    if (kws.some(k => lower.includes(k))) return level;
+    if (kws.some((k) => lower.includes(k))) return level;
   }
   return 'Routine';
 }
@@ -42,59 +48,81 @@ async function fetchDoctorsWithLoad() {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const [doctors, todayApts] = await Promise.all([
-    Doctor.find({ isAvailable: true }).populate('userId', 'name').lean(),
-    Appointment.find({ appointmentDate: { $gte: today, $lt: tomorrow } }).lean(),
+    prisma.doctor.findMany({
+      where: { isAvailable: true, user: { isActive: true } },
+      include: { user: { select: { name: true, isActive: true } } },
+    }),
+    prisma.appointment.findMany({
+      where: { appointmentDate: { gte: today, lt: tomorrow }, status: { notIn: ['Cancelled', 'Completed', 'No_Show'] } },
+      select: { doctorId: true },
+    }),
   ]);
 
   const loadMap = {};
-  todayApts.forEach(a => {
-    const id = String(a.doctor);
+  todayApts.forEach((a) => {
+    const id = String(a.doctorId);
     loadMap[id] = (loadMap[id] || 0) + 1;
   });
 
-  return doctors.map(d => ({
-    id: d._id,
-    name: d.userId?.name || 'Dr.',
-    specialization: d.specialization || '',
-    experience: d.experience,
-    currentLoad: loadMap[String(d._id)] || 0,
-    isAvailable: d.isAvailable,
-  })).sort((a, b) => a.currentLoad - b.currentLoad);
+  return doctors
+    .map((d) => ({
+      id: d.id,
+      name: d.user?.name || 'Dr.',
+      specialization: d.specialization || '',
+      experience: d.experience,
+      currentLoad: loadMap[String(d.id)] || 0,
+      isAvailable: d.isAvailable,
+      availabilityConfigured: Array.isArray(d.availability) && d.availability.length > 0,
+    }))
+    .sort((a, b) => a.currentLoad - b.currentLoad);
 }
 
-async function mockOptimize({ symptoms, department }) {
-  const doctors = await fetchDoctorsWithLoad();
+function buildVerifiedRecommendation({ symptoms, department, doctors, metadata = {} }) {
   const urgency = detectUrgency(symptoms);
-  const { dept, specs } = detectDept(symptoms);
-  const finalDept = department || dept;
+  const detected = detectDept(symptoms);
+  const requested = departmentRule(department);
+  const finalDept = requested?.dept || detected.dept;
+  const specs = requested?.specs || detected.specs;
 
-  const matched = doctors.filter(d => {
+  const matched = doctors.filter((d) => {
     const spec = d.specialization.toLowerCase();
-    return specs.some(s => spec.includes(s));
+    return specs.some((s) => spec.includes(s));
   });
 
-  const pool = matched.length ? matched : doctors;
+  const general = doctors.filter((d) => /general physician|general medicine|internal medicine/i.test(d.specialization));
+  const pool = (matched.length ? matched : general).slice().sort((a, b) =>
+    (a.currentLoad || 0) - (b.currentLoad || 0) || (b.experience || 0) - (a.experience || 0)
+  );
   const best = pool[0];
 
   return {
-    recommendedDoctor: best ? {
-      id: best.id,
-      name: best.name,
-      specialization: best.specialization,
-      currentLoad: best.currentLoad,
-    } : null,
+    recommendedDoctor: best
+      ? {
+          id: best.id,
+          name: best.name,
+          specialization: best.specialization,
+          currentLoad: best.currentLoad,
+        }
+      : null,
     suggestedDepartment: finalDept,
     urgencyLevel: urgency,
     rationale: best
-      ? `Dr. ${best.name} (${best.specialization}) is the best match for your symptoms. They currently have ${best.currentLoad} appointment(s) today, making them the least loaded available specialist.`
-      : 'No specific specialist found. A General Physician consultation is recommended.',
-    alternativeDoctors: pool.slice(1, 3).map(d => ({
+      ? `${best.name} is an active, available ${best.specialization} specialist with ${best.currentLoad} active appointment(s) today. Availability must be rechecked when selecting a date and time.`
+      : `No active, available doctor matching ${finalDept} was found. Please contact reception or view all doctors.`,
+    alternativeDoctors: pool.slice(1, 3).map((d) => ({
       id: d.id,
       name: d.name,
       specialization: d.specialization,
     })),
     disclaimer: DISCLAIMER,
+    liveDataCheckedAt: new Date().toISOString(),
+    recommendationBasis: matched.length ? 'specialization_and_current_load' : general.length ? 'general_physician_fallback' : 'no_verified_match',
+    ...metadata,
   };
+}
+
+async function mockOptimize({ symptoms, department, doctors }) {
+  return buildVerifiedRecommendation({ symptoms, department, doctors });
 }
 
 async function runAppointmentOptimizer({ symptoms, department }) {
@@ -102,9 +130,12 @@ async function runAppointmentOptimizer({ symptoms, department }) {
   const result = await callLLM(
     APPOINTMENT_OPTIMIZER.system,
     APPOINTMENT_OPTIMIZER.user({ symptoms, department, availableDoctors: doctors.slice(0, 10) }),
-    () => mockOptimize({ symptoms, department }),
+    () => mockOptimize({ symptoms, department, doctors })
   );
-  return result.data;
+  return buildVerifiedRecommendation({
+    symptoms, department, doctors,
+    metadata: { _source: result.data._source, _degraded: result.data._degraded, _fallbackReason: result.data._fallbackReason, _model: result.data._model },
+  });
 }
 
-module.exports = { runAppointmentOptimizer };
+module.exports = { runAppointmentOptimizer, buildVerifiedRecommendation };

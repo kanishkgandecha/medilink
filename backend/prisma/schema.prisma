@@ -1,0 +1,625 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ───────────────────────────────────────────────────────────
+
+enum Role {
+  Admin
+  Doctor
+  Nurse
+  Receptionist
+  Patient
+  Pharmacist
+  Staff
+}
+
+enum SubRole {
+  Nurse
+  Receptionist
+  Pharmacist
+  LabTechnician @map("Lab Technician")
+  WardManager   @map("Ward Manager")
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+enum BloodGroup {
+  A_POSITIVE  @map("A+")
+  A_NEGATIVE  @map("A-")
+  B_POSITIVE  @map("B+")
+  B_NEGATIVE  @map("B-")
+  AB_POSITIVE @map("AB+")
+  AB_NEGATIVE @map("AB-")
+  O_POSITIVE  @map("O+")
+  O_NEGATIVE  @map("O-")
+}
+
+enum MedicalStatus {
+  Active
+  Resolved
+  Chronic
+}
+
+enum AppointmentType {
+  Consultation
+  Follow_up   @map("Follow-up")
+  Emergency
+  Surgery
+}
+
+enum AppointmentStatus {
+  Scheduled
+  Confirmed
+  In_Progress @map("In-Progress")
+  Completed
+  Cancelled
+  No_Show     @map("No-Show")
+}
+
+enum AppointmentPriority {
+  Normal
+  Urgent
+  Emergency
+}
+
+enum BillType {
+  Consultation
+  Pharmacy
+  Test
+  Ward
+  Other
+}
+
+enum BillingCategory {
+  Consultation
+  Medicine
+  Lab_Test     @map("Lab Test")
+  Imaging
+  Surgery
+  Room_Charges @map("Room Charges")
+  Emergency
+  Other
+}
+
+enum PaymentStatus {
+  Unpaid
+  Partially_Paid @map("Partially-Paid")
+  Paid
+  Refunded
+}
+
+enum PaymentMethod {
+  Cash
+  Card
+  UPI
+  Net_Banking  @map("Net Banking")
+  Insurance
+  Online
+  Other
+  Cheque
+}
+
+enum ClaimStatus {
+  Pending
+  Approved
+  Rejected
+  Partially_Approved @map("Partially-Approved")
+}
+
+enum MedicineCategory {
+  Analgesic
+  Antibiotic
+  Anti_inflammatory @map("Anti-inflammatory")
+  Antidiabetic
+  Antihypertensive
+  Antihistamine
+  Cardiovascular
+  Gastrointestinal
+  Respiratory
+  Neurological
+  Dermatological
+  Other
+}
+
+enum DosageForm {
+  Tablet
+  Capsule
+  Syrup
+  Injection
+  Cream
+  Ointment
+  Drops
+  Inhaler
+  Other
+}
+
+enum PrescriptionStatus {
+  Pending
+  Partially_Filled @map("Partially-Filled")
+  Fulfilled
+  Cancelled
+}
+
+enum EmploymentType {
+  Full_Time @map("Full-Time")
+  Part_Time @map("Part-Time")
+  Contract
+  Intern
+}
+
+enum ShiftType {
+  Morning
+  Evening
+  Night
+  Rotational
+}
+
+enum WardType {
+  General
+  ICU
+  NICU
+  Private
+  Semi_Private @map("Semi-Private")
+  Emergency
+  Isolation
+}
+
+enum WardGender {
+  Male
+  Female
+  Mixed
+}
+
+// ── Models ──────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(uuid())
+  legacyMongoId      String?   @unique
+  name               String
+  email              String    @unique
+  password           String
+  role               Role      @default(Patient)
+  subRole            SubRole?
+  phone              String
+  street             String?
+  city               String?
+  state              String?
+  zipCode            String?
+  country            String?
+  dateOfBirth        DateTime?
+  gender             Gender?
+  avatar             String    @default("")
+  isActive           Boolean   @default(true)
+  resetPasswordToken String?
+  resetPasswordExpire DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now()) @updatedAt
+
+  // Relations
+  doctor             Doctor?
+  patient            Patient?
+  staff              Staff?          @relation("StaffUser")
+  supervisedStaff    Staff[]         @relation("SupervisedStaff")
+  createdAppointments Appointment[]  @relation("CreatedAppointments")
+  generatedBills     Billing[]       @relation("GeneratedBills")
+  dispensedMedicines PrescriptionMedicine[] @relation("DispensedMedicines")
+  wardNurseInCharge  Ward[]          @relation("WardNurseInCharge")
+  aiAuditEvents      AiAuditEvent[]
+
+  @@index([email])
+  @@index([legacyMongoId])
+}
+
+model AiAuditEvent {
+  id          String   @id @default(uuid())
+  requesterId String
+  requester   User     @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  agent       String
+  source      String
+  model       String?
+  degraded    Boolean  @default(false)
+  success     Boolean
+  durationMs  Int
+  errorCode   String?
+  createdAt   DateTime @default(now())
+
+  @@index([requesterId, createdAt])
+  @@index([agent, createdAt])
+}
+
+model Doctor {
+  id              String   @id @default(uuid())
+  legacyMongoId   String?  @unique
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization  String
+  qualification   String
+  experience      Int
+  licenseNumber   String   @unique
+  department      String
+  consultationFee Float
+  availability    Json?
+  onCallShifts    Json?
+  rating          Float    @default(0)
+  totalRatings    Int      @default(0)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  appointments    Appointment[]
+  prescriptions   Prescription[]
+
+  @@index([licenseNumber])
+  @@index([legacyMongoId])
+}
+
+model Patient {
+  id                 String   @id @default(uuid())
+  legacyMongoId      String?  @unique
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientId          String   @unique
+  bloodGroup         BloodGroup?
+  emergencyContact   Json?
+  allergies          String[]
+  insuranceInfo      Json?
+  archivedAt         DateTime?
+  archiveReason      String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+
+  medicalHistory     MedicalHistory[]
+  currentMedications CurrentMedication[]
+  labReports         LabReport[]
+  imagingData        ImagingData[]
+  admissionHistory   AdmissionHistory[]
+  appointments       Appointment[]
+  prescriptions      Prescription[]
+  billings           Billing[]
+  beds               Bed[]
+  clinicalAuditEvents ClinicalAuditEvent[]
+
+  @@index([patientId])
+  @@index([userId])
+  @@index([legacyMongoId])
+}
+
+model MedicalHistory {
+  id            String        @id @default(uuid())
+  patientId     String
+  patient       Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  condition     String
+  diagnosedDate DateTime
+  status        MedicalStatus
+  notes         String?
+  addedAt       DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
+  isVoided      Boolean       @default(false)
+  voidedAt      DateTime?
+  voidReason    String?
+
+  @@index([patientId, isVoided])
+}
+
+model ClinicalAuditEvent {
+  id         String   @id @default(uuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  actorId    String?
+  recordType String
+  recordId   String
+  action     String
+  before     Json?
+  after      Json?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([patientId, createdAt])
+  @@index([recordType, recordId])
+}
+
+model CurrentMedication {
+  id           String    @id @default(uuid())
+  patientId    String
+  patient      Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medicine     String?
+  dosage       String?
+  frequency    String?
+  startDate    DateTime?
+  endDate      DateTime?
+  prescribedBy String?
+}
+
+model LabReport {
+  id             String    @id @default(uuid())
+  patientId      String
+  patient        Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  testName       String
+  testType       String?
+  lab            String?
+  testDate       DateTime?
+  reportDate     DateTime?
+  results        String?
+  result         String?
+  referenceRange String?
+  status         String    @default("Pending")
+  notes          String?
+  fileUrl        String?
+  normalRange    String?
+  remarks        String?
+  addedAt        DateTime  @default(now())
+}
+
+model ImagingData {
+  id        String    @id @default(uuid())
+  patientId String
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  type      String?
+  date      DateTime?
+  findings  String?
+  fileUrl   String?
+}
+
+model AdmissionHistory {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  admissionDate   DateTime?
+  dischargeDate   DateTime?
+  reason          String?
+  ward            String?
+  attendingDoctor String?
+}
+
+model Appointment {
+  id               String              @id @default(uuid())
+  legacyMongoId    String?             @unique
+  appointmentId    String?             @unique
+  bookingKey       String?             @unique
+  patientId        String
+  patient          Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId         String
+  doctor           Doctor              @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  appointmentDate  DateTime
+  startTime        String
+  endTime          String
+  type             AppointmentType
+  status           AppointmentStatus   @default(Scheduled)
+  priority         AppointmentPriority @default(Normal)
+  symptoms         String?
+  diagnosis        String?
+  prescriptionId   String?             @unique
+  prescription     Prescription?       @relation("AppointmentPrescription", fields: [prescriptionId], references: [id], onDelete: SetNull)
+  notes            String?
+  operationTheatre Json?
+  cancelReason     String?
+  consultationFee  Float?
+  paid             Boolean             @default(false)
+  paymentMethod    PaymentMethod?
+  createdById      String?
+  createdBy        User?               @relation("CreatedAppointments", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @default(now()) @updatedAt
+
+  billings         Billing[]           @relation("AppointmentBilling")
+
+  @@index([doctorId, appointmentDate, startTime])
+  @@index([patientId, appointmentDate])
+  @@index([status])
+  @@index([appointmentDate])
+  @@index([legacyMongoId])
+}
+
+model Billing {
+  id                   String          @id @default(uuid())
+  legacyMongoId        String?         @unique
+  billNumber           String?         @unique
+  sourceKey            String?         @unique
+  patientId            String
+  patient              Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  billDate             DateTime        @default(now())
+  billType             BillType        @default(Other)
+  subtotal             Float
+  discount             Float           @default(0)
+  tax                  Float           @default(0)
+  totalAmount          Float
+  amountPaid           Float           @default(0)
+  balance              Float
+  paymentStatus        PaymentStatus   @default(Unpaid)
+  paymentMethod        PaymentMethod?
+  insuranceClaim       Json?
+  createdByRole        Role?
+  generatedById        String?
+  generatedBy          User?           @relation("GeneratedBills", fields: [generatedById], references: [id], onDelete: SetNull)
+  relatedAppointmentId String?
+  relatedAppointment   Appointment?    @relation("AppointmentBilling", fields: [relatedAppointmentId], references: [id], onDelete: SetNull)
+  notes                String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @default(now()) @updatedAt
+
+  items                BillingItem[]
+  payments             BillingPayment[]
+
+  @@index([billNumber])
+  @@index([patientId])
+  @@index([billDate])
+  @@index([paymentStatus])
+  @@index([billType])
+  @@index([legacyMongoId])
+}
+
+model BillingItem {
+  id          String          @id @default(uuid())
+  billingId   String
+  billing     Billing         @relation(fields: [billingId], references: [id], onDelete: Cascade)
+  description String
+  category    BillingCategory @default(Other)
+  quantity    Int             @default(1)
+  unitPrice   Float
+  amount      Float
+}
+
+model BillingPayment {
+  id            String   @id @default(uuid())
+  billingId     String
+  billing       Billing  @relation(fields: [billingId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String
+  transactionId String?
+  notes         String?
+  paymentDate   DateTime @default(now())
+}
+
+model Medicine {
+  id                   String           @id @default(uuid())
+  legacyMongoId        String?          @unique
+  medicineId           String?          @unique
+  name                 String
+  genericName          String
+  manufacturer         String
+  category             MedicineCategory
+  dosageForm           DosageForm       @default(Tablet)
+  strength             String?
+  unitPrice            Float
+  stockQuantity        Int              @default(0)
+  reorderLevel         Int              @default(50)
+  expiryDate           DateTime
+  batchNumber          String?
+  supplier             Json?
+  storageConditions    String?
+  sideEffects          String[]
+  contraindications    String[]
+  prescriptionRequired Boolean          @default(true)
+  isActive             Boolean          @default(true)
+  lastRestocked        DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @default(now()) @updatedAt
+
+  prescriptionMedicines PrescriptionMedicine[]
+
+  @@index([medicineId])
+  @@index([name])
+  @@index([genericName])
+  @@index([category])
+  @@index([expiryDate])
+  @@index([stockQuantity])
+  @@index([isActive])
+  @@index([legacyMongoId])
+}
+
+model Prescription {
+  id             String             @id @default(uuid())
+  legacyMongoId  String?            @unique
+  prescriptionId String?            @unique
+  patientId      String
+  patient        Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId       String
+  doctor         Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  diagnosis      String?
+  symptoms       String?
+  labTests       String[]
+  status         PrescriptionStatus @default(Pending)
+  refillsAllowed Int                @default(0)
+  refillsUsed    Int                @default(0)
+  validUntil     DateTime?
+  notes          String?
+  createdAt      DateTime           @default(now())
+
+  appointment    Appointment?       @relation("AppointmentPrescription")
+  medicines      PrescriptionMedicine[]
+
+  @@index([prescriptionId])
+  @@index([legacyMongoId])
+}
+
+model PrescriptionMedicine {
+  id                String       @id @default(uuid())
+  prescriptionId    String
+  prescription      Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medicineId        String
+  medicine          Medicine     @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  dosage            String
+  frequency         String
+  duration          String
+  instructions      String?
+  quantity          Int
+  dispensedQuantity Int          @default(0)
+  dispensedById     String?
+  dispensedBy       User?        @relation("DispensedMedicines", fields: [dispensedById], references: [id], onDelete: SetNull)
+  dispensedAt       DateTime?
+}
+
+model Staff {
+  id             String         @id @default(uuid())
+  legacyMongoId  String?        @unique
+  userId         String         @unique
+  user           User           @relation("StaffUser", fields: [userId], references: [id], onDelete: Cascade)
+  employeeId     String?        @unique
+  designation    String
+  department     String
+  qualification  String?
+  joiningDate    DateTime
+  employmentType EmploymentType @default(Full_Time)
+  shift          ShiftType      @default(Morning)
+  workSchedule   Json?
+  salary         Json?
+  supervisorId   String?
+  supervisor     User?          @relation("SupervisedStaff", fields: [supervisorId], references: [id], onDelete: SetNull)
+  skills         String[]
+  certifications Json?
+  performance    Json?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+
+  @@index([employeeId])
+  @@index([legacyMongoId])
+}
+
+model Ward {
+  id              String      @id @default(uuid())
+  legacyMongoId   String?     @unique
+  wardNumber      String      @unique
+  wardName        String
+  wardType        WardType
+  department      String?
+  floor           Int?
+  totalBeds       Int
+  availableBeds   Int
+  gender          WardGender?
+  facilities      String[]
+  dailyRate       Float
+  nurseInChargeId String?
+  nurseInCharge   User?       @relation("WardNurseInCharge", fields: [nurseInChargeId], references: [id], onDelete: SetNull)
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+
+  beds            Bed[]
+
+  @@index([wardNumber])
+  @@index([legacyMongoId])
+}
+
+model Bed {
+  id                    String    @id @default(uuid())
+  wardId                String
+  ward                  Ward      @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  bedNumber             String
+  isOccupied            Boolean   @default(false)
+  patientId             String?
+  patient               Patient?  @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  admissionDate         DateTime?
+  expectedDischargeDate DateTime?
+
+  @@unique([wardId, bedNumber])
+  @@index([patientId, isOccupied])
+}

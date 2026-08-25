@@ -197,8 +197,8 @@ const Doctors = () => {
   }
 
   const handleDelete = async (id) => {
-    try { await doctorService.deleteDoctor(id); toast.success('Doctor deleted'); fetchDoctors() }
-    catch { toast.error('Failed to delete doctor') }
+    try { await doctorService.deleteDoctor(id); toast.success('Doctor deactivated; historical records retained'); fetchDoctors() }
+    catch (err) { toast.error(err.response?.data?.message || 'Failed to deactivate doctor') }
   }
 
   const openEdit = (doc) => {
@@ -415,9 +415,9 @@ const Doctors = () => {
         isOpen={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => handleDelete(confirmDelete)}
-        title="Delete Doctor"
-        message="This will permanently remove the doctor and their associated data."
-        confirmLabel="Delete"
+        title="Deactivate Doctor"
+        message="This disables the doctor account and removes it from active booking lists. Historical records are retained. Upcoming appointments must be handled first."
+        confirmLabel="Deactivate"
       />
     </div>
   )

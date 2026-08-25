@@ -38,7 +38,7 @@ const STATUS_COLOR = {
   'No-Show': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 }
 
-const EMPTY_BOOKING = {
+const createEmptyBooking = () => ({
   step: 1,
   department: '',
   date: '',
@@ -49,7 +49,8 @@ const EMPTY_BOOKING = {
   doctorId: '',
   startTime: '',
   endTime: '',
-}
+  bookingKey: crypto.randomUUID(),
+})
 
 // ─── Step indicator ───────────────────────────────────────────
 const StepDots = ({ step, total }) => (
@@ -76,7 +77,7 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
     ...BASE_DEPARTMENTS,
     ...doctors.map(d => d.department).filter(Boolean)
   ])].sort()
-  const [booking, setBooking] = useState(EMPTY_BOOKING)
+  const [booking, setBooking] = useState(createEmptyBooking)
   const [submitting, setSubmitting] = useState(false)
   const [availableSlots, setAvailableSlots] = useState([])
   const [loadingSlots, setLoadingSlots] = useState(false)
@@ -213,12 +214,12 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
         symptoms: booking.symptoms,
       }
       if (!isPatient) payload.patient = booking.patientId
-      const res = await appointmentService.createAppointment(payload)
+      const res = await appointmentService.createAppointment(payload, booking.bookingKey)
       const notifMsg = res?.notificationSent
         ? (res.notificationMock ? ' · Email notification queued (mock)' : ' · Confirmation email sent')
         : ''
       toast.success(`Appointment booked successfully!${notifMsg}`)
-      setBooking(EMPTY_BOOKING)
+      setBooking(createEmptyBooking())
       onClose()
       onSuccess()
     } catch (err) {
@@ -229,7 +230,7 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
   }
 
   const handleClose = () => {
-    setBooking(EMPTY_BOOKING)
+    setBooking(createEmptyBooking())
     clearPatient()
     onClose()
   }

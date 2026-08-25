@@ -21,9 +21,9 @@ export const getAppointmentById = async (id) => {
 }
 
 // Create new appointment
-export const createAppointment = async (data) => {
+export const createAppointment = async (data, bookingKey = crypto.randomUUID()) => {
   try {
-    return await api.post('/appointments', data)
+    return await api.post('/appointments', { ...data, bookingKey }, { headers: { 'Idempotency-Key': bookingKey } })
   } catch (error) {
     console.error('Error creating appointment:', error)
     throw error

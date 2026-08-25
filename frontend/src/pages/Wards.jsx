@@ -422,7 +422,10 @@ const Wards = () => {
   const handleDischarge = async () => {
     setSubmitting(true)
     try {
-      const res = await wardService.dischargeBed(dischargeTarget.ward._id, { bedId: dischargeTarget.bed._id })
+      const res = await wardService.dischargeBed(dischargeTarget.ward._id, {
+        bedId: dischargeTarget.bed._id,
+        idempotencyKey: crypto.randomUUID(),
+      })
       const bill = res?.wardBill || res?.data?.wardBill
       if (bill) {
         const days  = bill.items?.[0]?.quantity || 1

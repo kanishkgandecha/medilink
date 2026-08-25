@@ -1,7 +1,7 @@
 'use strict';
 const { callLLM } = require('../llmClient');
 const { BED_ALLOCATION, DISCLAIMER } = require('../promptTemplates');
-const Ward = require('../../../models/Ward');
+const prisma = require('../../../config/prisma');
 
 const WARD_RULES = [
   { keywords: ['cardiac', 'heart', 'chest pain', 'arrhythmia', 'myocardial'], wardType: 'ICU', priority: 'Immediate' },
@@ -11,10 +11,11 @@ const WARD_RULES = [
   { keywords: ['private', 'vip', 'isolation', 'infection control', 'immunocompromised'], wardType: 'Private', priority: 'Standard' },
 ];
 
-function selectWardType(condition, urgency) {
+function selectWardType(condition, urgency, age) {
   const lower = (condition + ' ' + urgency).toLowerCase();
+  if (Number.isFinite(Number(age)) && Number(age) < 18) return { wardType: 'Pediatric', priority: urgency === 'Routine' ? 'Standard' : 'High' };
   for (const rule of WARD_RULES) {
-    if (rule.keywords.some(k => lower.includes(k))) {
+    if (rule.keywords.some((k) => lower.includes(k))) {
       return { wardType: rule.wardType, priority: rule.priority };
     }
   }
@@ -24,32 +25,40 @@ function selectWardType(condition, urgency) {
 }
 
 async function fetchAvailableWards() {
-  const wards = await Ward.find({ isActive: true }).lean();
-  return wards.map(w => {
-    const availBeds = (w.beds || []).filter(b => !b.isOccupied);
+  const wards = await prisma.ward.findMany({
+    where: { isActive: true },
+    include: { beds: { where: { isOccupied: false, patientId: null }, orderBy: { bedNumber: 'asc' } } },
+  });
+
+  return wards.map((w) => {
+    const availBeds = w.beds || [];
     return {
-      id: w._id,
+      id: w.id,
       name: w.wardName,
       type: w.wardType,
-      totalBeds: w.totalBeds || w.beds?.length || 0,
-      availableBeds: w.availableBeds ?? availBeds.length,
+      department: w.department,
+      totalBeds: w.totalBeds,
+      availableBeds: availBeds.length,
       dailyRate: w.dailyRate,
-      beds: availBeds.slice(0, 3).map(b => b.bedNumber),
+      beds: availBeds.slice(0, 3).map((b) => b.bedNumber),
     };
   });
 }
 
-async function mockAllocate({ condition, urgency, age, gender }) {
-  const wards = await fetchAvailableWards();
-  const { wardType, priority } = selectWardType(condition, urgency);
+function buildVerifiedAllocation({ condition, urgency, age, wards, metadata = {} }) {
+  const { wardType, priority } = selectWardType(condition, urgency, age);
 
-  const preferred = wards.find(w => w.type?.toLowerCase() === wardType.toLowerCase() && w.availableBeds > 0)
-    || wards.find(w => w.availableBeds > 0);
+  const matchesType = (ward) => wardType === 'Pediatric'
+    ? /paediatric|pediatric|child/i.test(`${ward.name} ${ward.department || ''}`)
+    : ward.type?.toLowerCase() === wardType.toLowerCase();
+  const preferred =
+    wards.find((w) => matchesType(w) && w.availableBeds > 0) ||
+    wards.find((w) => w.availableBeds > 0);
 
   const alternatives = wards
-    .filter(w => w.availableBeds > 0 && w.id !== preferred?.id)
+    .filter((w) => w.availableBeds > 0 && w.id !== preferred?.id)
     .slice(0, 2)
-    .map(w => `${w.name} (${w.availableBeds} beds available)`);
+    .map((w) => `${w.name} (${w.availableBeds} beds available)`);
 
   if (!preferred) {
     return {
@@ -60,6 +69,9 @@ async function mockAllocate({ condition, urgency, age, gender }) {
       specialRequirements: ['Contact ward manager immediately', 'Consider transfer if needed'],
       alternatives: [],
       disclaimer: DISCLAIMER,
+      liveDataCheckedAt: new Date().toISOString(),
+      advisoryOnly: true,
+      ...metadata,
     };
   }
 
@@ -74,12 +86,20 @@ async function mockAllocate({ condition, urgency, age, gender }) {
     },
     rationale: `Based on the patient's condition (${condition}) and urgency level (${urgency}), the ${preferred.name} (${preferred.type} ward) is the most appropriate placement. ${preferred.availableBeds} bed(s) are currently available.`,
     priority,
-    specialRequirements: priority === 'Immediate'
-      ? ['Continuous vital monitoring', 'Immediate nursing assessment', 'Notify attending physician']
-      : ['Standard admission protocol', 'Initial nursing assessment within 1 hour'],
+    specialRequirements:
+      priority === 'Immediate'
+        ? ['Immediate clinician assessment', 'Confirm monitoring and isolation requirements before assignment']
+        : ['Complete the standard admission assessment', 'Confirm ward suitability before assignment'],
     alternatives,
     disclaimer: DISCLAIMER,
+    liveDataCheckedAt: new Date().toISOString(),
+    advisoryOnly: true,
+    ...metadata,
   };
+}
+
+async function mockAllocate({ condition, urgency, age, wards }) {
+  return buildVerifiedAllocation({ condition, urgency, age, wards });
 }
 
 async function runBedAllocation({ condition, urgency, age, gender }) {
@@ -88,9 +108,12 @@ async function runBedAllocation({ condition, urgency, age, gender }) {
   const result = await callLLM(
     BED_ALLOCATION.system,
     BED_ALLOCATION.user({ condition, urgency, age, gender, availableWards: wards }),
-    () => mockAllocate({ condition, urgency, age, gender }),
+    () => mockAllocate({ condition, urgency, age, wards })
   );
-  return result.data;
+  return buildVerifiedAllocation({
+    condition, urgency, age, wards,
+    metadata: { _source: result.data._source, _degraded: result.data._degraded, _fallbackReason: result.data._fallbackReason, _model: result.data._model },
+  });
 }
 
-module.exports = { runBedAllocation };
+module.exports = { runBedAllocation, buildVerifiedAllocation };

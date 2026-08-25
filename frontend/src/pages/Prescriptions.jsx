@@ -133,7 +133,10 @@ const Prescriptions = () => {
     if (!items.length) return toast.error('Enter quantity for at least one medicine')
     try {
       setDispenseLoading(true)
-      await prescriptionService.dispensePrescription(dispensingRx._id, { items })
+      await prescriptionService.dispensePrescription(dispensingRx._id, {
+        items,
+        idempotencyKey: crypto.randomUUID(),
+      })
       toast.success('Medicines dispensed successfully')
       setShowDispense(false)
       setDispensingRx(null)

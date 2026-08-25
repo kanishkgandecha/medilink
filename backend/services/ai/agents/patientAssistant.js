@@ -1,6 +1,7 @@
 'use strict';
 const { callLLM } = require('../llmClient');
 const { PATIENT_ASSISTANT, DISCLAIMER } = require('../promptTemplates');
+const { enforceAssistantSafety } = require('../safety');
 
 const INTENT_MAP = [
   { intent: 'emergency',    patterns: ['emergency', 'ambulance', 'dying', 'heart attack', 'stroke', 'unconscious', 'can\'t breathe', 'severe chest pain', 'bleeding heavily', '112'] },
@@ -97,7 +98,7 @@ async function runPatientAssistant({ message, history, userData }) {
     PATIENT_ASSISTANT.user({ message, history, userData }),
     () => mockRespond({ message }),
   );
-  return result.data;
+  return enforceAssistantSafety(result.data, message);
 }
 
 module.exports = { runPatientAssistant };

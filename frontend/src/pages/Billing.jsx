@@ -428,8 +428,8 @@ const Billing = () => {
     if (!payNowMethod) return toast.error('Please select a payment method')
     setSubmitting(true)
     try {
-      await billingService.patientPayBill(selectedBill._id, payNowMethod)
-      toast.success('Payment successful! Your bill is now paid.')
+      const result = await billingService.patientPayBill(selectedBill._id, payNowMethod)
+      toast.success(result?.message || 'Demo payment recorded. No external gateway transaction was processed.')
       setShowPayNowModal(false)
       fetchBills()
     } catch (err) {

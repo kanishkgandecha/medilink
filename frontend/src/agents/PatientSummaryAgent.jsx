@@ -56,7 +56,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
           <div className="flex items-center gap-3">
             <ClipboardList className="w-5 h-5 text-white" />
             <h2 className="font-bold text-white text-base">Patient Summary Agent</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">LLM Powered</span>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Record Grounded</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
         </div>
@@ -69,7 +69,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
               </div>
               <div className="text-center">
                 <p className="font-semibold text-gray-800 dark:text-white">Generating Clinical Summary</p>
-                <p className="text-sm text-gray-500 mt-1">Fetching appointments, prescriptions, and billing data…</p>
+                <p className="text-sm text-gray-500 mt-1">Fetching verified clinical records and recent appointments…</p>
               </div>
             </div>
           )}
@@ -77,7 +77,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
           {!loading && !result && (
             <>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Generate a structured AI clinical summary for any patient — including medical history, current medications, risk flags, and recommendations.
+                Generate a structured summary grounded in recorded medical history, medications, allergies, and appointments.
               </p>
 
               {!propPatientId && (
@@ -138,7 +138,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
                   {[
                     { icon: Calendar, label: 'Appointments', value: result.recentActivity.appointments },
                     { icon: FileText, label: 'Last Visit', value: result.recentActivity.lastVisit },
-                    { icon: ClipboardList, label: 'Pending Bills', value: result.recentActivity.pendingBills },
+                    { icon: ClipboardList, label: 'Completed Visits', value: result.recentActivity.completedVisits },
                   ].map(({ icon: Icon, label, value }) => (
                     <div key={label} className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3 text-center">
                       <Icon className="w-4 h-4 text-gray-400 mx-auto mb-1" />
@@ -183,10 +183,19 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
                 </div>
               )}
 
+              {result.missingData?.length > 0 && (
+                <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-2">Missing or Unconfirmed Data</p>
+                  {result.missingData.map((item, i) => (
+                    <p key={i} className="text-sm text-amber-800 dark:text-amber-300">• {item}</p>
+                  ))}
+                </div>
+              )}
+
               {/* Recommendations */}
               {result.recommendations?.length > 0 && (
                 <div className="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-2">AI Recommendations</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-2">Review Requirement</p>
                   {result.recommendations.map((r, i) => (
                     <p key={i} className="text-sm text-blue-800 dark:text-blue-300">• {r}</p>
                   ))}
@@ -194,7 +203,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
               )}
 
               <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ This summary is AI-generated for reference. Clinical decisions must be made by a qualified healthcare professional.
+                ⚕️ Generated from MediLink records at {result.provenance?.generatedAt ? new Date(result.provenance.generatedAt).toLocaleString() : 'the current time'}. Not yet reviewed by a clinician.
               </p>
 
               {!propPatientId && (

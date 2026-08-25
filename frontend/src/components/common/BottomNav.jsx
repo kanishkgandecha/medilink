@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Home, Users, UserPlus, Calendar, Bed, Pill,
   DollarSign, BarChart3, Briefcase, Settings,
-  FileText, ClipboardList, FlaskConical,
+  FileText, ClipboardList, FlaskConical, Sparkles,
   MoreHorizontal, X, User,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -13,49 +13,49 @@ import { useTheme } from '../../context/ThemeContext'
 const PRIMARY = {
   admin: [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',icon: Sparkles,   path: '/ai-agents'    },
     { id: 'patients',     label: 'Patients', icon: Users,      path: '/patients'     },
     { id: 'appointments', label: 'Schedule', icon: Calendar,   path: '/appointments' },
-    { id: 'staff',        label: 'Staff',    icon: Briefcase,  path: '/staff'        },
   ],
   doctor: [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',icon: Sparkles,   path: '/ai-agents'    },
     { id: 'appointments', label: 'Schedule', icon: Calendar,   path: '/appointments' },
     { id: 'patients',     label: 'Patients', icon: Users,      path: '/patients'     },
-    { id: 'prescriptions',label: 'Rx',       icon: FileText,   path: '/prescriptions'},
   ],
   patient: [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,   path: '/ai-agents'    },
     { id: 'appointments', label: 'Appts',    icon: Calendar,   path: '/appointments' },
     { id: 'prescriptions',label: 'Rx',       icon: Pill,       path: '/prescriptions'},
-    { id: 'billing',      label: 'Bills',    icon: DollarSign, path: '/billing'      },
   ],
   nurse: [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,   path: '/ai-agents'    },
     { id: 'patients',     label: 'Patients', icon: Users,      path: '/patients'     },
     { id: 'wards',        label: 'Wards',    icon: Bed,        path: '/wards'        },
-    { id: 'appointments', label: 'Schedule', icon: Calendar,   path: '/appointments' },
   ],
   receptionist: [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,   path: '/ai-agents'    },
     { id: 'appointments', label: 'Schedule', icon: Calendar,   path: '/appointments' },
     { id: 'patients',     label: 'Patients', icon: Users,      path: '/patients'     },
-    { id: 'billing',      label: 'Billing',  icon: DollarSign, path: '/billing'      },
   ],
   pharmacist: [
     { id: 'dashboard',    label: 'Home',      icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite',  icon: Sparkles,   path: '/ai-agents'    },
     { id: 'pharmacy',     label: 'Medicines', icon: Pill,       path: '/pharmacy'     },
     { id: 'prescriptions',label: 'Rx',        icon: FileText,   path: '/prescriptions'},
-    { id: 'billing',      label: 'Billing',   icon: DollarSign, path: '/billing'      },
   ],
   'lab technician': [
     { id: 'dashboard',    label: 'Home',     icon: Home,        path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,    path: '/ai-agents'    },
     { id: 'test-reports', label: 'Reports',  icon: FlaskConical,path: '/test-reports' },
-    { id: 'patients',     label: 'Patients', icon: Users,       path: '/patients'     },
   ],
   'ward manager': [
     { id: 'dashboard',    label: 'Home',     icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Suite', icon: Sparkles,   path: '/ai-agents'    },
     { id: 'wards',        label: 'Wards',    icon: Bed,        path: '/wards'        },
-    { id: 'patients',     label: 'Patients', icon: Users,      path: '/patients'     },
   ],
 }
 PRIMARY.administrator = PRIMARY.admin
@@ -64,6 +64,7 @@ PRIMARY.administrator = PRIMARY.admin
 const ALL_ITEMS = {
   admin: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,       path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,   path: '/ai-agents'    },
     { id: 'patients',     label: 'Patients',     icon: Users,      path: '/patients'     },
     { id: 'doctors',      label: 'Doctors',      icon: UserPlus,   path: '/doctors'      },
     { id: 'staff',        label: 'Staff',        icon: Briefcase,  path: '/staff'        },

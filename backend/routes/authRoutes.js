@@ -36,14 +36,32 @@ router.post('/login', [
 ], login);
 
 // Password reset routes
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password/:resettoken', resetPassword);
+router.post('/forgot-password', [
+  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+  validate
+], forgotPassword);
+router.post('/reset-password/:resettoken', [
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/[a-z]/).withMessage('Password must contain a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must contain a number'),
+  validate
+], resetPassword);
 
 // Protected routes (require authentication)
 router.get('/verify', protect, verifyToken);
 router.get('/me', protect, getMe);
 router.get('/my-profile', protect, getMyProfile);
-router.put('/update-password', protect, updatePassword);
+router.put('/update-password', protect, [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+    .matches(/[a-z]/).withMessage('New password must contain a lowercase letter')
+    .matches(/[A-Z]/).withMessage('New password must contain an uppercase letter')
+    .matches(/[0-9]/).withMessage('New password must contain a number'),
+  validate
+], updatePassword);
 router.put('/profile', protect, updateProfile);
 router.post('/avatar', protect, (req, res, next) => {
   uploadAvatar(req, res, (err) => {

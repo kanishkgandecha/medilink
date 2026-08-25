@@ -1,226 +1,116 @@
-# MediLink — Hospital Management System
+# MediLink — Hospital Management System (PostgreSQL + Prisma)
 
-A full-stack MERN hospital management platform supporting role-based access for Admins, Doctors, Nurses, Receptionists, Pharmacists, Lab Technicians, Ward Managers, and Patients.
+A full-stack multi-specialty hospital management platform supporting role-based access for Admins, Doctors, Nurses, Receptionists, Pharmacists, Lab Technicians, Ward Managers, and Patients.
+
+> **Database Architecture Update**: The backend has been fully migrated from MongoDB (Mongoose) to **PostgreSQL** using **Prisma ORM**. Complete data preservation, relational schema normalization, foreign key constraints, and 100% REST API compatibility have been implemented.
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, Vite, Tailwind CSS, React Router v6 |
-| Backend | Node.js, Express.js |
-| Database | MongoDB Atlas (Mongoose ODM) |
-| Auth | JWT (httpOnly-compatible), bcrypt |
-| UI | Lucide Icons, React Toastify |
+| Frontend | React 18, Vite, Vanilla CSS / Tailwind, React Router v6 |
+| Backend | Node.js (v20), Express.js |
+| Database | PostgreSQL 15 (Prisma ORM 5.19.0) |
+| Containerization | Docker & Docker Compose |
+| Auth | JWT, bcryptjs |
+| AI Integration | OpenRouter API (OpenAI-compatible) with fallback rule-based mock engine |
 
-## Features
+---
 
-- **Role-based dashboards** — each role sees only relevant data and navigation
-- **Appointments** — book, reschedule, cancel; double-booking prevention; auto-generates consultation bill on completion
-- **Prescriptions** — doctors write, pharmacists fulfil; auto-generates medicine bill on fulfilment
-- **Pharmacy** — medicine inventory management with stock tracking
-- **Billing** — consultation and medicine bills; payment recording; insurance claims
-- **Wards & Beds** — ward creation, bed allocation and release
-- **Test Reports** — lab report upload and viewing per patient
-- **Staff Management** — create Staff accounts (Nurse, Receptionist, Pharmacist, Lab Technician, Ward Manager) with phone-number default password
-- **Doctor Management** — create Doctor profiles atomically; phone-number default password
-- **Change Password** — in-app password change from the header profile menu
+## Docker Quick Start (Single Command)
 
-## Roles & Access
-
-| Role | Key Pages |
-|---|---|
-| Admin | All pages |
-| Doctor | Dashboard, Appointments, Patients, Prescriptions, Reports |
-| Nurse | Dashboard, Patients, Wards, Tasks |
-| Receptionist | Dashboard, Appointments, Patients, Billing |
-| Pharmacist | Dashboard, Pharmacy, Prescriptions, Billing |
-| Lab Technician | Dashboard, Test Reports, Patients |
-| Ward Manager | Dashboard, Wards & Beds, Patients |
-| Patient | Dashboard, Appointments, Prescriptions, Billing, Test Reports |
-
-## Prerequisites
-
-- Node.js 18+
-- npm 9+
-- MongoDB Atlas account (or local MongoDB)
-
-## Local Setup
-
-### 1. Clone the repository
+Run the entire application stack (PostgreSQL + Backend + Frontend) using Docker Compose:
 
 ```bash
-git clone https://github.com/kanishkgandecha/Medilink.git
-cd Medilink
+docker compose up --build
 ```
 
-### 2. Backend
+- **Frontend**: [http://localhost:3001](http://localhost:3001)
+- **Backend API**: [http://localhost:5001](http://localhost:5001)
+- **Health Check**: [http://localhost:5001/health](http://localhost:5001/health)
+
+---
+
+## Canonical Generalized Demo Logins
+
+All seed passwords default to `Password123!` (configurable via `DEFAULT_SEED_PASSWORD` in `.env`).
+
+| Role | Email | Password | User Details |
+|---|---|---|---|
+| **Admin** | `admin@medilink.com` | `Password123!` | System Admin (Full System Access) |
+| **Doctor** | `doctor@medilink.com` | `Password123!` | Dr. Vikramaditya Mehta (Cardiology) |
+| **Patient** | `patient@medilink.com` | `Password123!` | Rahul Gupta (Mumbai, MH) |
+| **Nurse** | `nurse@medilink.com` | `Password123!` | Sister Deepa Pillai (Head ICU Nurse) |
+| **Receptionist** | `receptionist@medilink.com` | `Password123!` | Sunita Verma (Front Desk Lead) |
+| **Pharmacist** | `pharmacist@medilink.com` | `Password123!` | Amit Joshi (Chief Pharmacist) |
+| **Lab Technician** | `labtech@medilink.com` | `Password123!` | Ramesh Kulkarni (Pathology Tech) |
+| **Radiology Tech** | `radiology@medilink.com` | `Password123!` | Anil Saxena (Radiology Tech) |
+| **Billing Staff** | `billing@medilink.com` | `Password123!` | Vijay Trivedi (Billing Manager) |
+
+---
+
+## AI Features & LLM Provider Configuration
+
+MediLink includes an AI intelligence suite powering:
+- **Symptom Analysis & Triage**: Analyzes patient symptoms and recommends appropriate specialists.
+- **AI Bed Allocation**: Recommends optimal ward & bed placement based on urgency.
+- **Admin & Operational Insights**: Analyzes hospital revenue, bed occupancy, and high-risk patients.
+- **Pharmacy Inventory Alerts**: Flags expiring and low-stock medicines.
+- **Patient Assistant Chatbot**: Guided AI assistant for navigation, appointments, and billing.
+
+### Provider & Model Setup (OpenRouter)
+
+The AI client connects via **OpenRouter** (`https://openrouter.ai/api/v1/chat/completions`) using an OpenAI-compatible API interface.
+
+1. **Obtain API Key**:
+   - Sign in to [https://openrouter.ai](https://openrouter.ai).
+   - Generate an API key under **Keys** ([https://openrouter.ai/keys](https://openrouter.ai/keys)).
+2. **Configure Environment Variables (`backend/.env`)**:
+   ```env
+   OPENROUTER_API_KEY=sk-or-v1-your-actual-key-here
+   OPENROUTER_MODEL=openai/gpt-4o-mini
+   ```
+3. **Model Selection**:
+   - Model selection is driven entirely via `OPENROUTER_MODEL` in `.env`.
+   - Consult OpenRouter's model catalog ([https://openrouter.ai/models](https://openrouter.ai/models)) when selecting a model (e.g. `anthropic/claude-3.5-sonnet`, `google/gemini-2.5-flash`, `meta-llama/llama-3.3-70b-instruct`, `openai/gpt-4o-mini`).
+4. **Local Fallback Mode**:
+   - If `OPENROUTER_API_KEY` is commented out or missing, or if an LLM call times out (10s limit) or rate limits (429/5xx), MediLink automatically executes a rule-based mock response.
+
+---
+
+## Database Commands & Utilities
+
+### 1. Seeding Deterministic Indian Hospital Data
+Seed initial demo data into PostgreSQL:
 
 ```bash
-cd backend
-npm install
+# In local development
+npm run seed --prefix backend
+
+# Or via Docker
+docker compose run seed
 ```
 
-Create a `.env` file in the `backend/` directory:
+### 2. Database Migration Pipeline (MongoDB → PostgreSQL)
 
-```env
-PORT=5001
-NODE_ENV=development
-MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/medilink?retryWrites=true&w=majority
-JWT_SECRET=your_strong_random_secret_here
-JWT_EXPIRE=30d
-FRONTEND_URL=http://localhost:3000
-
-# Optional — for password reset emails
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_gmail_app_password
-EMAIL_FROM=MediLink <noreply@medilink.com>
-```
-
-Start the backend (with hot-reload):
-
-```bash
-npm run dev        # nodemon — auto-restarts on file changes
-# or
-npm start          # plain node
-```
-
-The API will be available at `http://localhost:5001`.
-
-### 3. Frontend
-
-Open a new terminal:
-
-```bash
-cd frontend
-npm install
-```
-
-Create a `.env` file in the `frontend/` directory:
-
-```env
-VITE_BACKEND_URL=http://localhost:5001
-VITE_APP_NAME=MediLink HMS
-VITE_API_TIMEOUT=30000
-```
-
-Start the frontend dev server:
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:3000`.
-
-### 4. Seed demo data (optional)
+To migrate live or legacy MongoDB data into PostgreSQL:
 
 ```bash
 cd backend
-node seed.js
+
+# Step A: Pre-migration MongoDB Backup
+npm run backup:data
+
+# Step B: Execute Automated Migration Script
+npm run migrate:data
+
+# Step C: Post-Migration Audit
+npm run verify:data
 ```
 
-This creates demo accounts for each role. Default credentials are printed to the console after seeding.
-
-## Default Passwords
-
-When an Admin creates a Doctor or Staff member via the UI, the account's **default password is set to the user's phone number**. The user should change it on first login via the profile dropdown → **Change Password**.
-
-## API Overview
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/register` | Self-register (Patient role) |
-| PUT | `/api/auth/update-password` | Change password |
-| GET | `/api/patients` | List patients |
-| POST | `/api/patients` | Create patient profile |
-| GET | `/api/doctors` | List doctors |
-| POST | `/api/doctors` | Create doctor + user account |
-| GET | `/api/appointments` | List appointments |
-| POST | `/api/appointments` | Book appointment |
-| PUT | `/api/appointments/:id` | Update / complete appointment |
-| GET | `/api/prescriptions` | List prescriptions |
-| POST | `/api/prescriptions` | Write prescription (Doctor) |
-| PUT | `/api/prescriptions/:id/status` | Fulfil prescription (Pharmacist) |
-| GET | `/api/billing` | List bills |
-| POST | `/api/billing` | Create bill |
-| POST | `/api/billing/:id/payment` | Record payment |
-| GET | `/api/medicines` | List medicines |
-| GET | `/api/wards` | List wards |
-| POST | `/api/wards/:id/allocate` | Allocate bed |
-| POST | `/api/wards/:id/release` | Release bed |
-| GET | `/api/staff` | List staff |
-| POST | `/api/staff` | Create staff + user account |
-| GET | `/api/dashboards/:role` | Role-specific dashboard stats |
-
-Full API documentation is available via the Postman collection in `backend/MediLink.postman_collection.json` (if present).
-
-## Environment Variables Reference
-
-### Backend (`backend/.env`)
-
-| Variable | Required | Description |
-|---|---|---|
-| `PORT` | No | Server port (default: 5001) |
-| `NODE_ENV` | No | `development` or `production` |
-| `MONGO_URI` | Yes | MongoDB Atlas connection string |
-| `JWT_SECRET` | Yes | Secret for signing JWTs |
-| `JWT_EXPIRE` | No | Token expiry (default: `30d`) |
-| `FRONTEND_URL` | No | Allowed CORS origin |
-| `EMAIL_HOST` | No | SMTP host for password reset emails |
-| `EMAIL_PORT` | No | SMTP port |
-| `EMAIL_USER` | No | SMTP username |
-| `EMAIL_PASS` | No | SMTP password / app password |
-| `EMAIL_FROM` | No | Sender display name + address |
-
-### Frontend (`frontend/.env`)
-
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_BACKEND_URL` | Yes | Base URL of the backend API |
-| `VITE_APP_NAME` | No | App title shown in UI |
-| `VITE_API_TIMEOUT` | No | Axios timeout in ms (default: 30000) |
-
-## Project Structure
-
-```
-Medilink/
-├── backend/
-│   ├── controllers/       # Route handler logic
-│   ├── middleware/        # auth, error handler, rate limiter
-│   ├── models/            # Mongoose schemas
-│   ├── routes/            # Express routers
-│   ├── utils/             # logger, email, asyncHandler
-│   ├── seed.js            # Demo data seeder
-│   └── server.js          # Entry point
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── common/    # Header, Sidebar, ProtectedRoute, modals
-    │   │   └── dashboard/ # Per-role dashboard components
-    │   ├── context/       # AuthContext, ThemeContext
-    │   ├── pages/         # Full-page views (Patients, Billing, etc.)
-    │   └── services/      # Axios API wrappers per domain
-    └── vite.config.js
-```
-
-## Deployment
-
-The app is deployed at:
-
-- **Frontend:** [https://medilinkfinal-git-main-kanishks-projects-810056d9.vercel.app](https://medilinkfinal-git-main-kanishks-projects-810056d9.vercel.app)
-- **Backend:** [https://medilink-oajt.onrender.com](https://medilink-oajt.onrender.com)
-
-For production deployment, set `NODE_ENV=production` and update `FRONTEND_URL` / `VITE_BACKEND_URL` accordingly.
-
-## Security
-
-- Passwords hashed with bcrypt (10 salt rounds)
-- JWT stored client-side; validated on every protected request
-- Role + subRole checked server-side on every protected route (`authorize` middleware)
-- Rate limiting on all API routes (stricter on `/api/auth`)
-- Helmet + mongo-sanitize for XSS/NoSQL injection protection
+---
 
 ## Authors
 

@@ -28,6 +28,7 @@ const Reports       = lazy(() => import('./pages/Reports'))
 const Settings      = lazy(() => import('./pages/Settings'))
 const TestReports   = lazy(() => import('./pages/TestReports'))
 const Profile       = lazy(() => import('./pages/Profile'))
+const AIAgents      = lazy(() => import('./pages/AIAgents'))
 
 // Page-level loading fallback — matches app chrome (no layout shift)
 const PageLoader = () => (
@@ -81,6 +82,15 @@ function App() {
           <Route path="/test-reports" element={<ProtectedRoute allowedRoles={['Patient','Doctor','Nurse','Admin','Lab Technician']}><TestReports /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/profile"    element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+          {/* AI Agent Suite Routes */}
+          <Route path="/ai-agents"  element={<ProtectedRoute><AIAgents /></ProtectedRoute>} />
+          <Route path="/symptom-checker" element={<Navigate to="/ai-agents?tab=symptom-checker" replace />} />
+          <Route path="/bed-allocation"  element={<Navigate to="/ai-agents?tab=bed-allocation" replace />} />
+          <Route path="/health-risk"     element={<Navigate to="/ai-agents?tab=health-risk" replace />} />
+          <Route path="/report-analyzer" element={<Navigate to="/ai-agents?tab=report-analyzer" replace />} />
+          <Route path="/appointment-optimizer" element={<Navigate to="/ai-agents?tab=appointment-optimizer" replace />} />
+          <Route path="/patient-summary" element={<Navigate to="/ai-agents?tab=patient-summary" replace />} />
 
           {/* Default */}
           <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />

@@ -16,3 +16,4 @@ export const symptomToAppointment   = (symptoms, age, gender) => api.post('/ai/s
 // ── Operational intelligence ─────────────────────────────────────────────────
 export const getAdminInsights       = () => api.get('/ai/admin-insights')
 export const getPharmacyAlerts      = () => api.get('/ai/pharmacy-alerts')
+export const getAiReliability       = (hours = 24) => api.get('/ai/reliability', { params: { hours } })

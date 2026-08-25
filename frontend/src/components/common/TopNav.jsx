@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Home, Users, UserPlus, Calendar, Bed, Pill,
   DollarSign, BarChart3, Briefcase, Settings,
-  FileText, ClipboardList, FlaskConical,
+  FileText, ClipboardList, FlaskConical, Sparkles,
   Sun, Moon, Bell, ChevronDown, LogOut, User, Lock, Eye, EyeOff,
   X, CheckCheck,
 } from 'lucide-react'
@@ -18,6 +18,7 @@ import logoDark  from '../../assets/logo/logo-icon-bg-dark.png'
 const MENUS = {
   admin: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
     { id: 'doctors',      label: 'Doctors',      icon: UserPlus,      path: '/doctors'      },
     { id: 'staff',        label: 'Staff',        icon: Briefcase,     path: '/staff'        },
@@ -29,6 +30,7 @@ const MENUS = {
   ],
   doctor: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'appointments', label: 'Appointments', icon: Calendar,      path: '/appointments' },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
     { id: 'prescriptions',label: 'Prescriptions',icon: FileText,      path: '/prescriptions'},
@@ -36,6 +38,7 @@ const MENUS = {
   ],
   patient: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'appointments', label: 'Appointments', icon: Calendar,      path: '/appointments' },
     { id: 'prescriptions',label: 'Prescriptions',icon: Pill,          path: '/prescriptions'},
     { id: 'billing',      label: 'My Bills',     icon: DollarSign,    path: '/billing'      },
@@ -43,6 +46,7 @@ const MENUS = {
   ],
   nurse: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
     { id: 'wards',        label: 'Ward Status',  icon: Bed,           path: '/wards'        },
     { id: 'prescriptions',label: 'Prescriptions',icon: ClipboardList, path: '/prescriptions'},
@@ -50,23 +54,27 @@ const MENUS = {
   ],
   receptionist: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'appointments', label: 'Appointments', icon: Calendar,      path: '/appointments' },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
     { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
   ],
   pharmacist: [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'pharmacy',     label: 'Medicines',    icon: Pill,          path: '/pharmacy'     },
     { id: 'prescriptions',label: 'Prescriptions',icon: FileText,      path: '/prescriptions'},
     { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
   ],
   'lab technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'test-reports', label: 'Test Reports', icon: FileText,      path: '/test-reports' },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
   ],
   'ward manager': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'wards',        label: 'Wards & Beds', icon: Bed,           path: '/wards'        },
     { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
   ],

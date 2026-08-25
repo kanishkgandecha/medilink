@@ -1,113 +1,131 @@
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
-const User = require('../models/User');
-const Doctor = require('../models/Doctor');
-const Patient = require('../models/Patient');
-const Appointment = require('../models/Appointment');
-const Prescription = require('../models/Prescription');
-const Medicine = require('../models/Medicine');
-const Ward = require('../models/Ward');
-const Billing = require('../models/Billing');
-const Staff = require('../models/Staff');
+const { formatAppointment } = require('../utils/virtuals');
 
-// @desc    Get Admin Dashboard
-// @route   GET /api/dashboards/admin
-// @access  Private (Admin only)
+const formatPopulatedApt = (apt) => {
+  if (!apt) return null;
+  const formatted = formatAppointment(apt);
+  return {
+    ...formatted,
+    _id: formatted.id,
+    patient: formatted.patient
+      ? {
+          ...formatted.patient,
+          _id: formatted.patient.id,
+          userId: formatted.patient.user ? { ...formatted.patient.user, _id: formatted.patient.user.id } : null,
+        }
+      : null,
+    doctor: formatted.doctor
+      ? {
+          ...formatted.doctor,
+          _id: formatted.doctor.id,
+          userId: formatted.doctor.user ? { ...formatted.doctor.user, _id: formatted.doctor.user.id } : null,
+        }
+      : null,
+  };
+};
+
 const getAdminDashboard = async (_req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Comprehensive statistics
   const [
     totalUsers,
     totalDoctors,
     totalPatients,
     todayAppointments,
     pendingAppointments,
-    totalBeds,
-    lowStockMedicines,
+    wards,
+    medicines,
     pendingBills,
-    todayRevenue,
+    todayBills,
     activeStaff,
-    expiringMedicines
   ] = await Promise.all([
-    User.countDocuments({ isActive: true }),
-    Doctor.countDocuments({ isAvailable: true }),
-    Patient.countDocuments(),
-    Appointment.countDocuments({
-      appointmentDate: { $gte: today, $lt: tomorrow }
+    prisma.user.count({ where: { isActive: true } }),
+    prisma.doctor.count({ where: { isAvailable: true } }),
+    prisma.patient.count(),
+    prisma.appointment.count({
+      where: { appointmentDate: { gte: today, lt: tomorrow } },
     }),
-    Appointment.countDocuments({ status: 'Scheduled' }),
-    Ward.aggregate([
-      { $match: { isActive: true } },
-      { $group: { _id: null, total: { $sum: '$totalBeds' }, available: { $sum: '$availableBeds' } } }
-    ]),
-    Medicine.countDocuments({
-      $expr: { $lte: ['$stockQuantity', '$reorderLevel'] },
-      isActive: true
-    }),
-    Billing.countDocuments({ paymentStatus: { $in: ['Unpaid', 'Partially-Paid'] } }),
-    Billing.aggregate([
-      { $match: { billDate: { $gte: today, $lt: tomorrow } } },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-    ]),
-    Staff.countDocuments({ isActive: true }),
-    Medicine.countDocuments({
-      expiryDate: { $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), $gte: today },
-      isActive: true
-    })
+    prisma.appointment.count({ where: { status: 'Scheduled' } }),
+    prisma.ward.findMany({ where: { isActive: true } }),
+    prisma.medicine.findMany({ where: { isActive: true } }),
+    prisma.billing.count({ where: { paymentStatus: { in: ['Unpaid', 'Partially_Paid'] } } }),
+    prisma.billing.findMany({ where: { billDate: { gte: today, lt: tomorrow } } }),
+    prisma.staff.count({ where: { isActive: true } }),
   ]);
 
-  // Recent activities
-  const recentAppointments = await Appointment.find()
-    .sort('-createdAt')
-    .limit(5)
-    .populate({
-      path: 'patient',
-      select: 'patientId userId',
-      populate: { path: 'userId', select: 'name' }
-    })
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId', select: 'name' }
-    });
+  const totalBedsCount = wards.reduce((sum, w) => sum + w.totalBeds, 0);
+  const availableBedsCount = wards.reduce((sum, w) => sum + w.availableBeds, 0);
 
-  const recentUsers = await User.find({ isActive: true })
-    .sort('-createdAt')
-    .limit(5)
-    .select('name email role createdAt');
+  const lowStockMedicines = medicines.filter((m) => m.stockQuantity <= m.reorderLevel).length;
+  const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const expiringMedicines = medicines.filter(
+    (m) => new Date(m.expiryDate) <= thirtyDaysLater && new Date(m.expiryDate) >= today
+  ).length;
 
-  // Monthly revenue for current year
-  const yearStart = new Date(today.getFullYear(), 0, 1);
-  const monthlyRevenue = await Billing.aggregate([
-    { $match: { billDate: { $gte: yearStart }, paymentStatus: { $in: ['Paid', 'Partially-Paid'] } } },
-    { $group: { _id: { month: { $month: '$billDate' } }, total: { $sum: '$amountPaid' } } },
-    { $sort: { '_id.month': 1 } }
-  ]);
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const revenueByMonth = MONTHS.map((month, i) => {
-    const found = monthlyRevenue.find(r => r._id.month === i + 1);
-    return { month, Revenue: found ? found.total : 0 };
+  const todayRevenueTotal = todayBills.reduce((sum, b) => sum + b.amountPaid, 0);
+
+  const recentAppointments = await prisma.appointment.findMany({
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+      doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+    },
   });
 
-  // Weekly appointment count (Mon–Sun of current week)
-  const dayOfWeek = today.getDay(); // 0=Sun
+  const recentUsers = await prisma.user.findMany({
+    where: { isActive: true },
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, name: true, email: true, role: true, createdAt: true },
+  });
+
+  const yearStart = new Date(today.getFullYear(), 0, 1);
+  const yearBills = await prisma.billing.findMany({
+    where: {
+      billDate: { gte: yearStart },
+      paymentStatus: { in: ['Paid', 'Partially_Paid'] },
+    },
+  });
+
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthMap = {};
+  yearBills.forEach((b) => {
+    const m = new Date(b.billDate).getMonth();
+    monthMap[m] = (monthMap[m] || 0) + b.amountPaid;
+  });
+
+  const revenueByMonth = MONTHS.map((month, i) => ({
+    month,
+    Revenue: monthMap[i] || 0,
+  }));
+
+  const dayOfWeek = today.getDay();
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
-  const weeklyApts = await Appointment.aggregate([
-    { $match: { appointmentDate: { $gte: weekStart, $lt: weekEnd } } },
-    { $group: { _id: { $dayOfWeek: '$appointmentDate' }, count: { $sum: 1 } } }
-  ]);
-  // $dayOfWeek: 1=Sun, 2=Mon, ... 7=Sat
-  const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
-  const weeklyTrend = DAY_LABELS.map((day, i) => {
-    const mongoDay = i + 2; // Mon=2, Tue=3, ..., Sat=7
-    const found = weeklyApts.find(a => a._id === mongoDay);
-    return { day, Appointments: found ? found.count : 0 };
+
+  const weekAppointments = await prisma.appointment.findMany({
+    where: { appointmentDate: { gte: weekStart, lt: weekEnd } },
   });
+
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayCounts = {};
+  weekAppointments.forEach((a) => {
+    const d = new Date(a.appointmentDate).getDay();
+    const labelIdx = d === 0 ? 6 : d - 1;
+    if (labelIdx < 6) dayCounts[labelIdx] = (dayCounts[labelIdx] || 0) + 1;
+  });
+
+  const weeklyTrend = DAY_LABELS.map((day, i) => ({
+    day,
+    Appointments: dayCounts[i] || 0,
+  }));
 
   res.status(200).json({
     success: true,
@@ -119,26 +137,26 @@ const getAdminDashboard = async (_req, res) => {
         totalPatients,
         todayAppointments,
         pendingAppointments,
-        totalBeds: totalBeds[0]?.total || 0,
-        availableBeds: totalBeds[0]?.available || 0,
-        occupiedBeds: (totalBeds[0]?.total || 0) - (totalBeds[0]?.available || 0),
-        activeStaff
+        totalBeds: totalBedsCount,
+        availableBeds: availableBedsCount,
+        occupiedBeds: totalBedsCount - availableBedsCount,
+        activeStaff,
       },
       alerts: {
         lowStockMedicines,
         expiringMedicines,
         pendingBills,
-        pendingAppointments
+        pendingAppointments,
       },
       revenue: {
-        today: todayRevenue[0]?.total || 0,
-        monthly: revenueByMonth
+        today: todayRevenueTotal,
+        monthly: revenueByMonth,
       },
       weeklyAppointments: weeklyTrend,
       recentActivities: {
-        appointments: recentAppointments,
-        users: recentUsers
-      }
+        appointments: recentAppointments.map(formatPopulatedApt),
+        users: recentUsers.map((u) => ({ ...u, _id: u.id })),
+      },
     },
     quickActions: [
       { label: 'Manage Users', route: '/api/auth/users' },
@@ -148,21 +166,20 @@ const getAdminDashboard = async (_req, res) => {
       { label: 'Manage Wards', route: '/api/wards' },
       { label: 'View Reports', route: '/api/reports/dashboard' },
       { label: 'Manage Staff', route: '/api/staff' },
-      { label: 'Medicine Inventory', route: '/api/medicines' }
-    ]
+      { label: 'Medicine Inventory', route: '/api/medicines' },
+    ],
   });
 };
 
-// @desc    Get Doctor Dashboard
-// @route   GET /api/dashboards/doctor
-// @access  Private (Doctor only)
 const getDoctorDashboard = async (req, res) => {
-  const doctor = await Doctor.findOne({ userId: req.user.id });
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { userId: req.user.id },
+  });
+
   if (!doctor) {
     return res.status(404).json({
       success: false,
-      message: 'Doctor profile not found'
+      message: 'Doctor profile not found',
     });
   }
 
@@ -171,54 +188,63 @@ const getDoctorDashboard = async (req, res) => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Doctor-specific statistics
   const [
     todayAppointments,
     upcomingAppointments,
     completedToday,
-    myPatients,
-    pendingPrescriptions
+    doctorAppointments,
+    pendingPrescriptions,
   ] = await Promise.all([
-    Appointment.find({
-      doctor: doctor._id,
-      appointmentDate: { $gte: today, $lt: tomorrow }
-    })
-      .populate('patient', 'patientId')
-      .populate({ path: 'patient', populate: { path: 'userId', select: 'name phone' } })
-      .sort('timeSlot.startTime'),
-    
-    Appointment.find({
-      doctor: doctor._id,
-      appointmentDate: { $gte: today },
-      status: { $in: ['Scheduled', 'Confirmed'] }
-    })
-      .sort('appointmentDate')
-      .limit(10)
-      .populate('patient', 'patientId')
-      .populate({ path: 'patient', populate: { path: 'userId', select: 'name phone' } }),
-    
-    Appointment.countDocuments({
-      doctor: doctor._id,
-      appointmentDate: { $gte: today, $lt: tomorrow },
-      status: 'Completed'
+    prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        appointmentDate: { gte: today, lt: tomorrow },
+      },
+      include: {
+        patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, phone: true } } } },
+      },
+      orderBy: { startTime: 'asc' },
     }),
-    
-    Patient.countDocuments({
-      _id: { $in: await Appointment.distinct('patient', { doctor: doctor._id }) }
+    prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        appointmentDate: { gte: today },
+        status: { in: ['Scheduled', 'Confirmed'] },
+      },
+      take: 10,
+      orderBy: { appointmentDate: 'asc' },
+      include: {
+        patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, phone: true } } } },
+      },
     }),
-    
-    Prescription.countDocuments({
-      doctor: doctor._id,
-      status: 'Pending'
-    })
+    prisma.appointment.count({
+      where: {
+        doctorId: doctor.id,
+        appointmentDate: { gte: today, lt: tomorrow },
+        status: 'Completed',
+      },
+    }),
+    prisma.appointment.findMany({
+      where: { doctorId: doctor.id },
+      select: { patientId: true },
+      distinct: ['patientId'],
+    }),
+    prisma.prescription.count({
+      where: {
+        doctorId: doctor.id,
+        status: 'Pending',
+      },
+    }),
   ]);
 
-  // Recent prescriptions
-  const recentPrescriptions = await Prescription.find({ doctor: doctor._id })
-    .sort('-createdAt')
-    .limit(5)
-    .populate('patient', 'patientId')
-    .populate({ path: 'patient', populate: { path: 'userId', select: 'name' } });
+  const recentPrescriptions = await prisma.prescription.findMany({
+    where: { doctorId: doctor.id },
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+    },
+  });
 
   res.status(200).json({
     success: true,
@@ -228,92 +254,100 @@ const getDoctorDashboard = async (req, res) => {
       specialization: doctor.specialization,
       department: doctor.department,
       experience: doctor.experience,
-      rating: doctor.rating
+      rating: doctor.rating,
     },
     dashboard: {
       overview: {
         todayAppointments: todayAppointments.length,
         completedToday,
         upcomingAppointments: upcomingAppointments.length,
-        totalPatients: myPatients,
-        pendingPrescriptions
+        totalPatients: doctorAppointments.length,
+        pendingPrescriptions,
       },
-      todaySchedule: todayAppointments,
-      upcomingAppointments: upcomingAppointments.slice(0, 5),
-      recentPrescriptions
+      todaySchedule: todayAppointments.map(formatPopulatedApt),
+      upcomingAppointments: upcomingAppointments.slice(0, 5).map(formatPopulatedApt),
+      recentPrescriptions: recentPrescriptions.map((rx) => ({
+        ...rx,
+        _id: rx.id,
+        patient: rx.patient ? { ...rx.patient, _id: rx.patient.id, userId: rx.patient.user ? { ...rx.patient.user, _id: rx.patient.user.id } : null } : null,
+      })),
     },
     quickActions: [
-      { label: 'My Appointments', route: `/api/appointments?doctor=${doctor._id}` },
+      { label: 'My Appointments', route: `/api/appointments?doctor=${doctor.id}` },
       { label: 'My Patients', route: '/api/patients' },
       { label: 'Create Prescription', route: '/api/prescriptions' },
-      { label: 'View Prescriptions', route: `/api/prescriptions?doctor=${doctor._id}` },
-      { label: 'Update Availability', route: `/api/doctors/${doctor._id}/availability` }
-    ]
+      { label: 'View Prescriptions', route: `/api/prescriptions?doctor=${doctor.id}` },
+      { label: 'Update Availability', route: `/api/doctors/${doctor.id}/availability` },
+    ],
   });
 };
 
-// @desc    Get Patient Dashboard
-// @route   GET /api/dashboards/patient
-// @access  Private (Patient only)
 const getPatientDashboard = async (req, res) => {
-  const patient = await Patient.findOne({ userId: req.user.id })
-    .populate('userId');
-  
+  const patient = await prisma.patient.findFirst({
+    where: { userId: req.user.id },
+    include: {
+      user: true,
+      medicalHistory: { where: { isVoided: false } },
+      currentMedications: true,
+    },
+  });
+
   if (!patient) {
     return res.status(404).json({
       success: false,
-      message: 'Patient profile not found. Please complete your profile.'
+      message: 'Patient profile not found. Please complete your profile.',
     });
   }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Patient-specific data
   const [
     upcomingAppointments,
     pastAppointments,
     activePrescriptions,
-    unpaidBills
+    unpaidBills,
   ] = await Promise.all([
-    Appointment.find({
-      patient: patient._id,
-      appointmentDate: { $gte: today },
-      status: { $in: ['Scheduled', 'Confirmed'] }
-    })
-      .sort('appointmentDate')
-      .populate({
-        path: 'doctor',
-        populate: { path: 'userId', select: 'name' }
-      }),
-
-    Appointment.find({
-      patient: patient._id,
-      status: 'Completed'
-    })
-      .sort('-appointmentDate')
-      .limit(5)
-      .populate({
-        path: 'doctor',
-        populate: { path: 'userId', select: 'name' }
-      }),
-
-    Prescription.find({
-      patient: patient._id,
-      status: { $in: ['Pending', 'Partially-Filled'] }
-    })
-      .sort('-createdAt')
-      .populate({
-        path: 'doctor',
-        populate: { path: 'userId', select: 'name' }
-      })
-      .populate('medicines.medicine', 'name dosageForm'),
-    
-    Billing.find({
-      patient: patient._id,
-      paymentStatus: { $in: ['Unpaid', 'Partially-Paid'] }
-    })
-      .sort('-billDate')
+    prisma.appointment.findMany({
+      where: {
+        patientId: patient.id,
+        appointmentDate: { gte: today },
+        status: { in: ['Scheduled', 'Confirmed'] },
+      },
+      orderBy: { appointmentDate: 'asc' },
+      include: {
+        doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+      },
+    }),
+    prisma.appointment.findMany({
+      where: {
+        patientId: patient.id,
+        status: 'Completed',
+      },
+      take: 5,
+      orderBy: { appointmentDate: 'desc' },
+      include: {
+        doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+      },
+    }),
+    prisma.prescription.findMany({
+      where: {
+        patientId: patient.id,
+        status: { in: ['Pending', 'Partially_Filled'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+        medicines: { include: { medicine: { select: { id: true, name: true, dosageForm: true } } } },
+      },
+    }),
+    prisma.billing.findMany({
+      where: {
+        patientId: patient.id,
+        paymentStatus: { in: ['Unpaid', 'Partially_Paid'] },
+      },
+      orderBy: { billDate: 'desc' },
+    }),
   ]);
 
   res.status(200).json({
@@ -323,7 +357,9 @@ const getPatientDashboard = async (req, res) => {
       patientId: patient.patientId,
       name: req.user.name,
       bloodGroup: patient.bloodGroup,
-      age: req.user.dateOfBirth ? Math.floor((Date.now() - new Date(req.user.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000)) : null,
+      age: req.user.dateOfBirth
+        ? Math.floor((Date.now() - new Date(req.user.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000))
+        : null,
       medicalHistory: patient.medicalHistory || [],
       allergies: patient.allergies || [],
       currentMedications: patient.currentMedications || [],
@@ -333,70 +369,71 @@ const getPatientDashboard = async (req, res) => {
         upcomingAppointments: upcomingAppointments.length,
         activePrescriptions: activePrescriptions.length,
         unpaidBills: unpaidBills.length,
-        totalUnpaidAmount: unpaidBills.reduce((sum, bill) => sum + bill.balance, 0)
+        totalUnpaidAmount: unpaidBills.reduce((sum, bill) => sum + bill.balance, 0),
       },
-      upcomingAppointments,
-      recentVisits: pastAppointments,
-      activePrescriptions,
-      pendingBills: unpaidBills
+      upcomingAppointments: upcomingAppointments.map(formatPopulatedApt),
+      recentVisits: pastAppointments.map(formatPopulatedApt),
+      activePrescriptions: activePrescriptions.map((rx) => ({
+        ...rx,
+        _id: rx.id,
+        doctor: rx.doctor ? { ...rx.doctor, _id: rx.doctor.id, userId: rx.doctor.user ? { ...rx.doctor.user, _id: rx.doctor.user.id } : null } : null,
+      })),
+      pendingBills: unpaidBills.map((b) => ({ ...b, _id: b.id })),
     },
     quickActions: [
       { label: 'Book Appointment', route: '/api/appointments' },
       { label: 'View Doctors', route: '/api/doctors' },
-      { label: 'My Appointments', route: `/api/appointments?patient=${patient._id}` },
-      { label: 'My Prescriptions', route: `/api/prescriptions?patient=${patient._id}` },
-      { label: 'My Bills', route: `/api/billing?patient=${patient._id}` },
-      { label: 'Medical History', route: `/api/patients/${patient._id}` }
-    ]
+      { label: 'My Appointments', route: `/api/appointments?patient=${patient.id}` },
+      { label: 'My Prescriptions', route: `/api/prescriptions?patient=${patient.id}` },
+      { label: 'My Bills', route: `/api/billing?patient=${patient.id}` },
+      { label: 'Medical History', route: `/api/patients/${patient.id}` },
+    ],
   });
 };
 
-// @desc    Get Nurse Dashboard
-// @route   GET /api/dashboards/nurse
-// @access  Private (Nurse only)
 const getNurseDashboard = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Nurse-specific data
   const [
     todayAppointments,
     wardOccupancy,
     criticalPatients,
-    pendingAdmissions
+    pendingAdmissions,
   ] = await Promise.all([
-    Appointment.countDocuments({
-      appointmentDate: { $gte: today, $lt: tomorrow }
+    prisma.appointment.count({
+      where: { appointmentDate: { gte: today, lt: tomorrow } },
     }),
-    
-    Ward.find({ isActive: true })
-      .select('wardNumber wardName wardType totalBeds availableBeds')
-      .sort('wardNumber'),
-    
-    Appointment.find({
-      priority: 'Emergency',
-      status: { $in: ['Scheduled', 'Confirmed', 'In-Progress'] }
-    })
-      .populate({
-        path: 'patient',
-        select: 'patientId userId',
-        populate: { path: 'userId', select: 'name' }
-      })
-      .limit(10),
-    
-    Appointment.countDocuments({
-      type: 'Emergency',
-      status: 'Scheduled'
-    })
+    prisma.ward.findMany({
+      where: { isActive: true },
+      select: { id: true, wardNumber: true, wardName: true, wardType: true, totalBeds: true, availableBeds: true },
+      orderBy: { wardNumber: 'asc' },
+    }),
+    prisma.appointment.findMany({
+      where: {
+        priority: 'Emergency',
+        status: { in: ['Scheduled', 'Confirmed', 'In_Progress'] },
+      },
+      take: 10,
+      include: {
+        patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+      },
+    }),
+    prisma.appointment.count({
+      where: {
+        type: 'Emergency',
+        status: 'Scheduled',
+      },
+    }),
   ]);
 
   res.status(200).json({
     success: true,
     role: 'Nurse',
     nurseInfo: {
-      name: req.user.name
+      name: req.user.name,
     },
     dashboard: {
       overview: {
@@ -405,74 +442,53 @@ const getNurseDashboard = async (req, res) => {
         occupiedBeds: wardOccupancy.reduce((sum, w) => sum + (w.totalBeds - w.availableBeds), 0),
         availableBeds: wardOccupancy.reduce((sum, w) => sum + w.availableBeds, 0),
         criticalPatients: criticalPatients.length,
-        pendingAdmissions
+        pendingAdmissions,
       },
-      wardOccupancy,
-      criticalPatients
+      wardOccupancy: wardOccupancy.map((w) => ({ ...w, _id: w.id })),
+      criticalPatients: criticalPatients.map(formatPopulatedApt),
     },
     quickActions: [
       { label: 'View Wards', route: '/api/wards' },
       { label: 'Manage Beds', route: '/api/wards' },
       { label: 'View Patients', route: '/api/patients' },
       { label: 'Today Appointments', route: '/api/appointments?date=' + today.toISOString().split('T')[0] },
-      { label: 'Emergency Cases', route: '/api/appointments?priority=Emergency' }
-    ]
+      { label: 'Emergency Cases', route: '/api/appointments?priority=Emergency' },
+    ],
   });
 };
 
-// @desc    Get Receptionist Dashboard
-// @route   GET /api/dashboards/receptionist
-// @access  Private (Receptionist only)
 const getReceptionistDashboard = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Receptionist-specific data
   const [
     todayAppointments,
     pendingAppointments,
     availableDoctors,
     pendingBills,
-    todayRegistrations
+    todayRegistrations,
   ] = await Promise.all([
-    Appointment.find({
-      appointmentDate: { $gte: today, $lt: tomorrow }
-    })
-      .sort('timeSlot.startTime')
-      .populate({
-        path: 'patient',
-        select: 'patientId userId',
-        populate: { path: 'userId', select: 'name phone' }
-      })
-      .populate({
-        path: 'doctor',
-        populate: { path: 'userId', select: 'name' }
-      }),
-    
-    Appointment.countDocuments({
-      status: 'Scheduled'
+    prisma.appointment.findMany({
+      where: { appointmentDate: { gte: today, lt: tomorrow } },
+      orderBy: { startTime: 'asc' },
+      include: {
+        patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, phone: true } } } },
+        doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
+      },
     }),
-    
-    Doctor.countDocuments({
-      isAvailable: true
-    }),
-    
-    Billing.countDocuments({
-      paymentStatus: { $in: ['Unpaid', 'Partially-Paid'] }
-    }),
-    
-    Patient.countDocuments({
-      createdAt: { $gte: today, $lt: tomorrow }
-    })
+    prisma.appointment.count({ where: { status: 'Scheduled' } }),
+    prisma.doctor.count({ where: { isAvailable: true } }),
+    prisma.billing.count({ where: { paymentStatus: { in: ['Unpaid', 'Partially_Paid'] } } }),
+    prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow } } }),
   ]);
 
   res.status(200).json({
     success: true,
     role: 'Receptionist',
     receptionistInfo: {
-      name: req.user.name
+      name: req.user.name,
     },
     dashboard: {
       overview: {
@@ -480,9 +496,9 @@ const getReceptionistDashboard = async (req, res) => {
         pendingAppointments,
         availableDoctors,
         pendingBills,
-        todayRegistrations
+        todayRegistrations,
       },
-      todaySchedule: todayAppointments
+      todaySchedule: todayAppointments.map(formatPopulatedApt),
     },
     quickActions: [
       { label: 'Register Patient', route: '/api/patients' },
@@ -490,67 +506,56 @@ const getReceptionistDashboard = async (req, res) => {
       { label: 'View Appointments', route: '/api/appointments' },
       { label: 'Generate Bill', route: '/api/billing' },
       { label: 'View Doctors', route: '/api/doctors' },
-      { label: 'Check Ward Availability', route: '/api/wards?available=true' }
-    ]
+      { label: 'Check Ward Availability', route: '/api/wards?available=true' },
+    ],
   });
 };
 
-// @desc    Get Pharmacist Dashboard
-// @route   GET /api/dashboards/pharmacist
-// @access  Private (Pharmacist only)
 const getPharmacistDashboard = async (req, res) => {
-  // Pharmacist-specific data
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const [
     pendingPrescriptions,
-    lowStockMedicines,
+    medicines,
     expiringMedicines,
-    todayDispensed
+    todayDispensed,
+    totalMedicines,
   ] = await Promise.all([
-    Prescription.find({
-      status: 'Pending'
-    })
-      .sort('-createdAt')
-      .limit(10)
-      .populate({
-        path: 'patient',
-        select: 'patientId userId',
-        populate: { path: 'userId', select: 'name' }
-      })
-      .populate({
-        path: 'doctor',
-        populate: { path: 'userId', select: 'name' }
-      }),
-    
-    Medicine.find({
-      $expr: { $lte: ['$stockQuantity', '$reorderLevel'] },
-      isActive: true
-    })
-      .sort('stockQuantity')
-      .limit(10),
-    
-    Medicine.find({
-      expiryDate: { 
-        $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        $gte: new Date()
+    prisma.prescription.findMany({
+      where: { status: 'Pending' },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true } } } },
+        doctor: { select: { id: true, user: { select: { id: true, name: true } } } },
       },
-      isActive: true
-    })
-      .sort('expiryDate')
-      .limit(10),
-    
-    Prescription.countDocuments({
-      status: 'Fulfilled',
-      updatedAt: { $gte: new Date().setHours(0, 0, 0, 0) }
-    })
+    }),
+    prisma.medicine.findMany({ where: { isActive: true }, orderBy: { stockQuantity: 'asc' } }),
+    prisma.medicine.findMany({
+      where: {
+        expiryDate: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), gte: new Date() },
+        isActive: true,
+      },
+      take: 10,
+      orderBy: { expiryDate: 'asc' },
+    }),
+    prisma.prescription.count({
+      where: {
+        status: 'Fulfilled',
+        createdAt: { gte: today },
+      },
+    }),
+    prisma.medicine.count({ where: { isActive: true } }),
   ]);
 
-  const totalMedicines = await Medicine.countDocuments({ isActive: true });
+  const lowStockMedicines = medicines.filter((m) => m.stockQuantity <= m.reorderLevel).slice(0, 10);
 
   res.status(200).json({
     success: true,
     role: 'Pharmacist',
     pharmacistInfo: {
-      name: req.user.name
+      name: req.user.name,
     },
     dashboard: {
       overview: {
@@ -558,11 +563,16 @@ const getPharmacistDashboard = async (req, res) => {
         lowStockMedicines: lowStockMedicines.length,
         expiringMedicines: expiringMedicines.length,
         todayDispensed,
-        totalMedicines
+        totalMedicines,
       },
-      pendingPrescriptions,
-      lowStockAlerts: lowStockMedicines,
-      expiringAlerts: expiringMedicines
+      pendingPrescriptions: pendingPrescriptions.map((rx) => ({
+        ...rx,
+        _id: rx.id,
+        patient: rx.patient ? { ...rx.patient, _id: rx.patient.id, userId: rx.patient.user ? { ...rx.patient.user, _id: rx.patient.user.id } : null } : null,
+        doctor: rx.doctor ? { ...rx.doctor, _id: rx.doctor.id, userId: rx.doctor.user ? { ...rx.doctor.user, _id: rx.doctor.user.id } : null } : null,
+      })),
+      lowStockAlerts: lowStockMedicines.map((m) => ({ ...m, _id: m.id })),
+      expiringAlerts: expiringMedicines.map((m) => ({ ...m, _id: m.id })),
     },
     quickActions: [
       { label: 'View Prescriptions', route: '/api/prescriptions?status=Pending' },
@@ -570,16 +580,16 @@ const getPharmacistDashboard = async (req, res) => {
       { label: 'Low Stock Medicines', route: '/api/medicines/low-stock' },
       { label: 'Expiring Medicines', route: '/api/medicines/expiring' },
       { label: 'Add Medicine', route: '/api/medicines' },
-      { label: 'Update Stock', route: '/api/medicines' }
-    ]
+      { label: 'Update Stock', route: '/api/medicines' },
+    ],
   });
 };
 
 module.exports = {
-  getAdminDashboard:       asyncHandler(getAdminDashboard),
-  getDoctorDashboard:      asyncHandler(getDoctorDashboard),
-  getPatientDashboard:     asyncHandler(getPatientDashboard),
-  getNurseDashboard:       asyncHandler(getNurseDashboard),
+  getAdminDashboard: asyncHandler(getAdminDashboard),
+  getDoctorDashboard: asyncHandler(getDoctorDashboard),
+  getPatientDashboard: asyncHandler(getPatientDashboard),
+  getNurseDashboard: asyncHandler(getNurseDashboard),
   getReceptionistDashboard: asyncHandler(getReceptionistDashboard),
-  getPharmacistDashboard:  asyncHandler(getPharmacistDashboard),
+  getPharmacistDashboard: asyncHandler(getPharmacistDashboard),
 };

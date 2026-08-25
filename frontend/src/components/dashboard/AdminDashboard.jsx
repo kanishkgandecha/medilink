@@ -12,7 +12,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { getAdminDashboard } from '../../services/dashboardService'
-import { getAdminInsights } from '../../services/aiService'
+import { getAdminInsights, getAiReliability } from '../../services/aiService'
 import { toast } from 'react-toastify'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
@@ -51,6 +51,7 @@ const AdminDashboard = () => {
   const [doctorLoad, setDoctorLoad]         = useState([])
   const [recentPatients, setRecentPatients] = useState([])
   const [backendInsights, setBackendInsights] = useState(null)
+  const [aiReliability, setAiReliability] = useState(null)
 
   useEffect(() => {
     getAdminDashboard()
@@ -59,6 +60,7 @@ const AdminDashboard = () => {
       .finally(() => setLoading(false))
 
     getAdminInsights().then(res => setBackendInsights(res?.data || res)).catch(() => {})
+    getAiReliability().then(res => setAiReliability(res?.data || res)).catch(() => {})
 
     ;(async () => {
       try {
@@ -234,32 +236,32 @@ const AdminDashboard = () => {
             {
               icon: Brain,
               label: 'Symptom Checker',
-              desc: 'AI-powered symptom triage to determine urgency and recommend specialists',
+              desc: 'Safety-screen symptoms and suggest an appropriate department for review',
               gradient: 'from-violet-500 to-purple-600',
               bg: darkMode ? 'bg-violet-900/20 border-violet-700/40' : 'bg-violet-50 border-violet-200/60',
               iconBg: darkMode ? 'bg-violet-500/20' : 'bg-violet-100',
               iconColor: '#7c3aed',
-              action: () => navigate('/appointments'),
+              action: () => navigate('/ai-agents?tab=symptom-checker'),
             },
             {
               icon: FlaskConical,
               label: 'Report Analyzer',
-              desc: 'Instant AI analysis of lab reports with clinical insights and flag anomalies',
+              desc: 'Extract submitted values and compare them with printed reference ranges',
               gradient: 'from-teal-500 to-emerald-600',
               bg: darkMode ? 'bg-teal-900/20 border-teal-700/40' : 'bg-teal-50 border-teal-200/60',
               iconBg: darkMode ? 'bg-teal-500/20' : 'bg-teal-100',
               iconColor: '#0d9488',
-              action: () => navigate('/test-reports'),
+              action: () => navigate('/ai-agents?tab=report-analyzer'),
             },
             {
               icon: HeartPulse,
               label: 'Risk Predictor',
-              desc: 'Predictive analytics for patient risk scoring based on clinical data trends',
+              desc: 'Transparent rules-based screening score from selected risk factors',
               gradient: 'from-[#2E86DE] to-[#1ABC9C]',
               bg: darkMode ? 'bg-blue-900/20 border-blue-700/40' : 'bg-blue-50 border-blue-200/60',
               iconBg: darkMode ? 'bg-blue-500/20' : 'bg-blue-100',
               iconColor: '#2E86DE',
-              action: () => navigate('/reports'),
+              action: () => navigate('/ai-agents?tab=health-risk'),
             },
           ].map(({ icon: Icon, label, desc, bg, iconBg, iconColor, action }) => (
             <button
@@ -286,6 +288,35 @@ const AdminDashboard = () => {
             </button>
           ))}
         </div>
+
+        {/* ── AI reliability ───────────────────────────────────────────── */}
+        {aiReliability && (
+          <div className={`${glass} p-4`}>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2 min-w-[180px]">
+                <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <p className={`text-sm font-bold ${textCls}`}>AI Reliability · {aiReliability.windowHours}h</p>
+                  <p className={`text-[11px] ${subCls}`}>{aiReliability.provider?.configured ? aiReliability.provider.model : 'Rules-only mode'}</p>
+                </div>
+              </div>
+              {[
+                ['Requests', aiReliability.total],
+                ['Success', aiReliability.successRate == null ? '—' : `${aiReliability.successRate}%`],
+                ['Degraded', aiReliability.degradedRate == null ? '—' : `${aiReliability.degradedRate}%`],
+                ['Avg latency', `${aiReliability.averageDurationMs} ms`],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-[90px]">
+                  <p className={`text-lg font-black ${textCls}`}>{value}</p>
+                  <p className={`text-[10px] uppercase tracking-wide ${subCls}`}>{label}</p>
+                </div>
+              ))}
+              <p className={`ml-auto text-[10px] ${subCls}`}>Metadata retained {aiReliability.retentionDays} days · prompts not stored</p>
+            </div>
+          </div>
+        )}
 
         {/* ── 3-column layout ────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-[240px_1fr_280px] gap-5 items-start">
@@ -655,16 +686,16 @@ const AdminDashboard = () => {
                     })
                 )}
               </div>
-              {backendInsights?.riskPatients?.filter(p => p.riskLevel === 'High').length > 0 && (
+              {backendInsights?.recordReviewCandidates?.length > 0 && (
                 <button
                   onClick={() => navigate('/patients')}
-                  className="w-full mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-left hover:bg-red-500/20 transition-all"
+                  className="w-full mt-3 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-left hover:bg-amber-500/20 transition-all"
                 >
-                  <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                  <p className="text-xs text-red-400 font-semibold flex-1">
-                    {backendInsights.riskPatients.filter(p => p.riskLevel === 'High').length} high-risk patient{backendInsights.riskPatients.filter(p => p.riskLevel === 'High').length > 1 ? 's' : ''} need monitoring
+                  <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
+                  <p className="text-xs text-amber-500 font-semibold flex-1">
+                    {backendInsights.recordReviewCandidates.length} patient record{backendInsights.recordReviewCandidates.length > 1 ? 's' : ''} with 3+ active/chronic conditions need clinician review
                   </p>
-                  <ChevronRight className="w-3.5 h-3.5 text-red-400" />
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-500" />
                 </button>
               )}
             </div>

@@ -36,10 +36,25 @@ const DEPT_SPEC_MAP = {
 const INITIAL_BOOKING = {
   step: STEPS.IDLE, department: '', doctorId: '', doctorName: '',
   doctorSpec: '', date: '', startTime: '', endTime: '', confirmLoading: false,
+  bookingKey: '',
 }
 
 const EMERGENCY_KEYWORDS = ['emergency', 'dying', 'heart attack', 'stroke', 'unconscious', "can't breathe", 'severe chest', 'critical']
 const BOOKING_KEYWORDS = ['book', 'appointment', 'schedule', 'see a doctor', 'consult', 'visit doctor']
+const SAFE_AI_ROUTES = new Set([
+  '/dashboard', '/appointments', '/doctors', '/prescriptions', '/billing', '/test-reports',
+  '/settings', '/profile', '/ai-agents', '/symptom-checker', '/report-analyzer', '/health-risk',
+])
+
+const safeAiActions = (actions, urgent = false) => (Array.isArray(actions) ? actions : [])
+  .slice(0, 5)
+  .filter(action => {
+    if (urgent && action?.route === 'tel:112') return true
+    const routePath = String(action?.route || '').split('?')[0]
+    return action?.type === 'navigate' && SAFE_AI_ROUTES.has(routePath)
+  })
+  .map(action => ({ label: String(action.label || 'Open').slice(0, 80), route: action.route,
+    type: action.route === 'tel:112' ? 'external' : 'navigate' }))
 
 const WELCOME_MSG = {
   id: 1, role: 'bot',
@@ -153,11 +168,14 @@ const DatePickerWidget = ({ onSelect, handled, selected, dm }) => {
   )
 }
 
-const SlotGrid = ({ slots, loading, onSelect, handled, selected, dm }) => {
+const SlotGrid = ({ slots, loading, unavailable, onSelect, handled, selected, dm }) => {
   if (loading) return (
     <div className="mt-2 flex items-center gap-2 text-xs text-gray-400 py-1">
       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability…
     </div>
+  )
+  if (unavailable) return (
+    <p className="mt-2 text-xs text-red-500">Live availability could not be checked. Please try again; no slot has been selected.</p>
   )
   if (!slots?.length) return (
     <p className="mt-2 text-xs text-amber-500">No slots available on this date. Please pick another date.</p>
@@ -385,8 +403,7 @@ const FloatingChatbot = () => {
       const slots = res?.data?.availableSlots || res?.availableSlots || []
       updateMsgWidget(msgId, { loading: false, data: slots })
     } catch {
-      const fallback = ['09:00', '09:30', '10:00', '10:30', '11:00', '14:00', '14:30', '15:00', '15:30', '16:00']
-      updateMsgWidget(msgId, { loading: false, data: fallback })
+      updateMsgWidget(msgId, { loading: false, data: [], unavailable: true })
     }
   }
 
@@ -399,7 +416,7 @@ const FloatingChatbot = () => {
       const endH = sm >= 30 ? sh + 1 : sh
       const endM = (sm + 30) % 60
       const endSlot = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
-      const updated = { ...prev, startTime: slot, endTime: endSlot, step: STEPS.CONFIRM }
+      const updated = { ...prev, startTime: slot, endTime: endSlot, bookingKey: crypto.randomUUID(), step: STEPS.CONFIRM }
 
       setTimeout(() => setMessages(msgs => [...msgs, {
         id: Date.now(), role: 'bot',
@@ -416,7 +433,7 @@ const FloatingChatbot = () => {
 
   const handleConfirm = async () => {
     updateLastConfirmWidget({ loading: true })
-    const { doctorId, date, startTime, endTime, doctorName } = booking
+    const { doctorId, date, startTime, endTime, doctorName, bookingKey } = booking
 
     try {
       await api.post('/appointments', {
@@ -425,6 +442,7 @@ const FloatingChatbot = () => {
         timeSlot: { startTime, endTime },
         type: 'Consultation',
         priority: 'Normal',
+        bookingKey,
       })
       updateLastConfirmWidget({ loading: false, handled: true, confirmed: true })
       setMessages(prev => [
@@ -497,6 +515,7 @@ const FloatingChatbot = () => {
       const res = await chatWithAssistant(msg, chatHistory.slice(-6))
       const ai = res?.data || res
       const reply = ai?.reply || ai?.message || "I'm here to help with anything health-related!"
+      const actions = safeAiActions(ai?.actions, ai?.urgent)
       setChatHistory(prev => [
         ...prev,
         { role: 'user', content: msg },
@@ -505,7 +524,7 @@ const FloatingChatbot = () => {
       const widgetId = Date.now()
       setMessages(prev => [...prev, {
         id: widgetId, role: 'bot', text: reply,
-        ...(ai?.actions?.length && { widget: { type: 'ai-actions', handled: false, data: ai.actions, msgId: widgetId } }),
+        ...(actions.length && { widget: { type: 'ai-actions', handled: false, data: actions, msgId: widgetId } }),
       }])
     } catch {
       setMessages(prev => [...prev, { id: Date.now(), role: 'bot', text: "I'm having a bit of trouble right now. Please try again in a moment." }])
@@ -530,7 +549,7 @@ const FloatingChatbot = () => {
       case 'date-picker':
         return <DatePickerWidget onSelect={handleDateSelect} handled={widget.handled} selected={widget.selected} dm={dm} />
       case 'slot-grid':
-        return <SlotGrid slots={widget.data} loading={widget.loading} onSelect={handleSlotSelect} handled={widget.handled} selected={widget.selected} dm={dm} />
+        return <SlotGrid slots={widget.data} loading={widget.loading} unavailable={widget.unavailable} onSelect={handleSlotSelect} handled={widget.handled} selected={widget.selected} dm={dm} />
       case 'confirm-card':
         return <ConfirmCard data={widget.data} onConfirm={handleConfirm} onCancel={handleCancelBooking} loading={widget.loading} handled={widget.handled} dm={dm} />
       case 'success-card':
@@ -542,7 +561,8 @@ const FloatingChatbot = () => {
               <button
                 key={i}
                 onClick={() => {
-                  navigate(action.route)
+                  if (action.type === 'external' && action.route === 'tel:112') window.location.href = action.route
+                  else navigate(action.route)
                   setMessages(prev => prev.map(m => m.id === msgId ? { ...m, widget: { ...m.widget, handled: true } } : m))
                 }}
                 className={`text-[11px] px-2.5 py-1 rounded-full border font-medium transition ${

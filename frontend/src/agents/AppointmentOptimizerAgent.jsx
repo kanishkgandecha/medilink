@@ -127,6 +127,11 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
             </>
           ) : (
             <>
+              {result._degraded && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
+                  External AI is unavailable. Doctor matching uses current MediLink records and deterministic rules.
+                </div>
+              )}
               {/* Urgency banner */}
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{uStyle?.label}</p>
@@ -155,7 +160,7 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
                         <Stethoscope className="w-3.5 h-3.5 text-gray-400" />
                         <p className="text-sm text-gray-500">{result.recommendedDoctor.specialization}</p>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">{result.recommendedDoctor.currentLoad} appointment(s) today · Least loaded</p>
+                      <p className="text-xs text-gray-400 mt-1">{result.recommendedDoctor.currentLoad} active appointment(s) today</p>
                     </div>
                     <button
                       onClick={() => bookDoctor(result.recommendedDoctor.id)}
@@ -200,7 +205,7 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
               )}
 
               <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ Doctor availability may change. Confirm at time of booking.
+                ⚕️ Live records checked {result.liveDataCheckedAt ? new Date(result.liveDataCheckedAt).toLocaleString() : 'recently'}. A time slot must still be confirmed during booking.
               </p>
 
               <div className="flex gap-3">

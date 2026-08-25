@@ -1,6 +1,6 @@
 'use strict';
-const { callLLM } = require('../llmClient');
-const { HEALTH_RISK, DISCLAIMER } = require('../promptTemplates');
+const { DISCLAIMER } = require('../promptTemplates');
+const { enforceHealthRiskSafety } = require('../safety');
 
 function calcAgeRisk(age) {
   const n = parseInt(age, 10);
@@ -83,12 +83,15 @@ function mockAssess({ age, gender, chronicConditions = [], acuteSymptoms = [] })
 }
 
 async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }) {
-  const result = await callLLM(
-    HEALTH_RISK.system,
-    HEALTH_RISK.user({ age, gender, chronicConditions, acuteSymptoms }),
-    () => mockAssess({ age, gender, chronicConditions, acuteSymptoms }),
-  );
-  return result.data;
+  const deterministic = mockAssess({ age, gender, chronicConditions, acuteSymptoms });
+  return enforceHealthRiskSafety({
+    ...deterministic,
+    _source: 'rules',
+    _degraded: false,
+    scoringMethod: 'deterministic_additive_rules_v1',
+    scoringFormula: 'min(100, age points + recorded condition points + selected acute symptom points)',
+    modelRole: 'not_used_for_scoring',
+  }, acuteSymptoms);
 }
 
 module.exports = { runHealthRisk };

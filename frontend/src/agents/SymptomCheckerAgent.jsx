@@ -155,6 +155,8 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
         conditions: aiData.conditions,
         overallUrgency: aiData.overallUrgency,
         aiSummary: aiData.aiSummary,
+        _source: aiData._source,
+        _degraded: aiData._degraded,
       }
       // Fetch matched doctors
       try {
@@ -292,6 +294,11 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
             </>
           ) : (
             <>
+              {result._degraded && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
+                  External AI is unavailable. This result uses a limited rule-based safety screen.
+                </div>
+              )}
               {/* Overall urgency banner */}
               <div className={`rounded-xl border p-4 flex items-center gap-3 ${cfg.color}`}>
                 <cfg.icon className={`w-5 h-5 flex-shrink-0 ${cfg.text}`} />

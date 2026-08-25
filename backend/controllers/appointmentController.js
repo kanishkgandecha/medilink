@@ -1,498 +1,489 @@
-const Appointment = require('../models/Appointment');
-const Doctor = require('../models/Doctor');
-const Patient = require('../models/Patient');
-const Billing = require('../models/Billing');
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendEmail } = require('../services/emailService');
+const { formatAppointment } = require('../utils/virtuals');
+const { normalizeAppointmentStatus, canTransitionAppointment } = require('../utils/stateMachines');
+const { bookAppointmentTransaction, rescheduleAppointmentTransaction } = require('../services/appointmentBookingService');
 
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-const fmtTime = (slot) => slot ? `${slot.startTime} – ${slot.endTime}` : '';
+const fmtTime = (slot) => (slot ? `${slot.startTime} – ${slot.endTime}` : '');
 
-// Create new appointment
+const formatPopulatedAppointment = (apt) => {
+  if (!apt) return null;
+  const formatted = formatAppointment(apt);
+  delete formatted.bookingKey;
+  return {
+    ...formatted,
+    _id: formatted.id,
+    patient: formatted.patient
+      ? {
+          ...formatted.patient,
+          _id: formatted.patient.id,
+          userId: formatted.patient.user ? { ...formatted.patient.user, _id: formatted.patient.user.id } : null,
+        }
+      : null,
+    doctor: formatted.doctor
+      ? {
+          ...formatted.doctor,
+          _id: formatted.doctor.id,
+          userId: formatted.doctor.user ? { ...formatted.doctor.user, _id: formatted.doctor.user.id } : null,
+        }
+      : null,
+    prescription: formatted.prescription ? { ...formatted.prescription, _id: formatted.prescription.id } : null,
+  };
+};
+
 const createAppointment = asyncHandler(async (req, res) => {
   let { patient, doctor, appointmentDate, timeSlot, type, symptoms, priority } = req.body;
 
-  // For Patient role: auto-resolve their own patient profile
   if (req.user.role === 'Patient') {
-    const ownProfile = await Patient.findOne({ userId: req.user._id });
+    const ownProfile = await prisma.patient.findFirst({ where: { userId: req.user.id } });
     if (!ownProfile) {
       return res.status(400).json({ success: false, message: 'Patient profile not found. Contact reception to set up your profile.' });
     }
-    patient = ownProfile._id;
+    patient = ownProfile.id;
   }
 
-  // Verify patient and doctor exist
-  const patientExists = await Patient.findById(patient);
-  const doctorExists = await Doctor.findById(doctor).populate('userId');
-
-  if (!patientExists) {
-    return res.status(404).json({ success: false, message: 'Patient not found' });
+  const startTime = timeSlot.startTime;
+  const endTime = timeSlot.endTime;
+  const bookingKey = String(req.body.bookingKey || req.get('Idempotency-Key') || '').trim() || null;
+  const result = await bookAppointmentTransaction({ patientIdentifier: patient, doctorIdentifier: doctor,
+    appointmentDate, startTime, endTime, type: type || 'Consultation', symptoms, priority,
+    createdById: req.user.id, bookingKey });
+  const errors = {
+    patient_not_found: [404, 'Patient not found'], patient_inactive: [409, 'Patient account is archived or inactive'],
+    doctor_not_found: [404, 'Doctor not found'], doctor_inactive: [409, 'Doctor is inactive or unavailable'],
+    invalid_date: [400, 'Appointment date is invalid'], past_date: [400, 'Appointments cannot be booked in the past'],
+    date_too_far: [400, 'Appointments cannot be booked more than one year ahead'],
+    invalid_time_slot: [400, 'Appointments must use a valid 30-minute time slot'],
+    schedule_not_configured: [409, 'Doctor schedule is not configured'],
+    outside_doctor_schedule: [409, 'Selected time is outside the doctor’s configured schedule'],
+    slot_conflict: [409, 'Time slot is already booked'],
+  };
+  if (result.error) {
+    const [status, message] = errors[result.error] || [400, 'Appointment could not be booked'];
+    return res.status(status).json({ success: false, message, code: result.error });
   }
+  const appointment = result.appointment;
 
-  if (!doctorExists) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Doctor not found' 
-    });
-  }
+  const populatedAppointment = formatPopulatedAppointment(appointment);
 
-  // Check if doctor is available
-  if (!doctorExists.isAvailable) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Doctor is not available' 
-    });
-  }
-
-  // Check if slot is available
-  const existingAppointment = await Appointment.findOne({
-    doctor,
-    appointmentDate,
-    'timeSlot.startTime': timeSlot.startTime,
-    status: { $nin: ['Cancelled', 'Completed', 'No-Show'] }
-  });
-
-  if (existingAppointment) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Time slot is already booked' 
-    });
-  }
-
-  const appointment = await Appointment.create({
-    patient, 
-    doctor, 
-    appointmentDate, 
-    timeSlot, 
-    type, 
-    symptoms, 
-    priority,
-    createdBy: req.user.id
-  });
-
-  const populatedAppointment = await Appointment.findById(appointment._id)
-    .populate({ path: 'patient', populate: { path: 'userId' } })
-    .populate({ path: 'doctor', populate: { path: 'userId' } });
-
-  // Send booking confirmation email (non-blocking)
   const patientEmail = populatedAppointment.patient?.userId?.email;
-  const notifResult = await sendEmail(patientEmail, 'appointmentBooked', {
+  const notifResult = result.replayed ? { success: false, mock: false } : await sendEmail(patientEmail, 'appointmentBooked', {
     patientName: populatedAppointment.patient?.userId?.name || 'Patient',
-    doctorName:  populatedAppointment.doctor?.userId?.name  || 'Doctor',
-    department:  populatedAppointment.doctor?.department,
-    date:        fmtDate(appointment.appointmentDate),
-    time:        fmtTime(appointment.timeSlot),
+    doctorName: populatedAppointment.doctor?.userId?.name || 'Doctor',
+    department: populatedAppointment.doctor?.department,
+    date: fmtDate(appointment.appointmentDate),
+    time: fmtTime({ startTime, endTime }),
     appointmentId: appointment.appointmentId,
-    type:        appointment.type
+    type: appointment.type,
   });
 
-  res.status(201).json({
+  res.status(result.replayed ? 200 : 201).json({
     success: true,
     data: populatedAppointment,
-    message: 'Appointment created successfully',
+    message: result.replayed ? 'Appointment request already completed' : 'Appointment created successfully',
+    replayed: result.replayed,
     notificationSent: notifResult.success,
-    notificationMock: notifResult.mock || false
+    notificationMock: notifResult.mock || false,
   });
 });
 
-// Get all appointments with filters
 const getAppointments = asyncHandler(async (req, res) => {
   const { doctor, patient, status, date, priority, search } = req.query;
 
-  let query = {};
+  const where = {};
 
-  // Patients only see their own appointments
   if (req.user.role === 'Patient') {
-    const ownProfile = await Patient.findOne({ userId: req.user._id });
+    const ownProfile = await prisma.patient.findFirst({ where: { userId: req.user.id } });
     if (!ownProfile) {
       return res.status(200).json({ success: true, count: 0, data: [] });
     }
-    query.patient = ownProfile._id;
+    where.patientId = ownProfile.id;
   } else if (req.user.role === 'Doctor') {
-    // Doctors only see their own appointments
-    const ownProfile = await Doctor.findOne({ userId: req.user._id });
+    const ownProfile = await prisma.doctor.findFirst({ where: { userId: req.user.id } });
     if (!ownProfile) {
       return res.status(200).json({ success: true, count: 0, data: [] });
     }
-    query.doctor = ownProfile._id;
-    if (patient) query.patient = patient;
+    where.doctorId = ownProfile.id;
+    if (patient) {
+      const p = await prisma.patient.findFirst({ where: { OR: [{ id: patient }, { legacyMongoId: patient }] } });
+      if (p) where.patientId = p.id;
+    }
   } else {
-    if (doctor) query.doctor = doctor;
-    if (patient) query.patient = patient;
+    if (doctor) {
+      const d = await prisma.doctor.findFirst({ where: { OR: [{ id: doctor }, { legacyMongoId: doctor }] } });
+      if (d) where.doctorId = d.id;
+    }
+    if (patient) {
+      const p = await prisma.patient.findFirst({ where: { OR: [{ id: patient }, { legacyMongoId: patient }] } });
+      if (p) where.patientId = p.id;
+    }
   }
 
-  if (status) query.status = status;
-  if (priority) query.priority = priority;
-  
+  if (status) where.status = status;
+  if (priority) where.priority = priority;
+
   if (date) {
     const startDate = new Date(date);
     const endDate = new Date(date);
     endDate.setDate(endDate.getDate() + 1);
-    
-    query.appointmentDate = {
-      $gte: startDate,
-      $lt: endDate
-    };
+    where.appointmentDate = { gte: startDate, lt: endDate };
   }
 
-  const appointments = await Appointment.find(query)
-    .populate({
-      path: 'patient',
-      populate: { path: 'userId', select: 'name email phone' }
-    })
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId', select: 'name email phone' }
-    })
-    .sort('-appointmentDate -timeSlot.startTime');
+  const appointments = await prisma.appointment.findMany({
+    where,
+    include: {
+      patient: { include: { user: { select: { id: true, name: true, email: true, phone: true } } } },
+      doctor: { include: { user: { select: { id: true, name: true, email: true, phone: true } } } },
+    },
+    orderBy: [{ appointmentDate: 'desc' }, { startTime: 'desc' }],
+  });
 
-  // Search filter
-  let filteredAppointments = appointments;
+  let formatted = appointments.map(formatPopulatedAppointment);
+
   if (search) {
     const searchLower = search.toLowerCase();
-    filteredAppointments = appointments.filter(apt => {
+    formatted = formatted.filter((apt) => {
       const patientName = apt.patient?.userId?.name?.toLowerCase() || '';
       const doctorName = apt.doctor?.userId?.name?.toLowerCase() || '';
       const appointmentId = apt.appointmentId?.toLowerCase() || '';
-      
-      return patientName.includes(searchLower) || 
-             doctorName.includes(searchLower) || 
-             appointmentId.includes(searchLower);
-    });
-  }
-
-  res.status(200).json({ 
-    success: true, 
-    count: filteredAppointments.length, 
-    data: filteredAppointments 
-  });
-});
-
-// Get single appointment
-const getAppointment = asyncHandler(async (req, res) => {
-  const appointment = await Appointment.findById(req.params.id)
-    .populate({
-      path: 'patient',
-      populate: { path: 'userId' }
-    })
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId' }
-    })
-    .populate('prescription');
-  
-  if (!appointment) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Appointment not found' 
-    });
-  }
-
-  res.status(200).json({ 
-    success: true, 
-    data: appointment 
-  });
-});
-
-// Update appointment
-const updateAppointment = asyncHandler(async (req, res) => {
-  let appointment = await Appointment.findById(req.params.id);
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      message: 'Appointment not found'
-    });
-  }
-
-  const previousStatus = appointment.status;
-
-  // If updating time slot, check availability
-  if (req.body.timeSlot || req.body.appointmentDate) {
-    const timeSlot = req.body.timeSlot || appointment.timeSlot;
-    const appointmentDate = req.body.appointmentDate || appointment.appointmentDate;
-    
-    const conflict = await Appointment.findOne({
-      doctor: appointment.doctor,
-      appointmentDate,
-      'timeSlot.startTime': timeSlot.startTime,
-      _id: { $ne: req.params.id },
-      status: { $nin: ['Cancelled', 'Completed', 'No-Show'] }
-    });
-
-    if (conflict) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Time slot not available' 
-      });
-    }
-  }
-
-  appointment = await Appointment.findByIdAndUpdate(
-    req.params.id, 
-    req.body, 
-    {
-      new: true,
-      runValidators: true
-    }
-  )
-    .populate({
-      path: 'patient',
-      populate: { path: 'userId' }
-    })
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId' }
-    });
-
-  // Auto-generate bill when appointment is marked Completed
-  if (req.body.status === 'Completed' && previousStatus !== 'Completed') {
-    try {
-      const appt = await Appointment.findById(req.params.id)
-        .populate({ path: 'doctor', select: 'consultationFee' });
-
-      const fee = appt?.doctor?.consultationFee || 500;
-      const patientId = appt?.patient;
-
-      if (patientId) {
-        await Billing.create({
-          patient: patientId,
-          billType: 'Consultation',
-          items: [{
-            description: `Consultation - ${appointment.type || 'General'}`,
-            category: 'Consultation',
-            quantity: 1,
-            unitPrice: fee,
-            amount: fee
-          }],
-          subtotal: fee,
-          discount: 0,
-          tax: 0,
-          totalAmount: fee,
-          balance: fee,
-          notes: `Auto-generated on appointment completion`,
-          generatedBy: req.user.id
-        });
-      }
-    } catch (billingErr) {
-      // Don't fail the status update if billing creation fails
-    }
-  }
-
-  // Appointment notifications on key status transitions / reschedule
-  const newStatus = req.body.status;
-  const patEmail  = appointment.patient?.userId?.email;
-  let notifResult = null;
-
-  if (newStatus === 'Confirmed' && previousStatus !== 'Confirmed') {
-    notifResult = await sendEmail(patEmail, 'appointmentConfirmed', {
-      patientName:   appointment.patient?.userId?.name || 'Patient',
-      doctorName:    appointment.doctor?.userId?.name  || 'Doctor',
-      date:          fmtDate(appointment.appointmentDate),
-      time:          fmtTime(appointment.timeSlot),
-      appointmentId: appointment.appointmentId
-    });
-  } else if ((req.body.appointmentDate || req.body.timeSlot) && previousStatus !== 'Cancelled') {
-    notifResult = await sendEmail(patEmail, 'appointmentRescheduled', {
-      patientName:   appointment.patient?.userId?.name || 'Patient',
-      doctorName:    appointment.doctor?.userId?.name  || 'Doctor',
-      newDate:       fmtDate(appointment.appointmentDate),
-      newTime:       fmtTime(appointment.timeSlot),
-      appointmentId: appointment.appointmentId
+      return patientName.includes(searchLower) || doctorName.includes(searchLower) || appointmentId.includes(searchLower);
     });
   }
 
   res.status(200).json({
     success: true,
-    data: appointment,
-    message: 'Appointment updated successfully',
-    ...(notifResult && { notificationSent: notifResult.success, notificationMock: notifResult.mock || false })
+    count: formatted.length,
+    data: formatted,
   });
 });
 
-// Cancel appointment
-const cancelAppointment = asyncHandler(async (req, res) => {
-  const appointment = await Appointment.findById(req.params.id);
-  
+const getAppointment = asyncHandler(async (req, res) => {
+  const appointment = await prisma.appointment.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: {
+      patient: { include: { user: true } },
+      doctor: { include: { user: true } },
+      prescription: true,
+    },
+  });
+
   if (!appointment) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Appointment not found' 
+    return res.status(404).json({
+      success: false,
+      message: 'Appointment not found',
     });
   }
 
-  if (appointment.status === 'Completed') {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Cannot cancel completed appointment' 
-    });
-  }
-
-  appointment.status = 'Cancelled';
-  appointment.cancelReason = req.body.reason || 'No reason provided';
-  await appointment.save();
-
-  res.status(200).json({ 
-    success: true, 
-    data: appointment,
-    message: 'Appointment cancelled successfully'
+  res.status(200).json({
+    success: true,
+    data: formatPopulatedAppointment(appointment),
   });
 });
 
-// Reschedule appointment
+const updateAppointment = asyncHandler(async (req, res) => {
+  let appointment = await prisma.appointment.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: {
+      patient: { include: { user: true } },
+      doctor: { include: { user: true } },
+    },
+  });
+
+  if (!appointment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Appointment not found',
+    });
+  }
+
+  const previousStatus = appointment.status;
+  const requestedStatus = normalizeAppointmentStatus(req.body.status);
+
+  if (requestedStatus && !canTransitionAppointment(previousStatus, requestedStatus)) {
+    return res.status(409).json({
+      success: false,
+      message: `Appointment cannot transition from ${previousStatus} to ${requestedStatus}`,
+    });
+  }
+
+  if (req.body.timeSlot || req.body.appointmentDate) {
+    const startTime = req.body.timeSlot?.startTime || appointment.startTime;
+    const appointmentDate = req.body.appointmentDate ? new Date(req.body.appointmentDate) : appointment.appointmentDate;
+
+    const conflict = await prisma.appointment.findFirst({
+      where: {
+        doctorId: appointment.doctorId,
+        appointmentDate,
+        startTime,
+        id: { not: appointment.id },
+        status: { notIn: ['Cancelled', 'Completed', 'No_Show'] },
+      },
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        success: false,
+        message: 'Time slot not available',
+      });
+    }
+  }
+
+  const updateData = {};
+  if (requestedStatus) updateData.status = requestedStatus;
+  if (req.body.priority) updateData.priority = req.body.priority;
+  if (req.body.type) updateData.type = req.body.type;
+  if (req.body.symptoms !== undefined) updateData.symptoms = req.body.symptoms;
+  if (req.body.diagnosis !== undefined) updateData.diagnosis = req.body.diagnosis;
+  if (req.body.notes !== undefined) updateData.notes = req.body.notes;
+  if (req.body.cancelReason !== undefined) updateData.cancelReason = req.body.cancelReason;
+  if (req.body.consultationFee !== undefined) updateData.consultationFee = parseFloat(req.body.consultationFee);
+  if (req.body.paid !== undefined) updateData.paid = Boolean(req.body.paid);
+  if (req.body.paymentMethod) updateData.paymentMethod = req.body.paymentMethod;
+  if (req.body.appointmentDate) updateData.appointmentDate = new Date(req.body.appointmentDate);
+  if (req.body.timeSlot) {
+    updateData.startTime = req.body.timeSlot.startTime;
+    updateData.endTime = req.body.timeSlot.endTime;
+  }
+
+  const updatedApt = await prisma.$transaction(async (tx) => {
+    const updated = await tx.appointment.update({
+      where: { id: appointment.id },
+      data: updateData,
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+        prescription: true,
+      },
+    });
+
+    if (requestedStatus === 'Completed' && previousStatus !== 'Completed' && updated.patientId) {
+      const fee = updated.doctor?.consultationFee || 500;
+      const sourceKey = `appointment:${updated.id}:consultation`;
+      await tx.billing.upsert({
+        where: { sourceKey },
+        update: {},
+        create: {
+          sourceKey,
+          patientId: updated.patientId,
+          billType: 'Consultation',
+          subtotal: fee,
+          discount: 0,
+          tax: 0,
+          totalAmount: fee,
+          amountPaid: 0,
+          balance: fee,
+          paymentStatus: 'Unpaid',
+          notes: 'Auto-generated on appointment completion',
+          generatedById: req.user.id,
+          relatedAppointmentId: updated.id,
+          items: {
+            create: [{
+              description: `Consultation - ${updated.type || 'General'}`,
+              category: 'Consultation',
+              quantity: 1,
+              unitPrice: fee,
+              amount: fee,
+            }],
+          },
+        },
+      });
+    }
+
+    return updated;
+  });
+
+  const formattedPopulated = formatPopulatedAppointment(updatedApt);
+  const newStatus = requestedStatus;
+  const patEmail = updatedApt.patient?.user?.email;
+  let notifResult = null;
+
+  if (newStatus === 'Confirmed' && previousStatus !== 'Confirmed') {
+    notifResult = await sendEmail(patEmail, 'appointmentConfirmed', {
+      patientName: updatedApt.patient?.user?.name || 'Patient',
+      doctorName: updatedApt.doctor?.user?.name || 'Doctor',
+      date: fmtDate(updatedApt.appointmentDate),
+      time: fmtTime({ startTime: updatedApt.startTime, endTime: updatedApt.endTime }),
+      appointmentId: updatedApt.appointmentId,
+    });
+  } else if ((req.body.appointmentDate || req.body.timeSlot) && previousStatus !== 'Cancelled') {
+    notifResult = await sendEmail(patEmail, 'appointmentRescheduled', {
+      patientName: updatedApt.patient?.user?.name || 'Patient',
+      doctorName: updatedApt.doctor?.user?.name || 'Doctor',
+      newDate: fmtDate(updatedApt.appointmentDate),
+      newTime: fmtTime({ startTime: updatedApt.startTime, endTime: updatedApt.endTime }),
+      appointmentId: updatedApt.appointmentId,
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: formattedPopulated,
+    message: 'Appointment updated successfully',
+    ...(notifResult && { notificationSent: notifResult.success, notificationMock: notifResult.mock || false }),
+  });
+});
+
+const cancelAppointment = asyncHandler(async (req, res) => {
+  const appointment = await prisma.appointment.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
+
+  if (!appointment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Appointment not found',
+    });
+  }
+
+  if (!canTransitionAppointment(appointment.status, 'Cancelled')) {
+    return res.status(409).json({
+      success: false,
+      message: `Cannot cancel an appointment with status ${appointment.status}`,
+    });
+  }
+
+  const updated = await prisma.appointment.update({
+    where: { id: appointment.id },
+    data: {
+      status: 'Cancelled',
+      cancelReason: req.body.reason || 'No reason provided',
+    },
+    include: {
+      patient: { include: { user: true } },
+      doctor: { include: { user: true } },
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    data: formatPopulatedAppointment(updated),
+    message: 'Appointment cancelled successfully',
+  });
+});
+
 const rescheduleAppointment = asyncHandler(async (req, res) => {
   const { appointmentDate, timeSlot } = req.body;
-  
+
   if (!appointmentDate || !timeSlot) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Date and time slot are required' 
-    });
-  }
-  
-  const appointment = await Appointment.findById(req.params.id);
-  
-  if (!appointment) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Appointment not found' 
+    return res.status(400).json({
+      success: false,
+      message: 'Date and time slot are required',
     });
   }
 
-  if (appointment.status === 'Completed' || appointment.status === 'Cancelled') {
-    return res.status(400).json({ 
-      success: false, 
-      message: `Cannot reschedule ${appointment.status.toLowerCase()} appointment` 
-    });
+  const result = await rescheduleAppointmentTransaction({ appointmentIdentifier: req.params.id,
+    appointmentDate, startTime: timeSlot.startTime, endTime: timeSlot.endTime });
+  const errors = {
+    appointment_not_found: [404, 'Appointment not found'], invalid_status: [409, 'Only scheduled or confirmed appointments can be rescheduled'],
+    doctor_inactive: [409, 'Doctor is inactive or unavailable'], invalid_date: [400, 'Appointment date is invalid'],
+    past_date: [400, 'Appointments cannot be moved into the past'], date_too_far: [400, 'Appointments cannot be moved more than one year ahead'],
+    invalid_time_slot: [400, 'Appointments must use a valid 30-minute time slot'],
+    schedule_not_configured: [409, 'Doctor schedule is not configured'],
+    outside_doctor_schedule: [409, 'Selected time is outside the doctor’s configured schedule'], slot_conflict: [409, 'Time slot not available'],
+  };
+  if (result.error) {
+    const [status, message] = errors[result.error] || [400, 'Appointment could not be rescheduled'];
+    return res.status(status).json({ success: false, message, code: result.error });
   }
+  const updated = result.appointment;
 
-  // Check availability for new slot
-  const conflict = await Appointment.findOne({
-    doctor: appointment.doctor,
-    appointmentDate,
-    'timeSlot.startTime': timeSlot.startTime,
-    _id: { $ne: req.params.id },
-    status: { $nin: ['Cancelled', 'Completed', 'No-Show'] }
-  });
-
-  if (conflict) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Time slot not available' 
-    });
-  }
-
-  appointment.appointmentDate = appointmentDate;
-  appointment.timeSlot = timeSlot;
-  appointment.status = 'Scheduled';
-  await appointment.save();
-
-  const updatedAppointment = await Appointment.findById(appointment._id)
-    .populate({
-      path: 'patient',
-      populate: { path: 'userId' }
-    })
-    .populate({
-      path: 'doctor',
-      populate: { path: 'userId' }
-    });
-
-  res.status(200).json({ 
-    success: true, 
-    data: updatedAppointment,
-    message: 'Appointment rescheduled successfully'
+  res.status(200).json({
+    success: true,
+    data: formatPopulatedAppointment(updated),
+    message: 'Appointment rescheduled successfully',
   });
 });
 
-// Get doctor availability (available time slots)
 const getDoctorAvailability = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;
   const { date } = req.query;
-  
+
   if (!date) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Date is required' 
+    return res.status(400).json({
+      success: false,
+      message: 'Date is required',
     });
   }
 
-  const doctor = await Doctor.findById(doctorId);
-  
+  const doctor = await prisma.doctor.findFirst({
+    where: { OR: [{ id: doctorId }, { legacyMongoId: doctorId }] },
+    include: { user: { select: { isActive: true } } },
+  });
+
   if (!doctor) {
-    return res.status(404).json({ 
-      success: false, 
-      message: 'Doctor not found' 
+    return res.status(404).json({
+      success: false,
+      message: 'Doctor not found',
     });
   }
+  if (!doctor.isAvailable || !doctor.user?.isActive) {
+    return res.status(409).json({ success: false, message: 'Doctor is inactive or unavailable' });
+  }
 
-  // Get booked appointments for the date
   const startDate = new Date(date);
   const endDate = new Date(date);
   endDate.setDate(endDate.getDate() + 1);
 
-  const bookedAppointments = await Appointment.find({
-    doctor: doctorId,
-    appointmentDate: { $gte: startDate, $lt: endDate },
-    status: { $nin: ['Cancelled', 'No-Show'] }
-  }).select('timeSlot');
+  const bookedAppointments = await prisma.appointment.findMany({
+    where: {
+      doctorId: doctor.id,
+      appointmentDate: { gte: startDate, lt: endDate },
+      status: { in: ['Scheduled', 'Confirmed', 'In_Progress'] },
+    },
+    select: { startTime: true },
+  });
 
-  const bookedSlots = bookedAppointments.map(apt => apt.timeSlot.startTime);
+  const bookedSlots = bookedAppointments.map((apt) => apt.startTime);
 
-  // Get doctor's schedule for the day
   const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
-  const daySchedule = doctor.availability.find(
-    slot => slot.day.toLowerCase() === dayOfWeek.toLowerCase()
+  const availabilityList = Array.isArray(doctor.availability) ? doctor.availability : [];
+  const daySchedule = availabilityList.find(
+    (slot) => slot.day && slot.day.toLowerCase() === dayOfWeek.toLowerCase()
   );
 
   let availableSlots = [];
-  if (daySchedule && daySchedule.slots.length > 0) {
-    // Generate time slots based on doctor's schedule
-    daySchedule.slots.forEach(slot => {
+  if (daySchedule && Array.isArray(daySchedule.slots) && daySchedule.slots.length > 0) {
+    daySchedule.slots.forEach((slot) => {
       if (slot.isAvailable) {
         const slots = generateTimeSlots(slot.startTime, slot.endTime);
-        availableSlots = availableSlots.concat(
-          slots.filter(time => !bookedSlots.includes(time))
-        );
+        availableSlots = availableSlots.concat(slots.filter((time) => !bookedSlots.includes(time)));
       }
     });
   }
 
-  res.status(200).json({ 
-    success: true, 
+  res.status(200).json({
+    success: true,
     data: {
       date,
       doctor: doctorId,
       availableSlots,
-      bookedSlots
-    }
+      bookedSlots,
+    },
   });
 });
 
-// Helper function to generate time slots
 function generateTimeSlots(startTime, endTime, interval = 30) {
   const slots = [];
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);
-  
+
   let currentHour = startHour;
   let currentMin = startMin;
-  
+
   while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
-    slots.push(
-      `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`
-    );
-    
+    slots.push(`${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`);
     currentMin += interval;
     if (currentMin >= 60) {
       currentHour += 1;
       currentMin -= 60;
     }
   }
-  
+
   return slots;
 }
 
-// Export all functions
 module.exports = {
   createAppointment,
   getAppointments,
@@ -500,5 +491,5 @@ module.exports = {
   updateAppointment,
   cancelAppointment,
   rescheduleAppointment,
-  getDoctorAvailability
+  getDoctorAvailability,
 };

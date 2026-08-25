@@ -1,6 +1,8 @@
 'use strict';
 const { callLLM } = require('../llmClient');
 const { REPORT_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
+const { enforceReportSafety } = require('../safety');
+const { parseReportMeasurements } = require('../reportParser');
 
 const REPORT_TYPES = [
   { keys: ['haemoglobin', 'hemoglobin', 'hb', 'wbc', 'rbc', 'platelet', 'hba1c', 'blood count', 'cbc'], type: 'Complete Blood Count (CBC)' },
@@ -97,12 +99,28 @@ function mockAnalyze(reportText, reportType) {
 }
 
 async function runReportAnalysis({ reportText, reportType }) {
+  const parsedFindings = parseReportMeasurements(reportText);
   const result = await callLLM(
     REPORT_ANALYSIS.system,
     REPORT_ANALYSIS.user({ reportText, reportType }),
     () => mockAnalyze(reportText, reportType),
   );
-  return result.data;
+  const safeNarrative = enforceReportSafety(result.data, reportText);
+  const abnormal = parsedFindings.filter((finding) => finding.status === 'Abnormal').length;
+  return {
+    ...safeNarrative,
+    keyFindings: parsedFindings,
+    summary: parsedFindings.length
+      ? `${parsedFindings.length} measurement(s) with explicit reference ranges were extracted from the submitted text. ${abnormal} value(s) fall outside those printed ranges.`
+      : 'No measurements with explicit numeric reference ranges could be reliably extracted. No clinical conclusions were generated.',
+    insights: parsedFindings.length ? [`Statuses were calculated only against reference ranges printed in the submitted report.`] : [],
+    recommendations: abnormal > 0
+      ? 'Ask a qualified clinician to interpret the out-of-range values in the context of symptoms, history, and the laboratory’s methodology.'
+      : 'Share the original report with a qualified clinician; a value within a printed range does not by itself establish health or exclude disease.',
+    urgency: abnormal > 0 ? 'Soon' : 'Routine',
+    interpretationBasis: 'submitted_values_and_printed_reference_ranges_only',
+    parsedMeasurementCount: parsedFindings.length,
+  };
 }
 
 module.exports = { runReportAnalysis };

@@ -3,6 +3,8 @@ const router = express.Router();
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
+const { requirePatientAccess } = require('../middleware/patientAccess');
+const prisma = require('../config/prisma');
 const {
   createPatient,
   getPatients,
@@ -16,7 +18,7 @@ const {
   addLabReport,
   getPatientMedicalRecords,
   getPatientAppointments,
-  getPatientStats
+  getPatientStats,
 } = require('../controllers/patientController');
 
 router.use(protect);
@@ -27,19 +29,21 @@ router.get('/available-users', authorize('Admin', 'Receptionist'), getAvailableP
 // Heal orphaned patient users — create missing profiles (Admin only)
 router.post('/heal-orphans', authorize('Admin'), async (req, res) => {
   try {
-    const User = require('../models/User');
-    const Patient = require('../models/Patient');
-    const patientUsers = await User.find({ role: 'Patient' }).select('_id');
-    const existing = await Patient.find().select('userId');
-    const profiledIds = new Set(existing.map(p => p.userId.toString()));
-    const orphans = patientUsers.filter(u => !profiledIds.has(u._id.toString()));
+    const patientUsers = await prisma.user.findMany({
+      where: { role: 'Patient', isActive: true },
+      select: { id: true },
+    });
+    const existing = await prisma.patient.findMany({ select: { userId: true } });
+    const profiledIds = new Set(existing.map((p) => p.userId));
+    const orphans = patientUsers.filter((u) => !profiledIds.has(u.id));
+
     const created = [];
     for (const u of orphans) {
       const ts = Date.now().toString().slice(-6);
       const rand = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
       const patientId = `PT${ts}${rand}`;
-      await Patient.create({ userId: u._id, patientId });
-      created.push(u._id);
+      await prisma.patient.create({ data: { userId: u.id, patientId } });
+      created.push(u.id);
     }
     res.json({ success: true, message: `Fixed ${created.length} orphaned patient(s)`, count: created.length });
   } catch (err) {
@@ -52,61 +56,123 @@ router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Lab
   try {
     const { q = '' } = req.query;
     if (!q.trim()) return res.json({ success: true, data: [] });
-    const User = require('../models/User');
-    const Patient = require('../models/Patient');
-    const matchedUsers = await User.find({
-      role: 'Patient',
-      $or: [
-        { name: new RegExp(q, 'i') },
-        { phone: new RegExp(q, 'i') },
-        { email: new RegExp(q, 'i') }
-      ]
-    }).select('_id').limit(20);
-    const userIds = matchedUsers.map(u => u._id);
-    const patients = await Patient.find({
-      $or: [
-        { userId: { $in: userIds } },
-        { patientId: new RegExp(q, 'i') }
-      ]
-    })
-      .populate('userId', 'name email phone gender dateOfBirth')
-      .limit(10)
-      .sort({ createdAt: -1 });
-    res.json({ success: true, data: patients });
+
+    const matchedUsers = await prisma.user.findMany({
+      where: {
+        role: 'Patient',
+        isActive: true,
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { phone: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+      take: 20,
+    });
+
+    const userIds = matchedUsers.map((u) => u.id);
+    const patients = await prisma.patient.findMany({
+      where: {
+        archivedAt: null,
+        OR: [
+          { userId: { in: userIds } },
+          { patientId: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true, phone: true, gender: true, dateOfBirth: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    const formatted = patients.map((p) => ({
+      ...p,
+      _id: p.id,
+      userId: p.user ? { ...p.user, _id: p.user.id } : null,
+    }));
+
+    res.json({ success: true, data: formatted });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Search failed' });
   }
 });
 
 // Main patient routes
-router.route('/')
-  .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Patient', 'Lab Technician', 'Ward Manager', 'Pharmacist'), getPatients)
-  .post(authorize('Admin', 'Receptionist'), [
-    body('email').optional().isEmail().withMessage('Valid email is required'),
-    body('phone').optional().notEmpty().withMessage('Phone is required'),
-    validate
-  ], createPatient);
+router
+  .route('/')
+  .get(
+    authorize(
+      'Admin',
+      'Doctor',
+      'Nurse',
+      'Receptionist',
+      'Patient',
+      'Lab Technician',
+      'Ward Manager',
+      'Pharmacist'
+    ),
+    getPatients
+  )
+  .post(
+    authorize('Admin', 'Receptionist'),
+    [
+      body('email').optional().isEmail().withMessage('Valid email is required'),
+      body('phone').optional().notEmpty().withMessage('Phone is required'),
+      validate,
+    ],
+    createPatient
+  );
 
-router.route('/:id')
-  .get(getPatient)
-  .put(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), updatePatient)
+router
+  .route('/:id')
+  .get(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Lab Technician', 'Ward Manager', 'Pharmacist'), getPatient)
+  .put(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), updatePatient)
   .delete(authorize('Admin'), deletePatient);
 
 // Medical records
-router.get('/:id/medical-records', getPatientMedicalRecords);
+router.get('/:id/medical-records', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Lab Technician'), getPatientMedicalRecords);
 
 // Appointments
-router.get('/:id/appointments', getPatientAppointments);
+router.get('/:id/appointments', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientAppointments);
 
 // Stats
-router.get('/:id/stats', getPatientStats);
+router.get('/:id/stats', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientStats);
 
 // Medical history routes
-router.post('/:id/medical-history', authorize('Doctor', 'Nurse'), addMedicalHistory);
-router.put('/:id/medical-history/:historyId', authorize('Doctor', 'Nurse'), updateMedicalHistory);
-router.delete('/:id/medical-history/:historyId', authorize('Doctor', 'Nurse'), deleteMedicalHistory);
+const medicalHistoryValidation = [
+  body('condition').trim().isLength({ min: 2, max: 200 }),
+  body('diagnosedDate').isISO8601().toDate(),
+  body('status').isIn(['Active', 'Resolved', 'Chronic']),
+  body('notes').optional({ nullable: true }).isLength({ max: 2000 }),
+  validate,
+];
+router.post('/:id/medical-history', requirePatientAccess('Doctor', 'Nurse'), medicalHistoryValidation, addMedicalHistory);
+router.put('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse'), [
+  body('condition').optional().trim().isLength({ min: 2, max: 200 }),
+  body('diagnosedDate').optional().isISO8601().toDate(),
+  body('status').optional().isIn(['Active', 'Resolved', 'Chronic']),
+  body('notes').optional({ nullable: true }).isLength({ max: 2000 }),
+  body('reason').optional().trim().isLength({ max: 500 }),
+  validate,
+], updateMedicalHistory);
+router.delete('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse'), [
+  body('reason').trim().isLength({ min: 3, max: 500 }).withMessage('A void reason is required'),
+  validate,
+], deleteMedicalHistory);
 
 // Lab reports
-router.post('/:id/lab-report', authorize('Doctor', 'Nurse', 'Lab Technician'), addLabReport);
+router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Technician'), [
+  body('testName').trim().isLength({ min: 2, max: 200 }),
+  body('testDate').optional({ nullable: true }).isISO8601().toDate(),
+  body('reportDate').optional({ nullable: true }).isISO8601().toDate(),
+  body('status').optional().isIn(['Pending', 'Collected', 'Processing', 'Completed', 'Verified', 'Amended', 'Cancelled']),
+  body('result').optional({ nullable: true }).isLength({ max: 5000 }),
+  body('results').optional({ nullable: true }).isLength({ max: 5000 }),
+  body('notes').optional({ nullable: true }).isLength({ max: 2000 }),
+  body('remarks').optional({ nullable: true }).isLength({ max: 2000 }),
+  validate,
+], addLabReport);
 
 module.exports = router;

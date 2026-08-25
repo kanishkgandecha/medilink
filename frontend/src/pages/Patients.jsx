@@ -210,10 +210,10 @@ const Patients = () => {
   const handleDelete = async (id) => {
     try {
       await patientService.deletePatient(id)
-      toast.success('Patient deleted')
+      toast.success('Patient archived; clinical records were retained')
       fetchPatients()
     } catch {
-      toast.error('Failed to delete patient')
+      toast.error('Failed to archive patient')
     }
   }
 
@@ -362,7 +362,7 @@ const Patients = () => {
           {!selectedPatient && (
             <>
               <div className={`p-3 rounded-lg text-sm ${darkMode ? 'bg-blue-900/20 border border-blue-800 text-blue-300' : 'bg-blue-50 border border-blue-200 text-blue-700'}`}>
-                Default password will be set to the patient's phone number
+                Default password will be the patient's phone number and can be changed later
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -525,9 +525,9 @@ const Patients = () => {
         isOpen={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => handleDelete(confirmDelete)}
-        title="Delete Patient Record"
-        message="This will permanently delete the patient's data including appointments and medical history."
-        confirmLabel="Delete"
+        title="Archive Patient"
+        message="This disables the patient account and removes it from active lists. Clinical history and linked records are retained."
+        confirmLabel="Archive"
       />
     </div>
   )

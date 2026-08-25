@@ -1,6 +1,4 @@
-const Ward = require('../models/Ward');
-const Patient = require('../models/Patient');
-const Billing = require('../models/Billing');
+const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 
 const calcWardBill = (admissionDate, dailyRate) => {
@@ -9,166 +7,281 @@ const calcWardBill = (admissionDate, dailyRate) => {
   return { days, total: days * dailyRate };
 };
 
-// Populate helper — used in multiple places
-const bedPatientPopulate = {
-  path: 'beds.patient',
-  model: 'Patient',
-  populate: { path: 'userId', select: 'name dateOfBirth gender phone' }
+const formatPopulatedWard = (w) => {
+  if (!w) return null;
+  return {
+    ...w,
+    _id: w.id,
+    nurseInCharge: w.nurseInCharge ? { ...w.nurseInCharge, _id: w.nurseInCharge.id } : null,
+    beds: (w.beds || []).map((b) => ({
+      ...b,
+      _id: b.id,
+      patient: b.patient
+        ? {
+            ...b.patient,
+            _id: b.patient.id,
+            userId: b.patient.user ? { ...b.patient.user, _id: b.patient.user.id } : null,
+          }
+        : null,
+    })),
+  };
 };
 
 exports.createWard = asyncHandler(async (req, res) => {
-  const { wardNumber, wardName, wardType, department, floor, totalBeds,
-          gender, facilities, dailyRate } = req.body;
+  const { wardNumber, wardName, wardType, department, floor, totalBeds, gender, facilities, dailyRate } = req.body;
 
-  const beds = [];
-  for (let i = 1; i <= totalBeds; i++) {
-    beds.push({
+  const bedsData = [];
+  for (let i = 1; i <= parseInt(totalBeds || 10); i++) {
+    bedsData.push({
       bedNumber: `${wardNumber}-${String(i).padStart(2, '0')}`,
-      isOccupied: false
+      isOccupied: false,
     });
   }
 
-  const ward = await Ward.create({
-    wardNumber, wardName, wardType, department, floor, totalBeds,
-    availableBeds: totalBeds, beds, gender, facilities, dailyRate
+  const ward = await prisma.ward.create({
+    data: {
+      wardNumber,
+      wardName,
+      wardType: wardType || 'General',
+      department: department || null,
+      floor: floor ? parseInt(floor) : null,
+      totalBeds: parseInt(totalBeds || 10),
+      availableBeds: parseInt(totalBeds || 10),
+      gender: gender || null,
+      facilities: Array.isArray(facilities) ? facilities : [],
+      dailyRate: parseFloat(dailyRate || 500),
+      beds: {
+        create: bedsData,
+      },
+    },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
   });
 
-  res.status(201).json({ success: true, data: ward });
+  res.status(201).json({ success: true, data: formatPopulatedWard(ward) });
 });
 
 exports.getWards = asyncHandler(async (req, res) => {
   const { wardType, gender, available } = req.query;
 
-  let query = { isActive: true };
-  if (wardType) query.wardType = wardType;
-  if (gender)   query.gender   = gender;
-  if (available === 'true') query.availableBeds = { $gt: 0 };
+  const where = { isActive: true };
+  if (wardType) where.wardType = wardType;
+  if (gender) where.gender = gender;
+  if (available === 'true') where.availableBeds = { gt: 0 };
 
-  const wards = await Ward.find(query)
-    .populate('nurseInCharge', 'name phone')
-    .populate(bedPatientPopulate);
+  const wards = await prisma.ward.findMany({
+    where,
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+    orderBy: { wardNumber: 'asc' },
+  });
 
-  res.status(200).json({ success: true, count: wards.length, data: wards });
+  const formatted = wards.map(formatPopulatedWard);
+  res.status(200).json({ success: true, count: formatted.length, data: formatted });
 });
 
 exports.getWard = asyncHandler(async (req, res) => {
-  const ward = await Ward.findById(req.params.id)
-    .populate('nurseInCharge', 'name phone email')
-    .populate(bedPatientPopulate);
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true, email: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+  });
 
   if (!ward) return res.status(404).json({ message: 'Ward not found' });
 
-  res.status(200).json({ success: true, data: ward });
+  res.status(200).json({ success: true, data: formatPopulatedWard(ward) });
 });
 
 exports.updateWard = asyncHandler(async (req, res) => {
-  let ward = await Ward.findById(req.params.id);
+  let ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
   if (!ward) return res.status(404).json({ message: 'Ward not found' });
 
-  ward = await Ward.findByIdAndUpdate(req.params.id, req.body, {
-    new: true, runValidators: true
+  const data = {};
+  if (req.body.wardName) data.wardName = req.body.wardName;
+  if (req.body.wardType) data.wardType = req.body.wardType;
+  if (req.body.department !== undefined) data.department = req.body.department;
+  if (req.body.floor !== undefined) data.floor = parseInt(req.body.floor);
+  if (req.body.gender) data.gender = req.body.gender;
+  if (req.body.facilities) data.facilities = req.body.facilities;
+  if (req.body.dailyRate !== undefined) data.dailyRate = parseFloat(req.body.dailyRate);
+
+  const updated = await prisma.ward.update({
+    where: { id: ward.id },
+    data,
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
   });
 
-  res.status(200).json({ success: true, data: ward });
+  res.status(200).json({ success: true, data: formatPopulatedWard(updated) });
 });
 
 exports.deleteWard = asyncHandler(async (req, res) => {
-  const ward = await Ward.findById(req.params.id);
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+  });
   if (!ward) return res.status(404).json({ message: 'Ward not found' });
 
-  if (ward.availableBeds !== ward.totalBeds) {
+  const occupiedBeds = await prisma.bed.count({ where: { wardId: ward.id, isOccupied: true } });
+  if (occupiedBeds > 0) {
     return res.status(400).json({ message: 'Cannot delete ward with occupied beds' });
   }
 
-  await ward.deleteOne();
-  res.status(200).json({ success: true, message: 'Ward deleted' });
+  await prisma.ward.update({ where: { id: ward.id }, data: { isActive: false } });
+  res.status(200).json({ success: true, message: 'Ward archived' });
 });
 
-// ── Existing: auto-assign next available bed in a ward ───────────────────────
 exports.allocateBed = asyncHandler(async (req, res) => {
   const { patientId, admissionDate, expectedDischargeDate } = req.body;
 
-  const ward = await Ward.findById(req.params.id);
-  if (!ward)  return res.status(404).json({ message: 'Ward not found' });
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: { beds: true },
+  });
+  if (!ward) return res.status(404).json({ message: 'Ward not found' });
   if (ward.availableBeds === 0) return res.status(400).json({ message: 'No beds available' });
 
-  const patient = await Patient.findById(patientId);
+  const patient = await prisma.patient.findFirst({
+    where: { OR: [{ id: patientId }, { legacyMongoId: patientId }] },
+  });
   if (!patient) return res.status(404).json({ message: 'Patient not found' });
 
-  const availableBed = ward.beds.find(bed => !bed.isOccupied);
+  const availableBed = ward.beds.find((b) => !b.isOccupied);
   if (!availableBed) return res.status(400).json({ message: 'No beds available' });
 
-  availableBed.isOccupied = true;
-  availableBed.patient    = patientId;
-  availableBed.admissionDate         = admissionDate || new Date();
-  availableBed.expectedDischargeDate = expectedDischargeDate;
+  const admDate = admissionDate ? new Date(admissionDate) : new Date();
+  const expDate = expectedDischargeDate ? new Date(expectedDischargeDate) : null;
 
-  ward.availableBeds -= 1;
-  await ward.save();
+  await prisma.bed.update({
+    where: { id: availableBed.id },
+    data: {
+      isOccupied: true,
+      patientId: patient.id,
+      admissionDate: admDate,
+      expectedDischargeDate: expDate,
+    },
+  });
 
-  patient.admissionHistory = patient.admissionHistory || [];
-  patient.admissionHistory.push({ admissionDate: availableBed.admissionDate, ward: ward.wardName });
-  await patient.save();
+  await prisma.ward.update({
+    where: { id: ward.id },
+    data: { availableBeds: Math.max(0, ward.availableBeds - 1) },
+  });
 
-  await ward.populate(bedPatientPopulate);
-  res.status(200).json({ success: true, data: ward });
+  await prisma.admissionHistory.create({
+    data: {
+      patientId: patient.id,
+      admissionDate: admDate,
+      ward: ward.wardName,
+    },
+  });
+
+  const updatedWard = await prisma.ward.findUnique({
+    where: { id: ward.id },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+  });
+
+  res.status(200).json({ success: true, data: formatPopulatedWard(updatedWard) });
 });
 
-// ── Existing: release bed by bedNumber string ────────────────────────────────
 exports.releaseBed = asyncHandler(async (req, res) => {
   const { bedNumber } = req.body;
 
-  const ward = await Ward.findById(req.params.id);
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: { beds: true },
+  });
   if (!ward) return res.status(404).json({ message: 'Ward not found' });
 
-  const bed = ward.beds.find(b => b.bedNumber === bedNumber);
+  const bed = ward.beds.find((b) => b.bedNumber === bedNumber);
   if (!bed || !bed.isOccupied) {
     return res.status(400).json({ message: 'Bed not found or not occupied' });
   }
 
   let wardBill = null;
-  if (bed.patient) {
-    const patient = await Patient.findById(bed.patient);
-    if (patient) {
-      const admission = patient.admissionHistory?.[patient.admissionHistory.length - 1];
-      if (admission && !admission.dischargeDate) {
-        admission.dischargeDate = new Date();
-        await patient.save();
-      }
+  if (bed.patientId) {
+    const lastAdmission = await prisma.admissionHistory.findFirst({
+      where: { patientId: bed.patientId, dischargeDate: null },
+      orderBy: { admissionDate: 'desc' },
+    });
+
+    if (lastAdmission) {
+      await prisma.admissionHistory.update({
+        where: { id: lastAdmission.id },
+        data: { dischargeDate: new Date() },
+      });
     }
 
     if (bed.admissionDate && ward.dailyRate > 0) {
       const { days, total } = calcWardBill(bed.admissionDate, ward.dailyRate);
-      wardBill = await Billing.create({
-        patient: bed.patient,
-        billType: 'Ward',
-        items: [{
-          description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
-          category: 'Room Charges',
-          quantity: days,
-          unitPrice: ward.dailyRate,
-          amount: total
-        }],
-        subtotal: total,
-        totalAmount: total,
-        balance: total,
-        notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      const ts = Date.now().toString(36).toUpperCase().slice(-4);
+      const rand = Math.random().toString(36).substr(2, 4).toUpperCase();
+      const billNumber = `BILL-${year}${month}-${ts}${rand}`;
+
+      wardBill = await prisma.billing.create({
+        data: {
+          billNumber,
+          patientId: bed.patientId,
+          billType: 'Ward',
+          subtotal: total,
+          totalAmount: total,
+          balance: total,
+          notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`,
+          items: {
+            create: [
+              {
+                description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
+                category: 'Room_Charges',
+                quantity: days,
+                unitPrice: ward.dailyRate,
+                amount: total,
+              },
+            ],
+          },
+        },
       });
     }
   }
 
-  bed.isOccupied = false;
-  bed.patient    = null;
-  bed.admissionDate = null;
-  bed.expectedDischargeDate = null;
+  await prisma.bed.update({
+    where: { id: bed.id },
+    data: {
+      isOccupied: false,
+      patientId: null,
+      admissionDate: null,
+      expectedDischargeDate: null,
+    },
+  });
 
-  ward.availableBeds += 1;
-  await ward.save();
+  await prisma.ward.update({
+    where: { id: ward.id },
+    data: { availableBeds: Math.min(ward.totalBeds, ward.availableBeds + 1) },
+  });
 
-  res.status(200).json({ success: true, data: ward, wardBill });
+  const updatedWard = await prisma.ward.findUnique({
+    where: { id: ward.id },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+  });
+
+  res.status(200).json({ success: true, data: formatPopulatedWard(updatedWard), wardBill: wardBill ? { ...wardBill, _id: wardBill.id } : null });
 });
 
-// ── NEW: assign a SPECIFIC bed (by beds._id) to a patient ────────────────────
 exports.assignBed = asyncHandler(async (req, res) => {
   const { patientId, bedId, admissionDate, expectedDischargeDate } = req.body;
 
@@ -176,100 +289,154 @@ exports.assignBed = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'patientId and bedId are required' });
   }
 
-  const ward = await Ward.findById(req.params.id);
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: { beds: true },
+  });
   if (!ward) return res.status(404).json({ success: false, message: 'Ward not found' });
 
-  // Validate bed exists and is free
-  const bed = ward.beds.id(bedId);
+  const bed = ward.beds.find((b) => b.id === bedId);
   if (!bed) return res.status(404).json({ success: false, message: 'Bed not found' });
   if (bed.isOccupied) {
     return res.status(400).json({ success: false, message: 'Bed is already occupied' });
   }
 
-  // Validate patient exists
-  const patient = await Patient.findById(patientId);
+  const patient = await prisma.patient.findFirst({
+    where: { OR: [{ id: patientId }, { legacyMongoId: patientId }] },
+  });
   if (!patient) return res.status(404).json({ success: false, message: 'Patient not found' });
 
-  // Prevent assigning same patient to multiple beds across all wards
-  const alreadyAssigned = await Ward.findOne({ 'beds.patient': patientId, 'beds.isOccupied': true });
+  const alreadyAssigned = await prisma.bed.findFirst({
+    where: { patientId: patient.id, isOccupied: true },
+  });
   if (alreadyAssigned) {
     return res.status(400).json({ success: false, message: 'Patient is already assigned to a bed' });
   }
 
-  bed.isOccupied = true;
-  bed.patient    = patientId;
-  bed.admissionDate         = admissionDate ? new Date(admissionDate) : new Date();
-  bed.expectedDischargeDate = expectedDischargeDate ? new Date(expectedDischargeDate) : null;
+  const admDate = admissionDate ? new Date(admissionDate) : new Date();
+  const expDate = expectedDischargeDate ? new Date(expectedDischargeDate) : null;
 
-  ward.availableBeds = Math.max(0, ward.availableBeds - 1);
-  await ward.save();
+  await prisma.bed.update({
+    where: { id: bed.id },
+    data: {
+      isOccupied: true,
+      patientId: patient.id,
+      admissionDate: admDate,
+      expectedDischargeDate: expDate,
+    },
+  });
 
-  // Log admission in patient history
-  patient.admissionHistory = patient.admissionHistory || [];
-  patient.admissionHistory.push({ admissionDate: bed.admissionDate, ward: ward.wardName });
-  await patient.save();
+  await prisma.ward.update({
+    where: { id: ward.id },
+    data: { availableBeds: Math.max(0, ward.availableBeds - 1) },
+  });
 
-  await ward.populate(bedPatientPopulate);
-  res.status(200).json({ success: true, message: 'Patient assigned to bed', data: ward });
+  await prisma.admissionHistory.create({
+    data: {
+      patientId: patient.id,
+      admissionDate: admDate,
+      ward: ward.wardName,
+    },
+  });
+
+  const updatedWard = await prisma.ward.findUnique({
+    where: { id: ward.id },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+  });
+
+  res.status(200).json({ success: true, message: 'Patient assigned to bed', data: formatPopulatedWard(updatedWard) });
 });
 
-// ── NEW: discharge patient from a SPECIFIC bed (by beds._id) ─────────────────
 exports.dischargeBed = asyncHandler(async (req, res) => {
   const { bedId } = req.body;
-
   if (!bedId) {
     return res.status(400).json({ success: false, message: 'bedId is required' });
   }
 
-  const ward = await Ward.findById(req.params.id);
+  const ward = await prisma.ward.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    include: { beds: true },
+  });
   if (!ward) return res.status(404).json({ success: false, message: 'Ward not found' });
 
-  const bed = ward.beds.id(bedId);
+  const bed = ward.beds.find((b) => b.id === bedId);
   if (!bed) return res.status(404).json({ success: false, message: 'Bed not found' });
   if (!bed.isOccupied) {
     return res.status(400).json({ success: false, message: 'Bed is not occupied' });
   }
 
-  // Close patient admission history and auto-generate ward bill
   let wardBill = null;
-  if (bed.patient) {
-    const patient = await Patient.findById(bed.patient);
-    if (patient) {
-      const lastAdmission = patient.admissionHistory?.[patient.admissionHistory.length - 1];
-      if (lastAdmission && !lastAdmission.dischargeDate) {
-        lastAdmission.dischargeDate = new Date();
-        await patient.save();
-      }
+  if (bed.patientId) {
+    const lastAdmission = await prisma.admissionHistory.findFirst({
+      where: { patientId: bed.patientId, dischargeDate: null },
+      orderBy: { admissionDate: 'desc' },
+    });
+
+    if (lastAdmission) {
+      await prisma.admissionHistory.update({
+        where: { id: lastAdmission.id },
+        data: { dischargeDate: new Date() },
+      });
     }
 
     if (bed.admissionDate && ward.dailyRate > 0) {
       const { days, total } = calcWardBill(bed.admissionDate, ward.dailyRate);
-      wardBill = await Billing.create({
-        patient: bed.patient,
-        billType: 'Ward',
-        items: [{
-          description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
-          category: 'Room Charges',
-          quantity: days,
-          unitPrice: ward.dailyRate,
-          amount: total
-        }],
-        subtotal: total,
-        totalAmount: total,
-        balance: total,
-        notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      const ts = Date.now().toString(36).toUpperCase().slice(-4);
+      const rand = Math.random().toString(36).substr(2, 4).toUpperCase();
+      const billNumber = `BILL-${year}${month}-${ts}${rand}`;
+
+      wardBill = await prisma.billing.create({
+        data: {
+          billNumber,
+          patientId: bed.patientId,
+          billType: 'Ward',
+          subtotal: total,
+          totalAmount: total,
+          balance: total,
+          notes: `Auto-generated on discharge. Admission: ${new Date(bed.admissionDate).toLocaleDateString('en-IN')} · ${days} day(s) @ ₹${ward.dailyRate}/day`,
+          items: {
+            create: [
+              {
+                description: `Ward Stay — ${ward.wardName} (${ward.wardType}) · ${bed.bedNumber}`,
+                category: 'Room_Charges',
+                quantity: days,
+                unitPrice: ward.dailyRate,
+                amount: total,
+              },
+            ],
+          },
+        },
       });
     }
   }
 
-  bed.isOccupied = false;
-  bed.patient    = null;
-  bed.admissionDate = null;
-  bed.expectedDischargeDate = null;
+  await prisma.bed.update({
+    where: { id: bed.id },
+    data: {
+      isOccupied: false,
+      patientId: null,
+      admissionDate: null,
+      expectedDischargeDate: null,
+    },
+  });
 
-  ward.availableBeds = Math.min(ward.totalBeds, ward.availableBeds + 1);
-  await ward.save();
+  await prisma.ward.update({
+    where: { id: ward.id },
+    data: { availableBeds: Math.min(ward.totalBeds, ward.availableBeds + 1) },
+  });
 
-  await ward.populate(bedPatientPopulate);
-  res.status(200).json({ success: true, message: 'Patient discharged successfully', data: ward, wardBill });
+  const updatedWard = await prisma.ward.findUnique({
+    where: { id: ward.id },
+    include: {
+      nurseInCharge: { select: { id: true, name: true, phone: true } },
+      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+    },
+  });
+
+  res.status(200).json({ success: true, message: 'Patient discharged successfully', data: formatPopulatedWard(updatedWard), wardBill: wardBill ? { ...wardBill, _id: wardBill.id } : null });
 });

@@ -68,7 +68,7 @@ export const updatePatient = async (id, data) => {
   }
 }
 
-// Delete patient
+// Archive patient while retaining linked clinical records
 export const deletePatient = async (id) => {
   return await api.delete(`/patients/${id}`)
 }
