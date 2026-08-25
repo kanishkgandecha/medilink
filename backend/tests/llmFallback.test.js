@@ -20,3 +20,39 @@ test('malformed provider output triggers an explicitly degraded fallback', async
     else process.env.OPENROUTER_API_KEY = previousKey;
   }
 });
+
+test('provider outage triggers deterministic degraded behavior', async () => {
+  const previousKey = process.env.OPENROUTER_API_KEY;
+  const previousFetch = global.fetch;
+  process.env.OPENROUTER_API_KEY = 'test-key';
+  global.fetch = async () => { throw new Error('provider unavailable'); };
+  try {
+    const result = await callLLM('system', 'user', async () => ({ safe: true }));
+    assert.equal(result.data._source, 'rules');
+    assert.equal(result.data._fallbackReason, 'provider_error');
+  } finally {
+    global.fetch = previousFetch;
+    if (previousKey === undefined) delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = previousKey;
+  }
+});
+
+test('provider abort is classified as a timeout and falls back safely', async () => {
+  const previousKey = process.env.OPENROUTER_API_KEY;
+  const previousFetch = global.fetch;
+  process.env.OPENROUTER_API_KEY = 'test-key';
+  global.fetch = async () => {
+    const error = new Error('request aborted');
+    error.name = 'AbortError';
+    throw error;
+  };
+  try {
+    const result = await callLLM('system', 'user', async () => ({ safe: true }));
+    assert.equal(result.data._source, 'rules');
+    assert.equal(result.data._fallbackReason, 'provider_timeout');
+  } finally {
+    global.fetch = previousFetch;
+    if (previousKey === undefined) delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = previousKey;
+  }
+});

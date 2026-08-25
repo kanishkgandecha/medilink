@@ -93,12 +93,10 @@ app.use((req, _res, next) => {
 });
 
 // ── PostgreSQL / Prisma Connection Check ─────────────────────
-prisma
-  .$connect()
-  .then(() => logger.info('PostgreSQL connected successfully via Prisma'))
-  .catch((err) => {
-    logger.error('PostgreSQL connection error:', err.message);
-  });
+if (require.main === module) {
+  prisma.$connect().then(() => logger.info('PostgreSQL connected successfully via Prisma'))
+    .catch((err) => logger.error('PostgreSQL connection error:', err.message));
+}
 
 // ── Static uploads ──────────────────────────────────────────
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
@@ -138,9 +136,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ── Start Server ─────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-});
+let server = null;
 
 // ── Graceful shutdown ────────────────────────────────────────
 let shuttingDown = false;
@@ -166,20 +162,23 @@ const shutdown = (exitCode, signal) => {
   });
 };
 
-process.on('SIGTERM', () => shutdown(0, 'SIGTERM'));
-process.on('SIGINT', () => shutdown(0, 'SIGINT'));
+if (require.main === module) {
+  server = app.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`));
+  process.on('SIGTERM', () => shutdown(0, 'SIGTERM'));
+  process.on('SIGINT', () => shutdown(0, 'SIGINT'));
+  process.on('unhandledRejection', (reason) => {
+    const msg = reason instanceof Error ? reason.stack : String(reason);
+    logger.error(`Unhandled Rejection: ${msg}`);
+    shutdown(1, 'unhandled rejection');
+  });
+  process.on('uncaughtException', (err) => {
+    logger.error(`Uncaught Exception: ${err.message}\n${err.stack}`);
+    if (err.code === 'EADDRINUSE') {
+      logger.error(`Port ${PORT} is already in use. Stop the existing server process first.`);
+      process.exit(1);
+    }
+    shutdown(1, 'uncaught exception');
+  });
+}
 
-process.on('unhandledRejection', (reason) => {
-  const msg = reason instanceof Error ? reason.stack : String(reason);
-  logger.error(`Unhandled Rejection: ${msg}`);
-  shutdown(1, 'unhandled rejection');
-});
-
-process.on('uncaughtException', (err) => {
-  logger.error(`Uncaught Exception: ${err.message}\n${err.stack}`);
-  if (err.code === 'EADDRINUSE') {
-    logger.error(`Port ${PORT} is already in use. Stop the existing server process first.`);
-    process.exit(1);
-  }
-  shutdown(1, 'uncaught exception');
-});
+module.exports = app;
