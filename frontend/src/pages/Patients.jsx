@@ -11,6 +11,9 @@ import * as appointmentService from '../services/appointmentService'
 import { toast } from 'react-toastify'
 import CardPagination, { paginateData } from '../components/common/CardPagination'
 import PageLayout from '../components/common/PageLayout'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getPatientsCapability } from '../config/pageCapabilities'
 
 const EMPTY_FORM = {
   // User fields (only on create)
@@ -22,7 +25,7 @@ const EMPTY_FORM = {
 }
 
 // ─── Patient Card ──────────────────────────────────────────────
-const PatientCard = ({ patient, canAdd, onView, onMedical, onEdit, onDelete, darkMode }) => {
+const PatientCard = ({ patient, canEdit, canDelete, onView, onMedical, onEdit, onDelete, darkMode }) => {
   const name     = patient.userId?.name || 'Unknown'
   const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   const phone    = patient.userId?.phone || '—'
@@ -95,23 +98,23 @@ const PatientCard = ({ patient, canAdd, onView, onMedical, onEdit, onDelete, dar
         >
           <Calendar className="w-3.5 h-3.5" /> Appts
         </button>
-        {canAdd && (
-          <>
-            <button
-              onClick={() => onEdit(patient)}
-              className={`p-1.5 rounded-lg transition-all text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
-              title="Edit"
-            >
-              <Edit className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onDelete(patient._id)}
-              className="p-1.5 rounded-lg transition-all text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-              title="Delete"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </>
+        {canEdit && (
+          <button
+            onClick={() => onEdit(patient)}
+            className={`p-1.5 rounded-lg transition-all text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+            title="Edit"
+          >
+            <Edit className="w-3.5 h-3.5" />
+          </button>
+        )}
+        {canDelete && (
+          <button
+            onClick={() => onDelete(patient._id)}
+            className="p-1.5 rounded-lg transition-all text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+            title="Archive"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         )}
       </div>
     </div>
@@ -121,12 +124,12 @@ const PatientCard = ({ patient, canAdd, onView, onMedical, onEdit, onDelete, dar
 const Patients = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
-  const role = user?.role?.toLowerCase()
-  const subRole = user?.subRole?.toLowerCase()
-  const canAdd = role === 'admin' || subRole === 'receptionist' || role === 'receptionist'
+  const capability = getPatientsCapability(user)
+  const { canCreate, canEdit, canDelete } = capability
 
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
@@ -147,10 +150,12 @@ const Patients = () => {
 
   const fetchPatients = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const data = await patientService.getAllPatients({ limit: 500 })
       setPatients(data.data || data.patients || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to fetch patients')
     } finally {
       setLoading(false)
@@ -276,12 +281,15 @@ const Patients = () => {
       {/* ── Page header ─────────────────────────────────────── */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>Patient Management</h1>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
           <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Manage patient records and information
+            {capability.description}
           </p>
         </div>
-        {canAdd && (
+        {canCreate && (
           <button
             onClick={openAdd}
             className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
@@ -320,12 +328,18 @@ const Patients = () => {
       </div>
 
       {/* ── Patient cards ────────────────────────────────────── */}
-      {filteredPatients.length === 0 ? (
+      {fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchPatients}
+        />
+      ) : filteredPatients.length === 0 ? (
         <div className={`${card} py-16 text-center`}>
           <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className={`font-semibold ${textCls}`}>No patients found</p>
           <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            {search ? 'Try adjusting your search' : 'Add a patient to get started'}
+            {search ? 'Try adjusting your search' : canCreate ? 'Add a patient to get started' : 'Patients will appear here once registered'}
           </p>
         </div>
       ) : (
@@ -335,7 +349,8 @@ const Patients = () => {
               <PatientCard
                 key={pt._id}
                 patient={pt}
-                canAdd={canAdd}
+                canEdit={canEdit}
+                canDelete={canDelete}
                 onView={viewAppointments}
                 onMedical={viewMedicalRecords}
                 onEdit={openEdit}

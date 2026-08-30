@@ -9,6 +9,9 @@ import ReportAnalysisAgent from '../agents/ReportAnalysisAgent'
 import * as patientService from '../services/patientService'
 import { toast } from 'react-toastify'
 import { getUserRoleKey } from '../config/rolePolicy'
+import { getTestReportsCapability } from '../config/pageCapabilities'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
 
 const REPORT_TYPES = [
   'Blood Test', 'Urine Test', 'X-Ray', 'CT Scan', 'MRI Scan',
@@ -25,11 +28,13 @@ const TestReports = () => {
   const isPatient = roleKey === 'patient'
   const isDiagnosticStaff = ['lab-technician', 'radiology-technician'].includes(roleKey)
   const isRadiology = roleKey === 'radiology-technician'
+  const capability = getTestReportsCapability(user)
 
   const [labReports, setLabReports] = useState([])
   const [patients, setPatients] = useState([])
   const [selectedPatientId, setSelectedPatientId] = useState('')
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showAiAnalysis, setShowAiAnalysis] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
@@ -54,6 +59,7 @@ const TestReports = () => {
   const fetchOwnReports = async () => {
     try {
       setLoading(true)
+      setFetchError(null)
       const res = isDiagnosticStaff
         ? await patientService.getDiagnosticWorkspace()
         : await patientService.getAllPatients()
@@ -70,7 +76,8 @@ const TestReports = () => {
       } else {
         setPatients(allPatients)
       }
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load reports')
     } finally {
       setLoading(false)
@@ -80,12 +87,14 @@ const TestReports = () => {
   const fetchPatientReports = async (id) => {
     if (!id) return
     setLoading(true)
+    setFetchError(null)
     try {
       const rec = isDiagnosticStaff
         ? await patientService.getDiagnosticRecords(id)
         : await patientService.getPatientMedicalRecords(id)
       setLabReports(rec.data?.labReports || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load reports')
     } finally {
       setLoading(false)
@@ -145,14 +154,11 @@ const TestReports = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>Test Reports</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            {isPatient
-              ? 'Your lab tests and diagnostic reports'
-              : isRadiology
-              ? 'Create and review patient imaging reports'
-              : 'Create and review patient laboratory reports'}
-          </p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-500 text-sm mt-0.5">{capability.description}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -162,7 +168,8 @@ const TestReports = () => {
             <Sparkles className="w-4 h-4" />
             AI Analysis
           </button>
-          {!isPatient && selectedPatientId && (
+          {/* Backend POST /patients/:id/lab-report allows Doctor, Nurse, Lab/Radiology Tech — not Admin. */}
+          {capability.canAdd && selectedPatientId && (
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] transition"
@@ -215,6 +222,12 @@ const TestReports = () => {
         <div className="flex items-center justify-center min-h-64">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
         </div>
+      ) : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={selectedPatientId && !isPatient ? () => fetchPatientReports(selectedPatientId) : fetchOwnReports}
+        />
       ) : !isPatient && !selectedPatientId ? (
         <div className={`${card} p-12 text-center`}>
           <User className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -226,7 +239,7 @@ const TestReports = () => {
           <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className={`font-medium ${textCls}`}>No test reports found</p>
           <p className="text-sm text-gray-400 mt-1">
-            {isPatient ? 'Your doctor will upload reports after tests' : 'Click "Add Report" to add a lab report'}
+            {isPatient ? 'Your doctor will upload reports after tests' : capability.canAdd ? 'Click "Add Report" to add a lab report' : 'Reports will appear here once added'}
           </p>
         </div>
       ) : (

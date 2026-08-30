@@ -7,6 +7,9 @@ import ConfirmDialog from '../components/common/ConfirmDialog'
 import StatCard from '../components/common/StatCard'
 import PageLayout from '../components/common/PageLayout'
 import { SkeletonDashboard } from '../components/common/SkeletonCard'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getStaffCapability } from '../config/pageCapabilities'
 import * as staffService from '../services/staffService'
 import { toast } from 'react-toastify'
 
@@ -142,8 +145,10 @@ const StaffCard = ({ member, onEdit, onDelete, darkMode }) => {
 
 const Staff = () => {
   const { darkMode } = useTheme()
+  const capability = getStaffCapability()
   const [staff, setStaff]               = useState([])
   const [loading, setLoading]           = useState(false)
+  const [fetchError, setFetchError]     = useState(null)
   const [submitting, setSubmitting]     = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
@@ -159,10 +164,12 @@ const Staff = () => {
 
   const fetchStaff = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const res = await staffService.getAllStaff()
       setStaff(res.data || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to fetch staff members')
     } finally {
       setLoading(false)
@@ -279,8 +286,11 @@ const Staff = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Staff Management</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage hospital staff and employees</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-400 text-sm mt-1">{capability.description}</p>
         </div>
         <button
           onClick={() => { setSelectedStaff(null); setFormData(EMPTY_FORM); setShowAddModal(true) }}
@@ -339,11 +349,19 @@ const Staff = () => {
       </div>
 
       {/* Card Grid */}
-      {filtered.length === 0 ? (
+      {fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchStaff}
+        />
+      ) : filtered.length === 0 ? (
         <div className={`flex flex-col items-center justify-center py-20 rounded-2xl border ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100'}`}>
           <Users className="w-12 h-12 text-gray-300 mb-3" />
           <p className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No staff members found</p>
-          <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {search || filterSubRole || filterShift ? 'Try adjusting your filters' : 'Add a staff member to get started'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

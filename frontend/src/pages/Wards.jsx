@@ -14,6 +14,9 @@ import { toast } from 'react-toastify'
 import * as wardService from '../services/wardService'
 import api from '../services/api'
 import BedAllocationAgent from '../agents/BedAllocationAgent'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getWardsCapability } from '../config/pageCapabilities'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const calcAge = (dob) => {
@@ -131,7 +134,10 @@ const BedCard = ({ bed, ward, canManage, onAssign, onDischarge, darkMode }) => {
 }
 
 // ── Ward Card ─────────────────────────────────────────────────────────────────
-const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, darkMode }) => {
+// `canManageBeds` gates bed-level assign/discharge (Admin, Doctor, Nurse, Ward
+// Manager, Receptionist per wardRoutes.js assign/discharge). `canManageWard`
+// gates the ward definition itself — edit/delete a ward is Admin-only.
+const WardCard = ({ ward, canManageBeds, canManageWard, onEdit, onDelete, onAllocate, onRelease, darkMode }) => {
   const [expanded, setExpanded] = useState(false)
   const occupied = ward.totalBeds - ward.availableBeds
   const pct = ward.totalBeds > 0 ? (occupied / ward.totalBeds) * 100 : 0
@@ -187,17 +193,17 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
         </div>
 
         <div className="flex gap-2">
-          {canManage && (
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
+              ${expanded
+                ? 'bg-[#2E86DE] text-white border-[#2E86DE]'
+                : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}
+          >
+            {expanded ? 'Hide Beds' : 'View Beds'}
+          </button>
+          {canManageWard && (
             <>
-              <button
-                onClick={() => setExpanded(v => !v)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
-                  ${expanded
-                    ? 'bg-[#2E86DE] text-white border-[#2E86DE]'
-                    : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}
-              >
-                {expanded ? 'Hide Beds' : 'View Beds'}
-              </button>
               <button
                 onClick={() => onEdit(ward)}
                 className={`p-2 rounded-lg transition-all duration-200 ${darkMode ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
@@ -214,17 +220,6 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
               </button>
             </>
           )}
-          {!canManage && (
-            <button
-              onClick={() => setExpanded(v => !v)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border
-                ${expanded
-                  ? 'bg-[#2E86DE] text-white border-[#2E86DE]'
-                  : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-            >
-              {expanded ? 'Hide Beds' : 'View Beds'}
-            </button>
-          )}
         </div>
       </div>
 
@@ -240,7 +235,7 @@ const WardCard = ({ ward, canManage, onEdit, onDelete, onAllocate, onRelease, da
                 key={bed._id}
                 bed={bed}
                 ward={ward}
-                canManage={canManage}
+                canManage={canManageBeds}
                 onAssign={onAllocate}
                 onDischarge={onRelease}
                 darkMode={darkMode}
@@ -260,13 +255,14 @@ const Wards = () => {
   const { darkMode } = useTheme()
   const { user }     = useAuth()
 
-  const canManage = ['Admin', 'Doctor', 'Nurse', 'Ward Manager', 'Receptionist'].includes(user?.role) ||
-                    ['Admin', 'Doctor', 'Nurse', 'Ward Manager', 'Receptionist'].includes(user?.subRole)
+  const capability = getWardsCapability(user)
+  const { canManageWard, canManageBeds } = capability
 
   // ── State ────────────────────────────────────────────────────────
   const [wards,    setWards]    = useState([])
   const [patients, setPatients] = useState([])
   const [loading,  setLoading]  = useState(false)
+  const [fetchError, setFetchError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmDeleteWard, setConfirmDeleteWard] = useState(null)
 
@@ -305,10 +301,12 @@ const Wards = () => {
 
   const fetchWards = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const res = await wardService.getAllWards()
       setWards(res.data || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load wards')
     } finally {
       setLoading(false)
@@ -494,12 +492,15 @@ const Wards = () => {
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Ward & Bed Management
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">Monitor ward status and patient-bed assignments in real-time</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {capability.title}
+            </h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-400 text-sm mt-1">{capability.description}</p>
         </div>
-        {canManage && user?.role === 'Admin' && (
+        {canManageWard && (
           <button
             onClick={() => { resetWardForm(); setShowWardModal(true) }}
             className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
@@ -522,11 +523,17 @@ const Wards = () => {
       {/* ── Ward Cards ───────────────────────────────────────────── */}
       {loading ? (
         <SkeletonDashboard />
+      ) : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchWards}
+        />
       ) : wards.length === 0 ? (
         <div className={`${card} p-12 text-center`}>
           <Bed className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">No wards yet</p>
-          {user?.role === 'Admin' && (
+          {canManageWard && (
             <button
               onClick={() => { resetWardForm(); setShowWardModal(true) }}
               className="mt-4 px-5 py-2 bg-[#2E86DE] text-white text-sm rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200"
@@ -539,7 +546,8 @@ const Wards = () => {
             <WardCard
               key={ward._id}
               ward={ward}
-              canManage={canManage}
+              canManageBeds={canManageBeds}
+              canManageWard={canManageWard}
               darkMode={darkMode}
               onEdit={openEditWard}
               onDelete={setConfirmDeleteWard}
@@ -627,7 +635,7 @@ const Wards = () => {
                           key={bed._id}
                           bed={bed}
                           ward={ward}
-                          canManage={canManage}
+                          canManage={canManageBeds}
                           onAssign={openAssignModal}
                           onDischarge={openDischargeModal}
                           darkMode={darkMode}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -13,6 +13,15 @@ export const paginateData = (data, page) => {
 const CardPagination = ({ total, page, onPage }) => {
   const { darkMode } = useTheme()
   const totalPages = Math.ceil(total / CARDS_PER_PAGE)
+
+  // Keep `page` in bounds when the underlying result count shrinks (a
+  // filter/search narrows the list, a record is deleted, etc.) so the
+  // caller never renders an out-of-range page with no cards and a
+  // "next" button that looks enabled but has nowhere to go.
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) onPage(totalPages)
+  }, [page, totalPages, onPage])
+
   if (totalPages <= 1) return null
 
   const pageNums = (() => {
@@ -21,8 +30,9 @@ const CardPagination = ({ total, page, onPage }) => {
     return Array.from({ length: Math.min(5, totalPages) }, (_, i) => start + i)
   })()
 
-  const btn = (disabled, onClick, children, active = false) => (
+  const btn = (key, disabled, onClick, children, active = false) => (
     <button
+      key={key}
       disabled={disabled}
       onClick={onClick}
       className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all duration-150
@@ -47,9 +57,9 @@ const CardPagination = ({ total, page, onPage }) => {
         {first}–{last} of {total}
       </p>
       <div className="flex items-center gap-1">
-        {btn(page === 1, () => onPage(page - 1), <ChevronLeft className="w-4 h-4" />)}
-        {pageNums.map(p => btn(false, () => onPage(p), p, p === page))}
-        {btn(page === totalPages, () => onPage(page + 1), <ChevronRight className="w-4 h-4" />)}
+        {btn('prev', page === 1, () => onPage(page - 1), <ChevronLeft className="w-4 h-4" />)}
+        {pageNums.map(p => btn(p, false, () => onPage(p), p, p === page))}
+        {btn('next', page === totalPages, () => onPage(page + 1), <ChevronRight className="w-4 h-4" />)}
       </div>
     </div>
   )
