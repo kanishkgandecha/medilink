@@ -38,7 +38,7 @@ LDL: 132 mg/dL (Ref: < 100)
 Triglycerides: 168 mg/dL (Ref: < 150)`,
 }
 
-const ReportAnalysisAgent = ({ open, onClose }) => {
+const ReportAnalysisAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const [reportText, setReportText] = useState('')
   const [reportType, setReportType] = useState('Complete Blood Count (CBC)')
   const [result, setResult] = useState(null)
@@ -98,7 +98,9 @@ const ReportAnalysisAgent = ({ open, onClose }) => {
       'RECOMMENDATIONS:',
       result.recommendations,
       '',
-      `[Source: ${resolveSourceDisplay(result).label}; not clinician reviewed]`,
+      showTechnicalSource
+        ? `[Source: ${resolveSourceDisplay(result).label}; not clinician reviewed]`
+        : '[Automated guidance; not clinician reviewed]',
     ].join('\n')
     navigator.clipboard?.writeText(text)
       .then(() => toast.success('Summary copied to clipboard'))
@@ -191,7 +193,7 @@ const ReportAnalysisAgent = ({ open, onClose }) => {
             </>
           ) : (
             <>
-              <SourceDisclosure result={result} />
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
               {/* Report type + urgency header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

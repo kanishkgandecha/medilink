@@ -25,7 +25,7 @@ const CONDITION_COLOR = {
 
 const ALL_AI_TOOLS = [
   { key: 'symptom', icon: Brain,          color: 'from-violet-500 to-purple-600',  label: 'Symptom Checker',       desc: 'AI triage for your symptoms'      },
-  { key: 'chat',    icon: MessageCircle,  color: 'from-[#2E86DE] to-[#5DADE2]',   label: 'MediBot Chat',          desc: 'LLM-powered health assistant'     },
+  { key: 'chat',    icon: MessageCircle,  color: 'from-[#2E86DE] to-[#5DADE2]',   label: 'MediBot Chat',          desc: 'Personalized health guidance'     },
   { key: 'risk',    icon: Activity,       color: 'from-rose-500 to-red-600',       label: 'Health Risk Predictor', desc: 'Assess your health risk level'    },
   { key: 'report',  icon: FlaskConical,   color: 'from-emerald-500 to-teal-600',  label: 'Report Analysis',       desc: 'Paste lab values for AI insights' },
   { key: 'bed',     icon: BedDouble,      color: 'from-sky-500 to-cyan-600',      label: 'Bed Allocation',        desc: 'Find best ward for admission'     },
@@ -397,22 +397,24 @@ const PatientDashboard = () => {
       <SymptomCheckerAgent
         open={aiModal === 'symptom'}
         onClose={() => setAiModal(null)}
+        showTechnicalSource={false}
         onBookAppointment={({ symptoms, department }) => {
           setPrefilledAppt({ symptoms, department })
           setAiModal('appt')
         }}
       />
-      <MediBotAgent             open={aiModal === 'chat'}    onClose={() => setAiModal(null)} onOpenSymptomChecker={() => setAiModal('symptom')} />
-      <ReportAnalysisAgent      open={aiModal === 'report'}  onClose={() => setAiModal(null)} />
-      <HealthRiskAgent          open={aiModal === 'risk'}    onClose={() => setAiModal(null)} />
-      <BedAllocationAgent       open={aiModal === 'bed'}     onClose={() => setAiModal(null)} />
+      <MediBotAgent             open={aiModal === 'chat'}    onClose={() => setAiModal(null)} onOpenSymptomChecker={() => setAiModal('symptom')} showTechnicalSource={false} />
+      <ReportAnalysisAgent      open={aiModal === 'report'}  onClose={() => setAiModal(null)} showTechnicalSource={false} />
+      <HealthRiskAgent          open={aiModal === 'risk'}    onClose={() => setAiModal(null)} showTechnicalSource={false} />
+      <BedAllocationAgent       open={aiModal === 'bed'}     onClose={() => setAiModal(null)} showTechnicalSource={false} />
       <AppointmentOptimizerAgent
         open={aiModal === 'appt'}
         onClose={() => { setAiModal(null); setPrefilledAppt({ symptoms: '', department: '' }) }}
         initialSymptoms={prefilledAppt.symptoms}
         initialDepartment={prefilledAppt.department}
+        showTechnicalSource={false}
       />
-      <PatientSummaryAgent      open={aiModal === 'summary'} onClose={() => setAiModal(null)} />
+      <PatientSummaryAgent      open={aiModal === 'summary'} onClose={() => setAiModal(null)} showTechnicalSource={false} />
     </div>
   )
 }

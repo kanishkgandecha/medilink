@@ -4,10 +4,12 @@ import {
   CheckCircle2, Stethoscope, Loader2, RotateCcw, CalendarCheck,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import { chatWithAssistant } from '../../services/aiService'
 import { resolveSourceDisplay } from '../../config/aiSourceTaxonomy'
+import { getUserRoleKey } from '../../config/rolePolicy'
 
 import logoIconBgLight from '../../assets/logo/logo-icon-bg-light.png'
 
@@ -254,7 +256,9 @@ const SuccessCard = ({ data, dm }) => (
 
 const FloatingChatbot = () => {
   const { darkMode: dm } = useTheme()
+  const { user } = useAuth()
   const navigate = useNavigate()
+  const showTechnicalSource = getUserRoleKey(user) !== 'patient'
 
   const [open, setOpen]           = useState(false)
   const [expanded, setExpanded]   = useState(false)
@@ -525,7 +529,7 @@ const FloatingChatbot = () => {
       const widgetId = Date.now()
       setMessages(prev => [...prev, {
         id: widgetId, role: 'bot', text: reply,
-        sourceDisplay: resolveSourceDisplay(ai),
+        sourceDisplay: showTechnicalSource ? resolveSourceDisplay(ai) : null,
         ...(actions.length && { widget: { type: 'ai-actions', handled: false, data: actions, msgId: widgetId } }),
       }])
     } catch {
@@ -605,7 +609,7 @@ const FloatingChatbot = () => {
           <p className="text-white text-sm font-bold leading-none">MediLink Assistant</p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <p className="text-blue-200 text-[10px]">AI-powered • Always available</p>
+            <p className="text-blue-200 text-[10px]">Guidance and navigation assistant</p>
           </div>
         </div>
       </div>

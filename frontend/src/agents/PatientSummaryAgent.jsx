@@ -5,7 +5,7 @@ import { getPatientSummary } from '../services/aiService'
 import api from '../services/api'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 
-const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
+const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTechnicalSource = true }) => {
   const [patientId, setPatientId] = useState(propPatientId || '')
   const [result, setResult]     = useState(null)
   const [loading, setLoading]   = useState(false)
@@ -124,7 +124,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
 
           {!loading && result && (
             <>
-              <SourceDisclosure result={result} />
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
               {/* Overview */}
               <div className="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-900 p-4">
                 <div className="flex items-center gap-2 mb-2">

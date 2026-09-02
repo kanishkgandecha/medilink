@@ -78,7 +78,7 @@ const LIFESTYLE_TIPS = {
 const STEPS = ['Age', 'Conditions', 'Symptoms', 'Result']
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const HealthRiskAgent = ({ open, onClose }) => {
+const HealthRiskAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [age, setAge] = useState('')
@@ -265,7 +265,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
           {/* Step 3: Result */}
           {step === 3 && result && (
             <div className="space-y-5">
-              <SourceDisclosure result={result} />
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
               {/* Risk score */}
               <div className={`rounded-xl border p-5 ${result.bg} ${result.border}`}>
                 <div className="flex items-center gap-3 mb-4">

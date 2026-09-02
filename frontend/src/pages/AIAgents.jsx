@@ -33,7 +33,7 @@ const AGENT_TABS = [
   {
     id: 'bed-allocation',
     name: 'Bed Allocation',
-    description: 'Real-time ward & bed assignment optimizer',
+    description: 'Current-record bed placement recommendation',
     icon: BedDouble,
     color: 'from-emerald-500 to-teal-500',
     badge: 'Hospital Ops',
@@ -81,7 +81,7 @@ const AGENT_TABS = [
     description: 'Conversational assistant for guidance & answers',
     icon: Bot,
     color: 'from-teal-500 to-emerald-600',
-    badge: '24/7 AI',
+    badge: 'Guidance',
     allowedRoles: ['admin', 'doctor', 'patient', 'nurse', 'receptionist', 'pharmacist', 'lab-technician', 'radiology-technician', 'billing-staff', 'ward-manager'],
   },
 ]
@@ -93,6 +93,7 @@ const AIAgents = () => {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const roleKey = getUserRoleKey(user)
+  const showTechnicalSource = roleKey !== 'patient'
   const availableAgents = AGENT_TABS.filter((agent) => agent.allowedRoles.includes(roleKey))
   const activeTab = searchParams.get('tab')
   const activeDefinition = AGENT_TABS.find((agent) => agent.id === activeTab)
@@ -115,16 +116,16 @@ const AIAgents = () => {
   const closeAgent = () => setSearchParams({}, { replace: true })
 
   return (
-    <PageLayout title="AI Intelligence Suite">
-      <div className="space-y-6">
+    <PageLayout>
+      <div className="w-full space-y-5">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 p-6 sm:p-8 text-white shadow-xl">
           <div className="relative z-10 max-w-3xl space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white">
-              <Sparkles size={14} className="text-amber-300" /> MediLink Clinical AI Platform
+              <Sparkles size={14} className="text-amber-300" /> MediLink Decision Support
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Hospital Intelligence & Clinical AI Agents
+              Clinical & Operational Decision-Support Tools
             </h1>
             <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
               Safety-screened guidance, record-grounded summaries, current bed/doctor lookups, and transparent rules-based risk scoring. All clinical outputs require professional review.
@@ -163,43 +164,50 @@ const AIAgents = () => {
           })}
         </div>
 
-        <div className={`mt-4 rounded-2xl border p-8 text-center ${
+        <div className={`mt-2 rounded-2xl border p-5 text-center ${
           darkMode ? 'border-gray-700 bg-gray-800/80' : 'border-gray-200 bg-white shadow-sm'
         }`}>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Choose a clinical intelligence tool</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-            Only tools approved for your role are shown. Select one above to open its guided workflow.
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Choose a decision-support tool</h2>
+          <p className="mx-auto mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+            Select a tool above. Only options available to your role are shown.
           </p>
         </div>
 
         <SymptomCheckerAgent
           open={activeTab === 'symptom-checker'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <BedAllocationAgent
           open={activeTab === 'bed-allocation'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <HealthRiskAgent
           open={activeTab === 'health-risk'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <ReportAnalysisAgent
           open={activeTab === 'report-analyzer'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <AppointmentOptimizerAgent
           open={activeTab === 'appointment-optimizer'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <PatientSummaryAgent
           open={activeTab === 'patient-summary'}
           onClose={closeAgent}
+          showTechnicalSource={showTechnicalSource}
         />
         <MediBotAgent
           open={activeTab === 'medibot'}
           onClose={closeAgent}
           onOpenSymptomChecker={() => handleTabChange('symptom-checker')}
+          showTechnicalSource={showTechnicalSource}
         />
       </div>
     </PageLayout>

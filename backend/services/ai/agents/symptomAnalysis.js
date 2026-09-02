@@ -29,10 +29,12 @@ function mockAnalyze(symptoms, age) {
 
   if (!scored.length) {
     return {
-      conditions: [{ name: 'Unspecified Complaint', probability: 'Low', urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Monitor symptoms', 'See a doctor if symptoms worsen'], redFlags: [] }],
       overallUrgency: 'Low',
       department: 'General Medicine',
-      aiSummary: 'No clear condition pattern detected from the provided symptoms. Please consult a General Physician for a thorough evaluation.',
+      recommendedSpeciality: 'General Physician',
+      guidanceSummary: 'The information provided is not enough to determine a cause. Monitor your symptoms and consult a General Physician if they persist, worsen, or concern you.',
+      selfCare: ['Rest and monitor how your symptoms change.', 'Stay hydrated if you are normally able to drink fluids.'],
+      redFlags: ['Symptoms that become severe or rapidly worsen', 'Difficulty breathing, fainting, confusion, or heavy bleeding'],
       disclaimer: DISCLAIMER,
     };
   }
@@ -41,18 +43,12 @@ function mockAnalyze(symptoms, age) {
   const top = scored[0];
 
   return {
-    conditions: scored.map((c, i) => ({
-      name: c.name,
-      probability: i === 0 ? 'High' : i === 1 ? 'Medium' : 'Low',
-      urgency: c.urgency,
-      speciality: c.speciality,
-      department: c.department,
-      advice: c.advice,
-      redFlags: c.redFlags,
-    })),
     overallUrgency,
     department: top.department,
-    aiSummary: `Based on the reported symptoms, the most likely condition is ${top.name} with ${top.urgency.toLowerCase()} urgency. ${scored.length > 1 ? `${scored.length - 1} other condition(s) have also been flagged.` : ''} Recommended specialist: ${top.speciality}.`,
+    recommendedSpeciality: top.speciality,
+    guidanceSummary: `Your symptoms have been used to personalize urgency and consultation guidance. This tool does not identify or predict a disease; consider consulting ${top.speciality}.`,
+    selfCare: top.advice,
+    redFlags: [...new Set(scored.flatMap((item) => item.redFlags))].slice(0, 6),
     disclaimer: DISCLAIMER,
   };
 }
