@@ -1,6 +1,7 @@
 'use strict';
 const { DISCLAIMER } = require('../promptTemplates');
 const prisma = require('../../../config/prisma');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
 async function fetchPatientContext(patientId) {
   const target = await prisma.patient.findFirst({
@@ -49,7 +50,7 @@ function buildGroundedSummary({ patient, appointments, prescriptions }) {
   if (!allergies.length) missingData.push('No allergy information is recorded; this does not confirm no known allergies.');
   const identity = `${user.name || 'Patient'}${age !== null ? `, age ${age}` : ''}${user.gender ? `, ${String(user.gender).toLowerCase()}` : ''}`;
 
-  return {
+  const summary = {
     overview: `${identity}. ${completed.length} completed visit(s) are recorded.${lastVisit ? ` Last completed visit was ${new Date(lastVisit.appointmentDate).toLocaleDateString('en-IN')} with ${lastVisit.doctor?.user?.name || 'a recorded clinician'}.` : ''}`,
     chiefComplaints: complaints.length ? complaints.slice(0, 5) : ['No recent complaints recorded'],
     medicalHistory: history.length ? history : ['No medical history entries recorded'],
@@ -64,6 +65,16 @@ function buildGroundedSummary({ patient, appointments, prescriptions }) {
       latestAppointmentUpdatedAt: appointments[0]?.updatedAt || null, clinicianReviewed: false },
     disclaimer: DISCLAIMER,
     _source: 'records', _degraded: false,
+  };
+  return {
+    ...summary,
+    ...buildSourceMeta(summary, {
+      forceSourceType: SOURCE_TYPES.RECORDS,
+      limitations: [
+        'Generated only from this patient’s existing MediLink records — nothing was inferred or predicted.',
+        'A missing item is reported as not recorded, not as confirmed absent.',
+      ],
+    }),
   };
 }
 

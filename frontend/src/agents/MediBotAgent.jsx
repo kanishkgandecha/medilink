@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, User, ArrowRight, Phone, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { chatWithAssistant } from '../services/aiService'
+import { resolveSourceDisplay } from '../config/aiSourceTaxonomy'
 
 const INITIAL_QUICK = [
   'Book an appointment',
@@ -59,8 +60,7 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
           callback: a.type === 'callback' ? () => { onClose(); onOpenSymptomChecker?.() } : undefined,
         })),
         urgent: ai.urgent || false,
-        source: ai._source || 'rules',
-        degraded: Boolean(ai._degraded),
+        sourceDisplay: resolveSourceDisplay(ai),
       }
       setMessages(prev => [...prev, botMsg])
       setHistory([...newHistory, { role: 'assistant', content: ai.reply }])
@@ -136,9 +136,10 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
                 }`}>
                   {msg.text}
                 </div>
-                {msg.from === 'bot' && msg.source && (
-                  <p className="px-1 text-[9px] text-gray-400">
-                    {msg.source === 'llm' ? 'External AI + safety rules' : 'Deterministic guidance'}{msg.degraded ? ' · degraded mode' : ''}
+                {msg.from === 'bot' && msg.sourceDisplay && (
+                  <p className="px-1 text-[9px] text-gray-400" title={msg.sourceDisplay.explanation}>
+                    {msg.sourceDisplay.label}
+                    {msg.sourceDisplay.providerUsed ? ` · ${msg.sourceDisplay.providerUsed}` : ''}
                   </p>
                 )}
                 {msg.actions?.length > 0 && (

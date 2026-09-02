@@ -1,5 +1,6 @@
 'use strict';
 const prisma = require('../../../config/prisma');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
 async function runAdminInsights() {
   const now = new Date();
@@ -78,9 +79,14 @@ async function runAdminInsights() {
 
   const thisRev = thisMonthBills.reduce((sum, b) => sum + b.amountPaid, 0);
   const lastRev = lastMonthBills.reduce((sum, b) => sum + b.amountPaid, 0);
-  const revTrend = lastRev > 0 ? Math.round(((thisRev - lastRev) / lastRev) * 100) : 0;
+  // A zero or missing prior-period baseline makes a percentage change
+  // mathematically undefined, not "0% change" — report trend as null with
+  // trendAvailable: false rather than a fabricated number in that case.
+  const revTrendAvailable = lastRev > 0;
+  const revTrend = revTrendAvailable ? Math.round(((thisRev - lastRev) / lastRev) * 100) : null;
 
-  const aptTrend = lastMonthApts > 0 ? Math.round(((thisMonthApts - lastMonthApts) / lastMonthApts) * 100) : 0;
+  const aptTrendAvailable = lastMonthApts > 0;
+  const aptTrend = aptTrendAvailable ? Math.round(((thisMonthApts - lastMonthApts) / lastMonthApts) * 100) : null;
 
   const recordReviewCandidates = highRiskPatientsRaw
     .map((p) => {
@@ -116,7 +122,7 @@ async function runAdminInsights() {
       action: 'patients',
     });
 
-  return {
+  const result = {
     pharmacy: {
       expiringSoon: expiringMeds.map((m) => ({
         name: m.name,
@@ -145,6 +151,7 @@ async function runAdminInsights() {
       thisMonth: thisRev,
       lastMonth: lastRev,
       trend: revTrend,
+      trendAvailable: revTrendAvailable,
       outstanding: totalUnpaidAmount,
       outstandingCount: unpaidBillsList.length,
     },
@@ -153,11 +160,19 @@ async function runAdminInsights() {
       thisMonth: thisMonthApts,
       lastMonth: lastMonthApts,
       trend: aptTrend,
+      trendAvailable: aptTrendAvailable,
     },
     recordReviewCandidates,
     actionItems,
-    _source: 'rules',
+    _source: 'live-records',
     dataComputedAt: new Date().toISOString(),
+  };
+  return {
+    ...result,
+    ...buildSourceMeta(result, {
+      forceSourceType: SOURCE_TYPES.LIVE_RECORDS,
+      limitations: ['Aggregated from current operational records; thresholds for alerts are fixed, deterministic rules.'],
+    }),
   };
 }
 

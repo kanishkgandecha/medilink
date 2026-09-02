@@ -29,8 +29,8 @@ const ALL_AI_TOOLS = [
   { key: 'risk',    icon: Activity,       color: 'from-rose-500 to-red-600',       label: 'Health Risk Predictor', desc: 'Assess your health risk level'    },
   { key: 'report',  icon: FlaskConical,   color: 'from-emerald-500 to-teal-600',  label: 'Report Analysis',       desc: 'Paste lab values for AI insights' },
   { key: 'bed',     icon: BedDouble,      color: 'from-sky-500 to-cyan-600',      label: 'Bed Allocation',        desc: 'Find best ward for admission'     },
-  { key: 'appt',    icon: CalendarCheck,  color: 'from-indigo-500 to-violet-600', label: 'Appointment Optimizer', desc: 'AI picks the best doctor for you' },
-  { key: 'summary', icon: ClipboardList,  color: 'from-purple-500 to-fuchsia-600',label: 'My Health Summary',     desc: 'AI-generated clinical overview'   },
+  { key: 'appt',    icon: CalendarCheck,  color: 'from-indigo-500 to-violet-600', label: 'Appointment Optimizer', desc: 'Finds the best available doctor for you' },
+  { key: 'summary', icon: ClipboardList,  color: 'from-purple-500 to-fuchsia-600',label: 'My Health Summary',     desc: 'Record-based clinical overview'   },
 ]
 
 const PatientDashboard = () => {

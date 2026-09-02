@@ -2,6 +2,19 @@
 const { callLLM } = require('../llmClient');
 const { APPOINTMENT_OPTIMIZER, DISCLAIMER } = require('../promptTemplates');
 const prisma = require('../../../config/prisma');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
+
+// The recommended doctor is always recomputed from a live query of doctor
+// availability and today's load, never taken from the LLM's own answer (see
+// runAppointmentOptimizer below), so the disclosed source is always Live
+// Records regardless of whether the LLM attempt succeeded.
+const liveRecordsSourceMeta = () => buildSourceMeta(null, {
+  forceSourceType: SOURCE_TYPES.LIVE_RECORDS,
+  limitations: [
+    'Recommendation only; a specific date and time slot must still be confirmed during booking.',
+    'Ranked by specialization match and current daily load, not by configured working hours.',
+  ],
+});
 
 const DEPT_MAP = [
   { keywords: ['chest', 'cardiac', 'heart', 'palpitation', 'bp', 'blood pressure'], dept: 'Cardiology', specs: ['cardiologist', 'cardiology'] },
@@ -118,6 +131,7 @@ function buildVerifiedRecommendation({ symptoms, department, doctors, metadata =
     liveDataCheckedAt: new Date().toISOString(),
     recommendationBasis: matched.length ? 'specialization_and_current_load' : general.length ? 'general_physician_fallback' : 'no_verified_match',
     ...metadata,
+    ...liveRecordsSourceMeta(),
   };
 }
 

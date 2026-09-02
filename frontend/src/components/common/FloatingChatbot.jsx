@@ -7,6 +7,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import { chatWithAssistant } from '../../services/aiService'
+import { resolveSourceDisplay } from '../../config/aiSourceTaxonomy'
 
 import logoIconBgLight from '../../assets/logo/logo-icon-bg-light.png'
 
@@ -524,6 +525,7 @@ const FloatingChatbot = () => {
       const widgetId = Date.now()
       setMessages(prev => [...prev, {
         id: widgetId, role: 'bot', text: reply,
+        sourceDisplay: resolveSourceDisplay(ai),
         ...(actions.length && { widget: { type: 'ai-actions', handled: false, data: actions, msgId: widgetId } }),
       }])
     } catch {
@@ -673,6 +675,12 @@ const FloatingChatbot = () => {
             >
               {msg.text}
             </div>
+            {msg.role === 'bot' && msg.sourceDisplay && (
+              <p className={`px-1 mt-1 text-[9px] ${dm ? 'text-gray-500' : 'text-gray-400'}`} title={msg.sourceDisplay.explanation}>
+                {msg.sourceDisplay.label}
+                {msg.sourceDisplay.providerUsed ? ` · ${msg.sourceDisplay.providerUsed}` : ''}
+              </p>
+            )}
             {msg.widget && (
               <div className={msg.role === 'bot' ? '' : 'flex justify-end'}>
                 {renderWidget(msg.widget, msg.id)}

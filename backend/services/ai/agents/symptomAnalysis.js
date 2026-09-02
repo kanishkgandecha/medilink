@@ -2,6 +2,7 @@
 const { callLLM } = require('../llmClient');
 const { SYMPTOM_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
 const { enforceSymptomSafety } = require('../safety');
+const { buildSourceMeta } = require('../sourceClassification');
 
 const CONDITIONS = [
   { name: 'Viral Fever / Flu', keywords: ['fever', 'chill', 'body ache', 'cold', 'runny nose', 'fatigue', 'weakness', 'sore throat'], urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Rest and stay hydrated (8+ glasses of water)', 'Paracetamol for fever > 38.5°C', 'Monitor temperature every 6 hours', 'Warm saline gargles for throat'], redFlags: ['Fever above 40°C', 'Difficulty breathing', 'Persistent vomiting'] },
@@ -62,7 +63,17 @@ async function runSymptomAnalysis({ symptoms, age, gender }) {
     SYMPTOM_ANALYSIS.user({ symptoms, age, gender }),
     () => mockAnalyze(symptoms, age),
   );
-  return enforceSymptomSafety(result.data, symptoms);
+  const safe = enforceSymptomSafety(result.data, symptoms);
+  return {
+    ...safe,
+    ...buildSourceMeta(safe, {
+      limitations: [
+        'This is decision support, not a diagnosis, and may be incomplete or incorrect.',
+        'It must be reviewed by an appropriate healthcare professional.',
+        'Call emergency services for symptoms that may be a medical emergency rather than relying on this tool.',
+      ],
+    }),
+  };
 }
 
 module.exports = { runSymptomAnalysis };

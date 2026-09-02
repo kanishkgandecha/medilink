@@ -64,9 +64,15 @@ async function runAuditedAi({ agent, requesterId, operation }) {
   const started = Date.now();
   try {
     const data = await operation();
+    // Prefer the taxonomy-classified sourceType/modelUsed (services/ai/sourceClassification.js)
+    // when an agent supplies it — it reflects what actually produced the
+    // displayed result (e.g. "live-records" for bed/appointment recommendations
+    // even when an LLM attempt succeeded but was not the substantive answer)
+    // rather than the raw provider-call outcome alone.
     await writeAudit({
-      requesterId, agent, source: data?._source || 'rules', model: data?._model || null,
-      degraded: Boolean(data?._degraded), success: true, durationMs: Date.now() - started,
+      requesterId, agent, source: data?.sourceType || data?._source || 'rules',
+      model: data?.modelUsed || data?._model || null,
+      degraded: Boolean(data?.fallbackUsed ?? data?._degraded), success: true, durationMs: Date.now() - started,
     });
     return data;
   } catch (error) {

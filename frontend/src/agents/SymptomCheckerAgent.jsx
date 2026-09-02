@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import api from '../services/api'
 import { analyzeSymptoms } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import HumanReviewNotice from '../components/ai/HumanReviewNotice'
 
 // ─── Condition Knowledge Base ─────────────────────────────────────────────────
 const CONDITIONS = [
@@ -151,8 +152,11 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
         setLoading(false)
         return
       }
-      // Map backend response to frontend schema
+      // Map backend response to frontend schema, keeping every taxonomy/
+      // provenance field (sourceType, limitations, generatedAt, etc.) that
+      // the backend attaches so downstream disclosure components see them.
       const mapped = {
+        ...aiData,
         conditions: aiData.conditions,
         overallUrgency: aiData.overallUrgency,
         aiSummary: aiData.aiSummary,
@@ -296,11 +300,6 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
           ) : (
             <>
               <SourceDisclosure result={result} />
-              {result._degraded && (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
-                  External AI is unavailable. This result uses a limited rule-based safety screen.
-                </div>
-              )}
               {/* Overall urgency banner */}
               <div className={`rounded-xl border p-4 flex items-center gap-3 ${cfg.color}`}>
                 <cfg.icon className={`w-5 h-5 flex-shrink-0 ${cfg.text}`} />
@@ -383,9 +382,13 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
                 </div>
               )}
 
-              <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ This AI assessment is for informational purposes only. Always consult a qualified medical professional for diagnosis and treatment.
-              </p>
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
+                <HumanReviewNotice
+                  context="clinical"
+                  limitations={result.limitations}
+                  showEmergencyNote={result.overallUrgency === 'Critical'}
+                />
+              </div>
 
               {/* Action buttons */}
               <div className="flex gap-3">

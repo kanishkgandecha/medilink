@@ -16,6 +16,10 @@ import { getAdminInsights, getAiReliability } from '../../services/aiService'
 import { toast } from 'react-toastify'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
+import { computeTrend, formatTrendLabel } from '../../utils/trend'
+import { formatFreshness } from '../../utils/format'
+import SourceBadge from '../ai/SourceBadge'
+import { SOURCE_TYPES } from '../../config/aiSourceTaxonomy'
 
 const STATUS_COLORS = {
   Confirmed: 'bg-emerald-100 text-emerald-700',
@@ -52,10 +56,11 @@ const AdminDashboard = () => {
   const [recentPatients, setRecentPatients] = useState([])
   const [backendInsights, setBackendInsights] = useState(null)
   const [aiReliability, setAiReliability] = useState(null)
+  const [dataFetchedAt, setDataFetchedAt] = useState(null)
 
   useEffect(() => {
     getAdminDashboard()
-      .then(res => setDashboard(res.dashboard))
+      .then(res => { setDashboard(res.dashboard); setDataFetchedAt(new Date()) })
       .catch(() => toast.error('Failed to load dashboard data'))
       .finally(() => setLoading(false))
 
@@ -118,9 +123,13 @@ const AdminDashboard = () => {
   const occupancyPct = overview.totalBeds > 0
     ? Math.round((overview.occupiedBeds / overview.totalBeds) * 100) : 0
   const currentMonth = new Date().getMonth()
-  const revLast  = revenueData[currentMonth]?.Revenue || revenueData[revenueData.length - 1]?.Revenue || 0
-  const revPrev  = revenueData[currentMonth > 0 ? currentMonth - 1 : 0]?.Revenue || 1
-  const revTrend = revPrev > 0 ? Math.round(((revLast - revPrev) / revPrev) * 100) : 0
+  const revLast  = revenueData[currentMonth]?.Revenue ?? revenueData[revenueData.length - 1]?.Revenue ?? 0
+  // Raw previous-month value, left undefined/0 rather than defaulted to 1 —
+  // defaulting an absent baseline to 1 previously produced huge or
+  // meaningless "% change" figures (Phase 5).
+  const revPrevRaw = revenueData[currentMonth > 0 ? currentMonth - 1 : 0]?.Revenue
+  const revenueTrend = computeTrend(revLast, revPrevRaw)
+  const revTrendLabel = formatTrendLabel(revenueTrend, { unavailableLabel: 'No comparison data' })
   const freeDocs = doctorLoad.filter(d => d.count === 0).length
   const totalAlerts = (alerts.lowStockMedicines || 0) + (alerts.expiringMedicines || 0) + (alerts.pendingBills || 0)
 
@@ -132,9 +141,11 @@ const AdminDashboard = () => {
       sub:   occupancyPct > 85 ? 'Approaching full capacity' : occupancyPct > 65 ? 'Monitor admissions' : 'Optimal range',
     },
     {
-      color: revTrend >= 0 ? 'emerald' : 'red',
-      label: `${revTrend >= 0 ? '+' : ''}${revTrend}% MoM`,
-      text:  `Revenue ${revTrend >= 0 ? 'up' : 'down'} vs last month`,
+      color: !revenueTrend.available ? 'blue' : revenueTrend.pct >= 0 ? 'emerald' : 'red',
+      label: revenueTrend.available ? `${revTrendLabel} MoM` : 'This month',
+      text:  revenueTrend.available
+        ? `Revenue ${revenueTrend.pct >= 0 ? 'up' : 'down'} vs last month`
+        : 'No prior-month data to compare',
       sub:   `₹${(revLast / 1000).toFixed(0)}k this month`,
     },
     alerts.lowStockMedicines > 0
@@ -208,10 +219,12 @@ const AdminDashboard = () => {
               {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
-          <div className={`flex items-center gap-2 text-xs font-medium px-3.5 py-2 rounded-full border
+          <div
+            title="Dashboard figures reflect the most recent request to the server; this is not a continuous live stream or a service health check."
+            className={`flex items-center gap-2 text-xs font-medium px-3.5 py-2 rounded-full border
             ${darkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-700/40' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            System Live · All services operational
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Dashboard data · {dataFetchedAt ? formatFreshness(dataFetchedAt) : 'Data unavailable'}
           </div>
         </div>
 
@@ -241,6 +254,7 @@ const AdminDashboard = () => {
               bg: darkMode ? 'bg-violet-900/20 border-violet-700/40' : 'bg-violet-50 border-violet-200/60',
               iconBg: darkMode ? 'bg-violet-500/20' : 'bg-violet-100',
               iconColor: '#7c3aed',
+              sourceType: SOURCE_TYPES.LLM,
               action: () => navigate('/ai-agents?tab=symptom-checker'),
             },
             {
@@ -251,6 +265,7 @@ const AdminDashboard = () => {
               bg: darkMode ? 'bg-teal-900/20 border-teal-700/40' : 'bg-teal-50 border-teal-200/60',
               iconBg: darkMode ? 'bg-teal-500/20' : 'bg-teal-100',
               iconColor: '#0d9488',
+              sourceType: SOURCE_TYPES.LLM,
               action: () => navigate('/ai-agents?tab=report-analyzer'),
             },
             {
@@ -261,9 +276,10 @@ const AdminDashboard = () => {
               bg: darkMode ? 'bg-blue-900/20 border-blue-700/40' : 'bg-blue-50 border-blue-200/60',
               iconBg: darkMode ? 'bg-blue-500/20' : 'bg-blue-100',
               iconColor: '#2E86DE',
+              sourceType: SOURCE_TYPES.RULES,
               action: () => navigate('/ai-agents?tab=health-risk'),
             },
-          ].map(({ icon: Icon, label, desc, bg, iconBg, iconColor, action }) => (
+          ].map(({ icon: Icon, label, desc, bg, iconBg, iconColor, sourceType, action }) => (
             <button
               key={label}
               onClick={action}
@@ -276,10 +292,7 @@ const AdminDashboard = () => {
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-2 mb-0.5">
                     <p className={`text-sm font-bold ${textCls}`}>{label}</p>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0
-                      ${darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-[#EBF5FB] text-[#2E86DE]'}`}>
-                      AI
-                    </span>
+                    <SourceBadge sourceType={sourceType} className="!text-[9px] !px-1.5 !py-0.5 flex-shrink-0" />
                   </div>
                   <p className={`text-[11px] leading-relaxed ${subCls}`}>{desc}</p>
                 </div>
@@ -369,28 +382,38 @@ const AdminDashboard = () => {
 
             {/* Metric progress pills */}
             <div className={`${glass} p-4 space-y-3`}>
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${subCls}`}>Live Metrics</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${subCls}`}>Live Metrics</p>
+                <SourceBadge sourceType={SOURCE_TYPES.LIVE_RECORDS} className="!text-[9px] !px-1.5 !py-0.5" />
+              </div>
+              {dataFetchedAt && (
+                <p className={`text-[10px] -mt-1.5 ${subCls}`}>{formatFreshness(dataFetchedAt)}</p>
+              )}
               {[
                 {
                   label: 'Bed Occupancy',
                   pct:   occupancyPct,
                   color: occupancyPct > 85 ? '#ef4444' : occupancyPct > 65 ? '#f59e0b' : '#10b981',
+                  available: true,
                 },
                 {
                   label: 'Appointment Fill',
                   pct:   overview.todayAppointments ? Math.min(Math.round((overview.todayAppointments / 20) * 100), 100) : 0,
                   color: '#2E86DE',
+                  available: true,
                 },
                 {
                   label: 'Revenue Growth',
-                  pct:   Math.min(Math.abs(revTrend), 100),
-                  color: revTrend >= 0 ? '#10b981' : '#ef4444',
+                  pct:   revenueTrend.available ? Math.min(Math.abs(revenueTrend.pct), 100) : 0,
+                  color: !revenueTrend.available ? '#9ca3af' : revenueTrend.pct >= 0 ? '#10b981' : '#ef4444',
+                  available: revenueTrend.available,
+                  displayValue: revenueTrend.available ? `${Math.abs(revenueTrend.pct)}%` : 'No comparison data',
                 },
-              ].map(({ label, pct, color }) => (
+              ].map(({ label, pct, color, available, displayValue }) => (
                 <div key={label}>
                   <div className="flex justify-between items-center mb-1">
                     <span className={`text-xs font-medium ${textCls}`}>{label}</span>
-                    <span className="text-xs font-bold" style={{ color }}>{pct}%</span>
+                    <span className="text-xs font-bold" style={{ color }}>{displayValue ?? `${pct}%`}</span>
                   </div>
                   <div className={`h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                     <div className="h-full rounded-full transition-all duration-700"
@@ -439,9 +462,11 @@ const AdminDashboard = () => {
                   <p className={`text-xs mt-0.5 ${subCls}`}>{year} — monthly revenue trend</p>
                 </div>
                 <div className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full
-                  ${darkMode ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                  ${!revenueTrend.available
+                    ? darkMode ? 'bg-gray-700/60 text-gray-400' : 'bg-gray-100 text-gray-500'
+                    : darkMode ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
                   <TrendingUp className="w-3.5 h-3.5" />
-                  {revTrend >= 0 ? '+' : ''}{revTrend}% MoM
+                  {revenueTrend.available ? `${revTrendLabel} MoM` : 'No comparison data'}
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={200}>
@@ -570,13 +595,10 @@ const AdminDashboard = () => {
                     <BarChart3 className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className={`text-base font-bold leading-none ${textCls}`}>AI Doctor Load Balancer</h2>
-                    <p className={`text-xs mt-0.5 ${subCls}`}>Available doctors sorted by today's appointment load</p>
+                    <h2 className={`text-base font-bold leading-none ${textCls}`}>Doctor Load Balancer</h2>
+                    <p className={`text-xs mt-0.5 ${subCls}`}>Available doctors sorted by today's appointment count — a deterministic sort, not a prediction</p>
                   </div>
-                  <span className={`ml-auto text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0
-                    ${darkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-[#EBF5FB] text-[#2E86DE]'}`}>
-                    Live · Today
-                  </span>
+                  <SourceBadge sourceType={SOURCE_TYPES.LIVE_RECORDS} className="ml-auto flex-shrink-0" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {doctorLoad.map((doc, i) => {
@@ -630,17 +652,21 @@ const AdminDashboard = () => {
           {/* ════ RIGHT PANEL ══════════════════════════════════════════════ */}
           <div className="space-y-4 xl:sticky xl:top-6">
 
-            {/* Dark AI Insights panel */}
+            {/* Insights panel — deterministic rules over live operational records */}
             <div className="rounded-2xl p-5 bg-[#1e293b] shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-1">
                 <div className="w-7 h-7 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-3.5 h-3.5 text-violet-400" />
                 </div>
-                <h3 className="text-sm font-bold text-white">AI Insights</h3>
-                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-semibold bg-blue-500/20 text-blue-400">
-                  Live
-                </span>
+                <h3 className="text-sm font-bold text-white">Insights</h3>
+                <SourceBadge
+                  sourceType={backendInsights ? SOURCE_TYPES.LIVE_RECORDS : SOURCE_TYPES.RULES}
+                  className="ml-auto flex-shrink-0 !bg-white/10 !text-gray-200 !border-white/10"
+                />
               </div>
+              <p className="text-[10px] text-gray-400 mb-4">
+                {backendInsights ? 'Deterministic thresholds applied to current hospital records.' : 'Deterministic thresholds applied to this dashboard’s current figures.'}
+              </p>
               <div className="space-y-2.5">
                 {(backendInsights?.actionItems?.length
                   ? backendInsights.actionItems.map((item, i) => {

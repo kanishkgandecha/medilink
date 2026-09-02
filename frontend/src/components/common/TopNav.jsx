@@ -353,6 +353,10 @@ const TopNav = () => {
                       <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-[#2C3E50]'}`}>
                         Notifications
                       </span>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide leading-none
+                        ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                        Demo
+                      </span>
                       {notifCount > 0 && (
                         <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#2E86DE] text-white leading-none">
                           {notifCount}
@@ -369,6 +373,10 @@ const TopNav = () => {
                       </button>
                     )}
                   </div>
+
+                  <p className={`px-4 pt-2 pb-1 text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Example notifications for this role — not generated from live system events.
+                  </p>
 
                   {/* Notif list */}
                   <div className="max-h-72 overflow-y-auto">
@@ -388,7 +396,7 @@ const TopNav = () => {
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-[#2C3E50]'}`}>{n.title}</p>
                           <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-[#7B8A8B]'}`}>{n.desc}</p>
-                          <p className={`text-[10px] mt-1 font-medium ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>{n.time}</p>
+                          <p className={`text-[10px] mt-1 font-medium ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>Example · {n.time}</p>
                         </div>
                         <button
                           onClick={() => dismissNotif(n.id)}
