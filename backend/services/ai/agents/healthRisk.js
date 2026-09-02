@@ -1,6 +1,7 @@
 'use strict';
 const { DISCLAIMER } = require('../promptTemplates');
 const { enforceHealthRiskSafety } = require('../safety');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
 function calcAgeRisk(age) {
   const n = parseInt(age, 10);
@@ -84,7 +85,7 @@ function mockAssess({ age, gender, chronicConditions = [], acuteSymptoms = [] })
 
 async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }) {
   const deterministic = mockAssess({ age, gender, chronicConditions, acuteSymptoms });
-  return enforceHealthRiskSafety({
+  const safe = enforceHealthRiskSafety({
     ...deterministic,
     _source: 'rules',
     _degraded: false,
@@ -92,6 +93,16 @@ async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }) 
     scoringFormula: 'min(100, age points + recorded condition points + selected acute symptom points)',
     modelRole: 'not_used_for_scoring',
   }, acuteSymptoms);
+  return {
+    ...safe,
+    ...buildSourceMeta(safe, {
+      forceSourceType: SOURCE_TYPES.RULES,
+      limitations: [
+        'This is a deterministic screening score, not a diagnosis or a trained predictive model.',
+        'It does not account for information beyond the age, conditions, and symptoms entered here.',
+      ],
+    }),
+  };
 }
 
 module.exports = { runHealthRisk };

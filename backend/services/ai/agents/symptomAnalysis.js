@@ -2,6 +2,7 @@
 const { callLLM } = require('../llmClient');
 const { SYMPTOM_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
 const { enforceSymptomSafety } = require('../safety');
+const { buildSourceMeta } = require('../sourceClassification');
 
 const CONDITIONS = [
   { name: 'Viral Fever / Flu', keywords: ['fever', 'chill', 'body ache', 'cold', 'runny nose', 'fatigue', 'weakness', 'sore throat'], urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Rest and stay hydrated (8+ glasses of water)', 'Paracetamol for fever > 38.5°C', 'Monitor temperature every 6 hours', 'Warm saline gargles for throat'], redFlags: ['Fever above 40°C', 'Difficulty breathing', 'Persistent vomiting'] },
@@ -28,10 +29,12 @@ function mockAnalyze(symptoms, age) {
 
   if (!scored.length) {
     return {
-      conditions: [{ name: 'Unspecified Complaint', probability: 'Low', urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Monitor symptoms', 'See a doctor if symptoms worsen'], redFlags: [] }],
       overallUrgency: 'Low',
       department: 'General Medicine',
-      aiSummary: 'No clear condition pattern detected from the provided symptoms. Please consult a General Physician for a thorough evaluation.',
+      recommendedSpeciality: 'General Physician',
+      guidanceSummary: 'The information provided is not enough to determine a cause. Monitor your symptoms and consult a General Physician if they persist, worsen, or concern you.',
+      selfCare: ['Rest and monitor how your symptoms change.', 'Stay hydrated if you are normally able to drink fluids.'],
+      redFlags: ['Symptoms that become severe or rapidly worsen', 'Difficulty breathing, fainting, confusion, or heavy bleeding'],
       disclaimer: DISCLAIMER,
     };
   }
@@ -40,18 +43,12 @@ function mockAnalyze(symptoms, age) {
   const top = scored[0];
 
   return {
-    conditions: scored.map((c, i) => ({
-      name: c.name,
-      probability: i === 0 ? 'High' : i === 1 ? 'Medium' : 'Low',
-      urgency: c.urgency,
-      speciality: c.speciality,
-      department: c.department,
-      advice: c.advice,
-      redFlags: c.redFlags,
-    })),
     overallUrgency,
     department: top.department,
-    aiSummary: `Based on the reported symptoms, the most likely condition is ${top.name} with ${top.urgency.toLowerCase()} urgency. ${scored.length > 1 ? `${scored.length - 1} other condition(s) have also been flagged.` : ''} Recommended specialist: ${top.speciality}.`,
+    recommendedSpeciality: top.speciality,
+    guidanceSummary: `Your symptoms have been used to personalize urgency and consultation guidance. This tool does not identify or predict a disease; consider consulting ${top.speciality}.`,
+    selfCare: top.advice,
+    redFlags: [...new Set(scored.flatMap((item) => item.redFlags))].slice(0, 6),
     disclaimer: DISCLAIMER,
   };
 }
@@ -62,7 +59,17 @@ async function runSymptomAnalysis({ symptoms, age, gender }) {
     SYMPTOM_ANALYSIS.user({ symptoms, age, gender }),
     () => mockAnalyze(symptoms, age),
   );
-  return enforceSymptomSafety(result.data, symptoms);
+  const safe = enforceSymptomSafety(result.data, symptoms);
+  return {
+    ...safe,
+    ...buildSourceMeta(safe, {
+      limitations: [
+        'This is decision support, not a diagnosis, and may be incomplete or incorrect.',
+        'It must be reviewed by an appropriate healthcare professional.',
+        'Call emergency services for symptoms that may be a medical emergency rather than relying on this tool.',
+      ],
+    }),
+  };
 }
 
 module.exports = { runSymptomAnalysis };

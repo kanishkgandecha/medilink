@@ -5,7 +5,7 @@ import { getPatientSummary } from '../services/aiService'
 import api from '../services/api'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 
-const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
+const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTechnicalSource = true }) => {
   const [patientId, setPatientId] = useState(propPatientId || '')
   const [result, setResult]     = useState(null)
   const [loading, setLoading]   = useState(false)
@@ -124,7 +124,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
 
           {!loading && result && (
             <>
-              <SourceDisclosure result={result} />
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
               {/* Overview */}
               <div className="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-900 p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -204,9 +204,16 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId }) => {
                 </div>
               )}
 
-              <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ Generated from MediLink records at {result.provenance?.generatedAt ? new Date(result.provenance.generatedAt).toLocaleString() : 'the current time'}. Not yet reviewed by a clinician.
-              </p>
+              <div className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3 space-y-1.5">
+                <p>
+                  ⚕️ Generated from MediLink records at {result.provenance?.generatedAt ? new Date(result.provenance.generatedAt).toLocaleString() : 'the current time'}. Not yet reviewed by a clinician.
+                </p>
+                {result.limitations?.length > 0 && (
+                  <ul className="pl-5 list-disc space-y-0.5">
+                    {result.limitations.map((item, i) => <li key={i}>{item}</li>)}
+                  </ul>
+                )}
+              </div>
 
               {!propPatientId && (
                 <button onClick={reset} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 text-sm font-medium hover:bg-purple-50 dark:hover:bg-purple-900/20 transition">

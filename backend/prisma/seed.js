@@ -171,8 +171,8 @@ async function seed() {
     { email: 'receptionist@medilink.com', name: 'Sunita Verma', role: 'Staff', subRole: 'Receptionist', designation: 'Front Desk Lead', dept: 'Reception', phone: '9820710002' },
     { email: 'pharmacist@medilink.com', name: 'Amit Joshi', role: 'Staff', subRole: 'Pharmacist', designation: 'Chief Pharmacist', dept: 'Pharmacy', phone: '9820710003' },
     { email: 'labtech@medilink.com', name: 'Ramesh Kulkarni', role: 'Staff', subRole: 'LabTechnician', designation: 'Lead Pathology Tech', dept: 'Pathology', phone: '9820710004' },
-    { email: 'radiology@medilink.com', name: 'Anil Saxena', role: 'Staff', subRole: 'LabTechnician', designation: 'Lead Radiology Tech', dept: 'Radiology', phone: '9820710005' },
-    { email: 'billing@medilink.com', name: 'Vijay Trivedi', role: 'Staff', subRole: 'WardManager', designation: 'Billing Manager', dept: 'Finance', phone: '9820710006' },
+    { email: 'radiology@medilink.com', name: 'Anil Saxena', role: 'Staff', subRole: 'RadiologyTechnician', designation: 'Lead Radiology Tech', dept: 'Radiology', phone: '9820710005' },
+    { email: 'billing@medilink.com', name: 'Vijay Trivedi', role: 'Staff', subRole: 'BillingStaff', designation: 'Billing Manager', dept: 'Finance', phone: '9820710006' },
   ];
 
   const staffList = [];

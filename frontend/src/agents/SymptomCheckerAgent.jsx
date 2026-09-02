@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import api from '../services/api'
 import { analyzeSymptoms } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import { normalizeSymptomGuidance } from '../utils/symptomGuidance'
 
 // ─── Condition Knowledge Base ─────────────────────────────────────────────────
 const CONDITIONS = [
@@ -116,7 +117,7 @@ const URGENCY_CONFIG = {
 // (local engine removed — analysis is now done by the backend AI agent)
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
+const SymptomCheckerAgent = ({ open, onClose, onBookAppointment, showTechnicalSource = true }) => {
   const navigate = useNavigate()
   const [selected, setSelected] = useState([])
   const [customInput, setCustomInput] = useState('')
@@ -146,19 +147,16 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
     try {
       const res = await analyzeSymptoms(selected)
       const aiData = res?.data || res
-      if (!aiData?.conditions?.length) {
-        toast.info('No matching conditions found. Please consult a doctor for a proper evaluation.')
-        setLoading(false)
-        return
-      }
-      // Map backend response to frontend schema
-      const mapped = {
-        conditions: aiData.conditions,
+      // Map backend response to frontend schema, keeping every taxonomy/
+      // provenance field (sourceType, limitations, generatedAt, etc.) that
+      // the backend attaches so downstream disclosure components see them.
+      const mapped = normalizeSymptomGuidance({
+        ...aiData,
         overallUrgency: aiData.overallUrgency,
-        aiSummary: aiData.aiSummary,
+        guidanceSummary: aiData.guidanceSummary,
         _source: aiData._source,
         _degraded: aiData._degraded,
-      }
+      }, selected)
       // Fetch matched doctors
       try {
         const doctorRes = await api.get('/doctors', { params: { limit: 200 } })
@@ -188,7 +186,7 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
   }
 
   const bookAppointment = () => {
-    const dept = result?.conditions?.[0]?.department || ''
+    const dept = result?.department || ''
     if (onBookAppointment) {
       onClose()
       onBookAppointment({ symptoms: selected.join(', '), department: dept })
@@ -210,19 +208,19 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-violet-600 to-purple-600 flex-shrink-0">
           <div className="flex items-center gap-3">
             <Brain className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">AI Symptom Checker</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">AI + Safety Rules</span>
+            <h2 className="font-bold text-white text-base">Symptom Guidance</h2>
+            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Personalized · Non-diagnostic</span>
           </div>
           <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {!result ? (
             <>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Select your symptoms or type custom ones. Our AI will assess possible conditions and urgency level.
+                Select or enter symptoms to receive personalized self-care, urgency, warning-sign, and doctor-consultation guidance. This tool does not identify diseases.
               </p>
 
               {/* Quick symptom chips */}
@@ -295,12 +293,7 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
             </>
           ) : (
             <>
-              <SourceDisclosure result={result} />
-              {result._degraded && (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
-                  External AI is unavailable. This result uses a limited rule-based safety screen.
-                </div>
-              )}
+              <SourceDisclosure result={result} compact visible={showTechnicalSource} />
               {/* Overall urgency banner */}
               <div className={`rounded-xl border p-4 flex items-center gap-3 ${cfg.color}`}>
                 <cfg.icon className={`w-5 h-5 flex-shrink-0 ${cfg.text}`} />
@@ -315,38 +308,38 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
                 </span>
               </div>
 
-              {/* Possible conditions */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Possible Conditions</p>
-                <div className="space-y-3">
-                  {result.conditions.map((cond, i) => (
-                    <div key={i} className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{cond.name}</p>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white ${URGENCY_CONFIG[cond.urgency]?.badge || 'bg-gray-500'}`}>
-                          {cond.urgency}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-2">Specialist: <span className="text-gray-600 dark:text-gray-300 font-medium">{cond.speciality}</span></p>
-                      <ul className="space-y-1">
-                        {cond.advice.map((a, j) => (
-                          <li key={j} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <span className="w-4 h-4 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[9px] flex items-center justify-center flex-shrink-0 mt-0.5 font-bold">{j + 1}</span>
-                            {a}
-                          </li>
-                        ))}
-                      </ul>
-                      {cond.redFlags.length > 0 && (
-                        <div className="mt-2.5 p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
-                          <p className="text-[10px] font-bold uppercase text-red-600 dark:text-red-400 mb-1">⚠ Red Flags — Seek Immediate Care If:</p>
-                          {cond.redFlags.map((f, j) => (
-                            <p key={j} className="text-[10px] text-red-600 dark:text-red-400">• {f}</p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+              <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">What to do now</p>
+                  <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{result.guidanceSummary}</p>
                 </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Consult: <span className="font-semibold text-gray-700 dark:text-gray-200">{result.recommendedSpeciality || 'General Physician'}</span>
+                </p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Immediate steps</p>
+                  <ul className="space-y-1.5">
+                    {(result.selfCare || []).slice(0, 3).map((item, index) => (
+                      <li key={`${item}-${index}`} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-emerald-500" />{item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className={`rounded-xl border p-3 ${
+                result.overallUrgency === 'Critical'
+                  ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20'
+                  : 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20'
+              }`}>
+                <p className={`text-xs font-bold uppercase tracking-wide ${result.overallUrgency === 'Critical' ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'}`}>Safety & warning signs</p>
+                {result.redFlags?.slice(0, 3).map((item, index) => (
+                  <p key={`${item}-${index}`} className="mt-1 text-xs text-gray-700 dark:text-gray-300">• {item}</p>
+                ))}
+                <p className="mt-2 text-[11px] leading-4 text-gray-600 dark:text-gray-400">
+                  Decision support only—not a diagnosis. Seek professional review. For severe or rapidly worsening symptoms, call emergency services (112 in India).
+                </p>
               </div>
 
               {/* Recommended doctors */}
@@ -382,10 +375,6 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment }) => {
                   </div>
                 </div>
               )}
-
-              <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ This AI assessment is for informational purposes only. Always consult a qualified medical professional for diagnosis and treatment.
-              </p>
 
               {/* Action buttons */}
               <div className="flex gap-3">

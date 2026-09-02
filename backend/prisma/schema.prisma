@@ -24,6 +24,8 @@ enum SubRole {
   Receptionist
   Pharmacist
   LabTechnician @map("Lab Technician")
+  RadiologyTechnician @map("Radiology Technician")
+  BillingStaff @map("Billing Staff")
   WardManager   @map("Ward Manager")
 }
 

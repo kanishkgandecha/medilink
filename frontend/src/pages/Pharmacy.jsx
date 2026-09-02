@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Plus, Edit, Trash2, AlertTriangle, Package, TrendingDown, Filter, PackagePlus, PackageMinus, X, Search } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import CardPagination, { paginateData, CARDS_PER_PAGE } from '../components/common/CardPagination'
 import Modal from '../components/common/Modal'
 import ConfirmDialog from '../components/common/ConfirmDialog'
 import StatCard from '../components/common/StatCard'
 import PageLayout from '../components/common/PageLayout'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getPharmacyCapability } from '../config/pageCapabilities'
 import api from '../services/api'
 import { toast } from 'react-toastify'
 
@@ -36,7 +40,7 @@ const STOCK_BADGE = {
   'Out of Stock':'bg-gray-100 text-gray-600'
 }
 
-const MedicineCard = ({ med, onStockUpdate, onEdit, onDelete, darkMode }) => {
+const MedicineCard = ({ med, canDelete, onStockUpdate, onEdit, onDelete, darkMode }) => {
   const stockStatus  = getStockStatus(med)
   const expiryStatus = getExpiryStatus(med.expiryDate)
   const stockPct     = med.reorderLevel > 0 ? Math.min(100, Math.round((med.stockQuantity / (med.reorderLevel * 2)) * 100)) : 100
@@ -136,12 +140,14 @@ const MedicineCard = ({ med, onStockUpdate, onEdit, onDelete, darkMode }) => {
         >
           <Edit className="w-3.5 h-3.5" /> Edit
         </button>
-        <button
-          onClick={() => onDelete(med._id)}
-          className={`p-1.5 rounded-xl border transition-all duration-150 ${darkMode ? 'border-red-800/60 text-red-400 hover:bg-red-900/30' : 'border-red-100 text-red-500 hover:bg-red-50'}`}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        {canDelete && (
+          <button
+            onClick={() => onDelete(med._id)}
+            className={`p-1.5 rounded-xl border transition-all duration-150 ${darkMode ? 'border-red-800/60 text-red-400 hover:bg-red-900/30' : 'border-red-100 text-red-500 hover:bg-red-50'}`}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -149,8 +155,12 @@ const MedicineCard = ({ med, onStockUpdate, onEdit, onDelete, darkMode }) => {
 
 const Pharmacy = () => {
   const { darkMode } = useTheme()
+  const { user } = useAuth()
+  const capability = getPharmacyCapability(user)
+  const { canEdit, canDelete } = capability
   const [medicines, setMedicines]         = useState([])
   const [loading, setLoading]             = useState(false)
+  const [fetchError, setFetchError]       = useState(null)
   const [showAddModal, setShowAddModal]   = useState(false)
   const [showStockModal, setShowStockModal] = useState(false)
   const [selectedMedicine, setSelectedMedicine] = useState(null)
@@ -171,10 +181,12 @@ const Pharmacy = () => {
 
   const fetchMedicines = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const res = await api.get('/medicines')
       setMedicines(res.data || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to fetch medicines')
     } finally {
       setLoading(false)
@@ -343,15 +355,20 @@ const Pharmacy = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Pharmacy Management</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage medicines and inventory</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-400 text-sm mt-1">{capability.description}</p>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowAddModal(true) }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200 active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4" /> Add Medicine
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => { resetForm(); setShowAddModal(true) }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all duration-200 active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" /> Add Medicine
+          </button>
+        )}
       </div>
 
       <PageLayout leftPanel={leftPanel}>
@@ -437,11 +454,19 @@ const Pharmacy = () => {
       </div>
 
       {/* Card Grid */}
-      {filteredMedicines.length === 0 ? (
+      {fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchMedicines}
+        />
+      ) : filteredMedicines.length === 0 ? (
         <div className={`flex flex-col items-center justify-center py-20 rounded-2xl border ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100'}`}>
           <Package className="w-12 h-12 text-gray-300 mb-3" />
           <p className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No medicines found</p>
-          <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {search || stockFilter !== 'all' ? 'Try adjusting your filters' : canEdit ? 'Add a medicine to get started' : 'Medicines will appear here once added'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -449,6 +474,7 @@ const Pharmacy = () => {
             <MedicineCard
               key={med._id}
               med={med}
+              canDelete={canDelete}
               onStockUpdate={openStockModal}
               onEdit={openEdit}
               onDelete={id => setConfirmDelete(id)}

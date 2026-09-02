@@ -8,23 +8,33 @@ import Modal from '../components/common/Modal'
 import ReportAnalysisAgent from '../agents/ReportAnalysisAgent'
 import * as patientService from '../services/patientService'
 import { toast } from 'react-toastify'
+import { getUserRoleKey } from '../config/rolePolicy'
+import { getTestReportsCapability } from '../config/pageCapabilities'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
 
 const REPORT_TYPES = [
   'Blood Test', 'Urine Test', 'X-Ray', 'CT Scan', 'MRI Scan',
   'Ultrasound', 'ECG', 'Echocardiogram', 'Biopsy', 'Culture & Sensitivity',
   'Lipid Profile', 'Thyroid Function', 'Liver Function', 'Kidney Function', 'Other'
 ]
+const RADIOLOGY_REPORT_TYPES = ['X-Ray', 'CT Scan', 'MRI Scan', 'Ultrasound', 'Echocardiogram']
+const LAB_REPORT_TYPES = REPORT_TYPES.filter(type => !RADIOLOGY_REPORT_TYPES.includes(type))
 
 const TestReports = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
-  const role = user?.role?.toLowerCase()
-  const isPatient = role === 'patient'
+  const roleKey = getUserRoleKey(user)
+  const isPatient = roleKey === 'patient'
+  const isDiagnosticStaff = ['lab-technician', 'radiology-technician'].includes(roleKey)
+  const isRadiology = roleKey === 'radiology-technician'
+  const capability = getTestReportsCapability(user)
 
   const [labReports, setLabReports] = useState([])
   const [patients, setPatients] = useState([])
   const [selectedPatientId, setSelectedPatientId] = useState('')
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showAiAnalysis, setShowAiAnalysis] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
@@ -32,12 +42,12 @@ const TestReports = () => {
 
   const [reportForm, setReportForm] = useState({
     testName: '',
-    testType: 'Blood Test',
+    testType: isRadiology ? 'X-Ray' : 'Blood Test',
     lab: '',
     reportDate: new Date().toISOString().split('T')[0],
     result: '',
     referenceRange: '',
-    status: 'Normal',
+    status: 'Pending',
     notes: '',
   })
 
@@ -49,8 +59,13 @@ const TestReports = () => {
   const fetchOwnReports = async () => {
     try {
       setLoading(true)
-      const res = await patientService.getAllPatients()
-      const allPatients = res.data || res.patients || []
+      setFetchError(null)
+      const res = isDiagnosticStaff
+        ? await patientService.getDiagnosticWorkspace()
+        : await patientService.getAllPatients()
+      const allPatients = isDiagnosticStaff
+        ? (res.data?.patients || [])
+        : (res.data || res.patients || [])
       if (isPatient) {
         const mine = allPatients[0]
         if (mine) {
@@ -61,7 +76,8 @@ const TestReports = () => {
       } else {
         setPatients(allPatients)
       }
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load reports')
     } finally {
       setLoading(false)
@@ -71,10 +87,14 @@ const TestReports = () => {
   const fetchPatientReports = async (id) => {
     if (!id) return
     setLoading(true)
+    setFetchError(null)
     try {
-      const rec = await patientService.getPatientMedicalRecords(id)
+      const rec = isDiagnosticStaff
+        ? await patientService.getDiagnosticRecords(id)
+        : await patientService.getPatientMedicalRecords(id)
       setLabReports(rec.data?.labReports || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load reports')
     } finally {
       setLoading(false)
@@ -101,7 +121,7 @@ const TestReports = () => {
       })
       toast.success('Report added successfully')
       setShowAddModal(false)
-      setReportForm({ testName: '', testType: 'Blood Test', lab: '', reportDate: new Date().toISOString().split('T')[0], result: '', referenceRange: '', status: 'Normal', notes: '' })
+      setReportForm({ testName: '', testType: isRadiology ? 'X-Ray' : 'Blood Test', lab: '', reportDate: new Date().toISOString().split('T')[0], result: '', referenceRange: '', status: 'Pending', notes: '' })
       fetchPatientReports(pid)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add report')
@@ -110,9 +130,15 @@ const TestReports = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case 'Verified':
+      case 'Completed':
       case 'Normal': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
       case 'Abnormal': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
       case 'Borderline': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+      case 'Cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+      case 'Pending':
+      case 'Collected': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+      case 'Processing': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       default: return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
     }
   }
@@ -128,10 +154,11 @@ const TestReports = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>Test Reports</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            {isPatient ? 'Your lab tests and diagnostic reports' : 'View and manage patient lab reports'}
-          </p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-500 text-sm mt-0.5">{capability.description}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -141,7 +168,8 @@ const TestReports = () => {
             <Sparkles className="w-4 h-4" />
             AI Analysis
           </button>
-          {!isPatient && selectedPatientId && (
+          {/* Backend POST /patients/:id/lab-report allows Doctor, Nurse, Lab/Radiology Tech — not Admin. */}
+          {capability.canAdd && selectedPatientId && (
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] transition"
@@ -156,9 +184,9 @@ const TestReports = () => {
       <PageLayout leftPanel={
         <div className="space-y-3">
           <StatCard title="Total Reports" value={labReports.length}                                                        icon={FlaskConical}  iconBg="bg-blue-50 text-[#2E86DE]"     />
-          <StatCard title="Normal"        value={labReports.filter(r => r.status === 'Normal').length}                     icon={CheckCircle}   iconBg="bg-emerald-50 text-emerald-600" />
-          <StatCard title="Abnormal"      value={labReports.filter(r => r.status === 'Abnormal').length}                   icon={AlertCircle}   iconBg="bg-red-50 text-red-600"        />
-          <StatCard title="Borderline"    value={labReports.filter(r => r.status === 'Borderline').length}                 icon={Clock}         iconBg="bg-amber-50 text-amber-600"    />
+          <StatCard title="Pending"       value={labReports.filter(r => ['Pending','Collected'].includes(r.status)).length} icon={Clock}         iconBg="bg-amber-50 text-amber-600"    />
+          <StatCard title="Processing"    value={labReports.filter(r => r.status === 'Processing').length}                 icon={AlertCircle}   iconBg="bg-blue-50 text-blue-600"      />
+          <StatCard title="Completed"     value={labReports.filter(r => ['Completed','Verified','Normal','Abnormal','Borderline'].includes(r.status)).length} icon={CheckCircle} iconBg="bg-emerald-50 text-emerald-600" />
         </div>
       }>
 
@@ -194,6 +222,12 @@ const TestReports = () => {
         <div className="flex items-center justify-center min-h-64">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
         </div>
+      ) : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={selectedPatientId && !isPatient ? () => fetchPatientReports(selectedPatientId) : fetchOwnReports}
+        />
       ) : !isPatient && !selectedPatientId ? (
         <div className={`${card} p-12 text-center`}>
           <User className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -205,7 +239,7 @@ const TestReports = () => {
           <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className={`font-medium ${textCls}`}>No test reports found</p>
           <p className="text-sm text-gray-400 mt-1">
-            {isPatient ? 'Your doctor will upload reports after tests' : 'Click "Add Report" to add a lab report'}
+            {isPatient ? 'Your doctor will upload reports after tests' : capability.canAdd ? 'Click "Add Report" to add a lab report' : 'Reports will appear here once added'}
           </p>
         </div>
       ) : (
@@ -292,7 +326,7 @@ const TestReports = () => {
                 onChange={e => setReportForm(f => ({ ...f, testType: e.target.value }))}
                 className={inp}
               >
-                {REPORT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                {(isRadiology ? RADIOLOGY_REPORT_TYPES : LAB_REPORT_TYPES).map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
@@ -343,10 +377,11 @@ const TestReports = () => {
                 onChange={e => setReportForm(f => ({ ...f, status: e.target.value }))}
                 className={inp}
               >
-                <option value="Normal">Normal</option>
-                <option value="Abnormal">Abnormal</option>
-                <option value="Borderline">Borderline</option>
                 <option value="Pending">Pending</option>
+                <option value="Collected">Collected</option>
+                <option value="Processing">Processing</option>
+                <option value="Completed">Completed</option>
+                <option value="Verified">Verified</option>
               </select>
             </div>
           </div>

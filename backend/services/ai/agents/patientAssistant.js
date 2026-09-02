@@ -2,6 +2,7 @@
 const { callLLM } = require('../llmClient');
 const { PATIENT_ASSISTANT, DISCLAIMER } = require('../promptTemplates');
 const { enforceAssistantSafety } = require('../safety');
+const { buildSourceMeta } = require('../sourceClassification');
 
 const INTENT_MAP = [
   { intent: 'emergency',    patterns: ['emergency', 'ambulance', 'dying', 'heart attack', 'stroke', 'unconscious', 'can\'t breathe', 'severe chest pain', 'bleeding heavily', '112'] },
@@ -98,7 +99,17 @@ async function runPatientAssistant({ message, history, userData }) {
     PATIENT_ASSISTANT.user({ message, history, userData }),
     () => mockRespond({ message }),
   );
-  return enforceAssistantSafety(result.data, message);
+  const safe = enforceAssistantSafety(result.data, message);
+  return {
+    ...safe,
+    ...buildSourceMeta(safe, {
+      requiresHumanReview: false,
+      limitations: [
+        'General navigation and guidance only — it cannot read or change any medical record.',
+        'For medical advice, book an appointment with a qualified clinician; for an emergency, call emergency services.',
+      ],
+    }),
+  };
 }
 
 module.exports = { runPatientAssistant };

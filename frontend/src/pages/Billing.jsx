@@ -15,6 +15,10 @@ import api from '../services/api'
 import CardPagination, { paginateData } from '../components/common/CardPagination'
 import PageLayout from '../components/common/PageLayout'
 import TimeStamp from '../components/common/TimeStamp'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getBillingCapability } from '../config/pageCapabilities'
+import { getUserRoleKey } from '../config/rolePolicy'
 
 const downloadBillPdf = async (bill) => {
   const { generateBillPdf } = await import('../utils/generateBillPdf')
@@ -218,18 +222,19 @@ const Billing = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
 
-  const isPatient     = user?.role === 'Patient'
-  const isPharmacist  = user?.role === 'Pharmacist' || user?.subRole === 'Pharmacist'
-  const canCreateBill = ['Admin','Receptionist'].includes(user?.role) ||
-                        ['Admin','Receptionist'].includes(user?.subRole) ||
-                        isPharmacist
-  const canManageAll  = ['Admin','Receptionist'].includes(user?.role) ||
-                        ['Admin','Receptionist'].includes(user?.subRole)
+  const roleKey = getUserRoleKey(user)
+  const isPatient       = roleKey === 'patient'
+  const isPharmacist    = roleKey === 'pharmacist'
+  const isBillingStaff  = roleKey === 'billing-staff'
+  const canCreateBill = ['admin', 'receptionist'].includes(roleKey) || isPharmacist || isBillingStaff
+  const canManageAll  = ['admin', 'receptionist'].includes(roleKey) || isBillingStaff
+  const capability = getBillingCapability(user)
 
   // ── State ────────────────────────────────────────────────────
   const [bills, setBills]           = useState([])
   const [patients, setPatients]     = useState([])
   const [loading, setLoading]       = useState(false)
+  const [fetchError, setFetchError] = useState(null)
   const [stats, setStats]           = useState({ totalRevenue: 0, totalCollected: 0, totalPending: 0, totalBills: 0 })
   const [billTypeFilter, setBillTypeFilter] = useState('All')
   const [billSearch, setBillSearch]         = useState('')
@@ -290,10 +295,12 @@ const Billing = () => {
 
   const fetchBills = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const res = await billingService.getAllBills({ limit: 500 })
       setBills(res.bills || [])
     } catch (err) {
+      setFetchError(err)
       toast.error(err.response?.data?.message || err.message || 'Failed to fetch bills')
     } finally {
       setLoading(false)
@@ -592,7 +599,7 @@ const Billing = () => {
           )}
 
           {/* Admin delete (unpaid only) */}
-          {['Admin'].includes(user?.role) && row.amountPaid === 0 && (
+          {roleKey === 'admin' && row.amountPaid === 0 && (
             <button
               onClick={() => setConfirmDeleteBill(row._id)}
               className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
@@ -1304,8 +1311,11 @@ const Billing = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Bills & Payments</h1>
-          <p className="text-sm text-gray-400 mt-1">View and pay your hospital bills</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-sm text-gray-400 mt-1">{capability.description}</p>
         </div>
 
         <PageLayout leftPanel={<StatsRow patientMode />}>
@@ -1343,6 +1353,12 @@ const Billing = () => {
               <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-600 animate-spin" />
             </div>
           </div>
+        ) : fetchError ? (
+          <ErrorState
+            variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+            message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+            onRetry={fetchBills}
+          />
         ) : displayBills.length === 0 ? (
           <div className={`${card} p-12 text-center`}>
             <CheckCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -1483,8 +1499,11 @@ const Billing = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Pharmacy Billing</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage pharmacy bills — medicines and dispensing charges</p>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{capability.title}</h1>
+              <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+            </div>
+            <p className="text-sm text-gray-500 mt-1">{capability.description}</p>
           </div>
           <button
             onClick={() => { setGenerateData(EMPTY_GENERATE); setNewItem(EMPTY_PHARMA_ITEM); setShowGenerateModal(true) }}
@@ -1526,6 +1545,12 @@ const Billing = () => {
                 <div key={i} className={`rounded-xl border h-48 animate-pulse ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`} />
               ))}
             </div>
+          ) : fetchError ? (
+            <ErrorState
+              variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+              message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+              onRetry={fetchBills}
+            />
           ) : pharmFiltered.length === 0 ? (
             <div className={`${card} py-16 text-center`}>
               <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -1569,8 +1594,11 @@ const Billing = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Billing & Payments</h1>
-          <p className="text-sm text-gray-400 mt-1">Manage all invoices and track payments</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-sm text-gray-400 mt-1">{capability.description}</p>
         </div>
         {canCreateBill && (
           <button
@@ -1642,12 +1670,18 @@ const Billing = () => {
             <div key={i} className={`rounded-xl border h-48 animate-pulse ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`} />
           ))}
         </div>
+      ) : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchBills}
+        />
       ) : filteredBills.length === 0 ? (
         <div className={`${card} py-16 text-center`}>
           <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>No bills found</p>
           <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            {billSearch ? 'Try adjusting your search' : 'Generate an invoice to get started'}
+            {billSearch ? 'Try adjusting your search' : canCreateBill ? 'Generate an invoice to get started' : 'Invoices will appear here once generated'}
           </p>
         </div>
       ) : (
@@ -1658,7 +1692,7 @@ const Billing = () => {
                 key={bill._id}
                 bill={bill}
                 canManageAll={canManageAll}
-                canDelete={['Admin'].includes(user?.role)}
+                canDelete={roleKey === 'admin'}
                 onView={b => { setSelectedBill(b); setShowInvoiceModal(true) }}
                 onPayment={b => { setSelectedBill(b); setPaymentData(p => ({ ...p, amount: b.balance })); setShowPaymentModal(true) }}
                 onInsurance={b => { setSelectedBill(b); setInsuranceData(d => ({ ...d, amountClaimed: b.balance.toString() })); setShowInsuranceModal(true) }}

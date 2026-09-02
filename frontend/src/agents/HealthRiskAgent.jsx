@@ -3,6 +3,7 @@ import { Activity, X, Loader2, AlertTriangle, CheckCircle2, TrendingUp, RotateCc
 import { useNavigate } from 'react-router-dom'
 import { assessHealthRisk } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import HumanReviewNotice from '../components/ai/HumanReviewNotice'
 
 // ─── Risk scoring ─────────────────────────────────────────────────────────────
 const CHRONIC_CONDITIONS = [
@@ -77,7 +78,7 @@ const LIFESTYLE_TIPS = {
 const STEPS = ['Age', 'Conditions', 'Symptoms', 'Result']
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const HealthRiskAgent = ({ open, onClose }) => {
+const HealthRiskAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [age, setAge] = useState('')
@@ -101,8 +102,8 @@ const HealthRiskAgent = ({ open, onClose }) => {
       })
       const ai = res?.data || res
       const risk = getRiskLevel(ai.riskScore)
-      setResult({ totalScore: ai.riskScore, riskFactors: ai.riskFactors, lifestyle: ai.lifestyle, urgentActions: ai.urgentActions,
-        _source: ai._source, _degraded: ai._degraded, scoringMethod: ai.scoringMethod, scoringFormula: ai.scoringFormula, ...risk })
+      setResult({ ...ai, totalScore: ai.riskScore, riskFactors: ai.riskFactors, lifestyle: ai.lifestyle, urgentActions: ai.urgentActions,
+        scoringMethod: ai.scoringMethod, scoringFormula: ai.scoringFormula, ...risk })
       setStep(3)
     } catch {
       // fallback to local calculation
@@ -113,7 +114,12 @@ const HealthRiskAgent = ({ open, onClose }) => {
       const totalScore = Math.min(100, ageRisk + chronicRisk + symptomRisk)
       const risk = getRiskLevel(totalScore)
       setResult({ totalScore, ageRisk, chronicRisk, symptomRisk, _source: 'local-rules', _degraded: true,
-        scoringMethod: 'local deterministic fallback', scoringFormula: 'capped sum of displayed points', ...risk })
+        scoringMethod: 'local deterministic fallback', scoringFormula: 'capped sum of displayed points',
+        limitations: [
+          'The MediLink server could not be reached, so this score was calculated in your browser using the same point table.',
+          'This is a deterministic screening score, not a diagnosis or a trained predictive model.',
+        ],
+        ...risk })
       setStep(3)
     } finally {
       setLoading(false)
@@ -259,12 +265,7 @@ const HealthRiskAgent = ({ open, onClose }) => {
           {/* Step 3: Result */}
           {step === 3 && result && (
             <div className="space-y-5">
-              <SourceDisclosure result={result} />
-              {result._degraded && (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
-                  External AI is unavailable. This score was produced by the documented rules engine.
-                </div>
-              )}
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
               {/* Risk score */}
               <div className={`rounded-xl border p-5 ${result.bg} ${result.border}`}>
                 <div className="flex items-center gap-3 mb-4">
@@ -328,9 +329,11 @@ const HealthRiskAgent = ({ open, onClose }) => {
                 </ul>
               </div>
 
-              <p className="text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                ⚕️ This is an AI-generated risk estimate for informational purposes only. Consult a qualified doctor for professional medical advice.
-              </p>
+              <HumanReviewNotice
+                context="clinical"
+                limitations={result.limitations}
+                showEmergencyNote={result.level === 'Critical'}
+              />
 
               <div className="flex gap-3">
                 <button onClick={reset}

@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   },
   subRole: {
     type: String,
-    enum: ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Ward Manager'],
+    enum: ['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Radiology Technician', 'Billing Staff', 'Ward Manager'],
   },
   phone: { type: String, required: true },
   address: {

@@ -4,15 +4,15 @@ import { toast } from 'react-toastify'
 import { allocateBed } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 
-const URGENCY_OPTIONS = ['Routine', 'Moderate', 'High', 'Critical', 'Emergency']
+const URGENCY_OPTIONS = ['Routine', 'Standard', 'High', 'Critical', 'Emergency']
 const PRIORITY_STYLE = {
   Immediate: { color: 'text-red-700 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', badge: 'bg-red-600', icon: AlertTriangle },
   High:      { color: 'text-orange-700 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20', badge: 'bg-orange-500', icon: Clock },
   Standard:  { color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', badge: 'bg-emerald-500', icon: CheckCircle2 },
 }
 
-const BedAllocationAgent = ({ open, onClose }) => {
-  const [form, setForm] = useState({ condition: '', urgency: 'Moderate', age: '', gender: '' })
+const BedAllocationAgent = ({ open, onClose, showTechnicalSource = true }) => {
+  const [form, setForm] = useState({ condition: '', urgency: 'Standard', age: '', gender: '' })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -33,7 +33,7 @@ const BedAllocationAgent = ({ open, onClose }) => {
 
   const reset = () => {
     setResult(null)
-    setForm({ condition: '', urgency: 'Moderate', age: '', gender: '' })
+    setForm({ condition: '', urgency: 'Standard', age: '', gender: '' })
   }
 
   if (!open) return null
@@ -122,8 +122,8 @@ const BedAllocationAgent = ({ open, onClose }) => {
             </>
           ) : (
             <>
-              <SourceDisclosure result={result} />
-              {result._degraded && (
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
+              {showTechnicalSource && result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. This advisory uses current unoccupied bed records and deterministic placement rules.
                 </div>

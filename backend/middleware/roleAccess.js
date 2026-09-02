@@ -71,13 +71,47 @@ const rolePermissions = {
       patients: ['GET'], // Can view patient info
       reports: ['GET'] // Can view medicine reports
     }
+  },
+  LabTechnician: {
+    canAccess: ['test-reports', 'assigned-patients'],
+    dashboard: '/dashboard',
+    routes: {
+      patients: ['GET'],
+      reports: ['GET', 'POST']
+    }
+  },
+  RadiologyTechnician: {
+    canAccess: ['test-reports'],
+    dashboard: '/dashboard',
+    routes: {
+      reports: ['GET', 'POST']
+    }
+  },
+  BillingStaff: {
+    canAccess: ['billing'],
+    dashboard: '/dashboard',
+    routes: {
+      billing: ['GET', 'POST', 'PUT']
+    }
+  },
+  WardManager: {
+    canAccess: ['wards', 'assigned-patients'],
+    dashboard: '/dashboard',
+    routes: {
+      patients: ['GET'],
+      wards: ['GET', 'PUT']
+    }
   }
 };
+
+const resolvePermissionRole = (user) => user?.role === 'Staff' && user?.subRole
+  ? user.subRole
+  : user?.role;
 
 // Check if user has permission for specific route and method
 exports.checkRouteAccess = (requiredRoute, requiredMethod) => {
   return asyncHandler(async (req, res, next) => {
-    const userRole = req.user.role;
+    const userRole = resolvePermissionRole(req.user);
     const permissions = rolePermissions[userRole];
 
     if (!permissions) {
@@ -118,8 +152,12 @@ exports.checkRouteAccess = (requiredRoute, requiredMethod) => {
 
 // Get user's accessible routes
 exports.getUserPermissions = asyncHandler(async (req, res) => {
-  const userRole = req.user.role;
+  const userRole = resolvePermissionRole(req.user);
   const permissions = rolePermissions[userRole];
+
+  if (!permissions) {
+    return res.status(403).json({ success: false, message: 'No permissions configured for this role' });
+  }
 
   res.status(200).json({
     success: true,
@@ -131,5 +169,4 @@ exports.getUserPermissions = asyncHandler(async (req, res) => {
 });
 
 module.exports = { rolePermissions, checkRouteAccess: exports.checkRouteAccess, getUserPermissions: exports.getUserPermissions };
-
 

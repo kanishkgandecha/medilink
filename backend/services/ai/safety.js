@@ -2,7 +2,9 @@
 
 const { DISCLAIMER } = require('./promptTemplates');
 
-const EMERGENCY_PATTERN = /\b(severe chest pain|chest pressure|can(?:not|'t) breathe|difficulty breathing|unconscious|stroke|heavy bleeding|suicid(?:e|al)|self[- ]harm|anaphylaxis|seizure)\b/i;
+const EMERGENCY_PATTERN = /\b(severe chest pain|chest pressure|chest squeezing|can(?:not|'t) breathe|difficulty breathing|blue lips|throat swelling|unconscious|fainting|stroke|face drooping|slurred speech|sudden confusion|heavy bleeding|vomiting blood|blood in vomit|severe abdominal pain|thunderclap headache|suicid(?:e|al)|self[- ]harm|anaphylaxis|seizure)\b/i;
+const CHEST_DISCOMFORT_PATTERN = /\b(chest pain|chest discomfort|chest tightness)\b/i;
+const CHEST_RED_FLAG_PATTERN = /\b(shortness of breath|breathlessness|cold sweat|sweating|faint(?:ed|ing)?|lightheaded|jaw pain|arm pain|back pain)\b/i;
 const MEDICATION_PATTERN = /\b(aspirin|paracetamol|acetaminophen|ibuprofen|antibiotic|antacid|antihistamine|cetirizine|tablet|dose|dosage|mg\b)/i;
 const URGENCIES = ['Critical', 'High', 'Moderate', 'Low'];
 const SAFE_INTERNAL_ROUTES = new Set([
@@ -15,7 +17,9 @@ const text = (value, fallback = '', max = 2000) =>
 const list = (value, max = 10) => Array.isArray(value) ? value.slice(0, max) : [];
 
 function isEmergencyInput(value) {
-  return EMERGENCY_PATTERN.test(Array.isArray(value) ? value.join(' ') : String(value || ''));
+  const input = Array.isArray(value) ? value.join(' ') : String(value || '');
+  return EMERGENCY_PATTERN.test(input)
+    || (CHEST_DISCOMFORT_PATTERN.test(input) && CHEST_RED_FLAG_PATTERN.test(input));
 }
 
 function safeAdvice(items) {
@@ -29,6 +33,8 @@ function safeAdvice(items) {
 
 function enforceSymptomSafety(result, symptoms) {
   const emergency = isEmergencyInput(symptoms);
+  const symptomText = Array.isArray(symptoms) ? symptoms.join(' ') : String(symptoms || '');
+  const chestDiscomfort = CHEST_DISCOMFORT_PATTERN.test(symptomText);
   const conditions = list(result?.conditions, 5).map((condition) => ({
     name: text(condition?.name, 'Possible condition requires clinical assessment', 200),
     probability: ['High', 'Medium', 'Low'].includes(condition?.probability) ? condition.probability : 'Low',
@@ -39,26 +45,42 @@ function enforceSymptomSafety(result, symptoms) {
     redFlags: list(condition?.redFlags, 8).map((v) => text(v, '', 300)).filter(Boolean),
   }));
 
-  if (emergency) {
-    conditions.unshift({
-      name: 'Potential medical emergency', probability: 'High', urgency: 'Critical',
-      speciality: 'Emergency Medicine', department: 'Emergency',
-      advice: ['Call emergency services (112 in India) or go to the nearest emergency department now.', 'Do not drive yourself; ask someone to accompany you.'],
-      redFlags: ['The reported symptoms contain an emergency warning sign.'],
-    });
-  }
+  const primary = conditions[0];
+  const selfCare = safeAdvice(result?.selfCare).length
+    ? safeAdvice(result.selfCare)
+    : safeAdvice(primary?.advice);
+  const redFlags = list(result?.redFlags, 8).map((v) => text(v, '', 300)).filter(Boolean).length
+    ? list(result.redFlags, 8).map((v) => text(v, '', 300)).filter(Boolean)
+    : (primary?.redFlags || []);
 
   return {
-    ...result,
-    conditions: conditions.length ? conditions.slice(0, 5) : [{
-      name: 'Unspecified complaint', probability: 'Low', urgency: 'Moderate', speciality: 'General Physician',
-      department: 'General Medicine', advice: ['Arrange a clinical assessment if symptoms persist or worsen.'], redFlags: [],
-    }],
-    overallUrgency: emergency ? 'Critical' : (URGENCIES.includes(result?.overallUrgency) ? result.overallUrgency : 'Moderate'),
-    department: emergency ? 'Emergency' : text(result?.department, 'General Medicine', 100),
-    aiSummary: emergency
-      ? 'The reported symptoms include a potential emergency warning sign. This tool cannot determine the cause; seek immediate in-person care.'
-      : text(result?.aiSummary, 'The information is insufficient for a reliable assessment. Please consult a qualified clinician.', 1000),
+    _source: result?._source,
+    _degraded: result?._degraded,
+    _model: result?._model,
+    overallUrgency: emergency
+      ? 'Critical'
+      : (chestDiscomfort
+        ? 'High'
+        : (URGENCIES.includes(result?.overallUrgency) ? result.overallUrgency : 'Moderate')),
+    department: emergency ? 'Emergency' : text(result?.department || primary?.department, 'General Medicine', 100),
+    recommendedSpeciality: emergency
+      ? 'Emergency Medicine'
+      : (chestDiscomfort
+        ? 'General Physician / Urgent Care'
+        : text(result?.recommendedSpeciality || primary?.speciality, 'General Physician', 100)),
+    guidanceSummary: emergency
+      ? 'Your reported symptoms include a warning sign that needs immediate in-person medical attention. This tool does not determine the cause.'
+      : (chestDiscomfort
+        ? 'Chest discomfort can have different causes and cannot be safely identified here. Arrange a same-day medical assessment; seek emergency care immediately if warning signs appear.'
+        : text(result?.guidanceSummary, 'These symptoms cannot be diagnosed here. Use the guidance below and consult a qualified clinician if they persist, worsen, or concern you.', 1000)),
+    selfCare: emergency
+      ? ['Call emergency services (112 in India) or go to the nearest emergency department now.', 'Do not drive yourself; ask someone to accompany you.']
+      : (chestDiscomfort
+        ? ['Stop strenuous activity and rest while arranging a same-day medical assessment.', 'If discomfort becomes severe, persistent, or occurs with breathlessness, sweating, fainting, or arm/jaw/back pain, call emergency services (112 in India).']
+        : (selfCare.length ? selfCare : ['Rest, stay hydrated if appropriate, and monitor how your symptoms change.', 'Arrange a clinical consultation if symptoms persist or worsen.'])),
+    redFlags: emergency
+      ? ['The reported symptoms include an emergency warning sign.']
+      : redFlags,
     disclaimer: DISCLAIMER,
   };
 }

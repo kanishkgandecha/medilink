@@ -2,6 +2,7 @@
 const { callLLM } = require('../llmClient');
 const { BED_ALLOCATION, DISCLAIMER } = require('../promptTemplates');
 const prisma = require('../../../config/prisma');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
 const WARD_RULES = [
   { keywords: ['cardiac', 'heart', 'chest pain', 'arrhythmia', 'myocardial'], wardType: 'ICU', priority: 'Immediate' },
@@ -45,6 +46,19 @@ async function fetchAvailableWards() {
   });
 }
 
+// The recommended ward/bed is always recomputed from this live query, never
+// taken from the LLM's own answer (see runBedAllocation below), so the
+// disclosed source is always Live Records — an LLM attempt's outcome only
+// ever changes provenance metadata, never the substantive recommendation,
+// and must therefore never surface a provider/model name here.
+const liveRecordsSourceMeta = () => buildSourceMeta(null, {
+  forceSourceType: SOURCE_TYPES.LIVE_RECORDS,
+  limitations: [
+    'Recommendation only; it does not reserve or assign a bed.',
+    'Availability is rechecked at the moment of assignment, which may differ from when this was generated.',
+  ],
+});
+
 function buildVerifiedAllocation({ condition, urgency, age, wards, metadata = {} }) {
   const { wardType, priority } = selectWardType(condition, urgency, age);
 
@@ -72,6 +86,7 @@ function buildVerifiedAllocation({ condition, urgency, age, wards, metadata = {}
       liveDataCheckedAt: new Date().toISOString(),
       advisoryOnly: true,
       ...metadata,
+      ...liveRecordsSourceMeta(),
     };
   }
 
@@ -95,6 +110,7 @@ function buildVerifiedAllocation({ condition, urgency, age, wards, metadata = {}
     liveDataCheckedAt: new Date().toISOString(),
     advisoryOnly: true,
     ...metadata,
+    ...liveRecordsSourceMeta(),
   };
 }
 

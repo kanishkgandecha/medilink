@@ -17,6 +17,10 @@ import { toast } from 'react-toastify'
 import CardPagination, { paginateData } from '../components/common/CardPagination'
 import PageLayout from '../components/common/PageLayout'
 import StatCard from '../components/common/StatCard'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getAppointmentsCapability } from '../config/pageCapabilities'
+import { getUserRoleKey } from '../config/rolePolicy'
 
 const drName = (name) => `Dr. ${(name || '').replace(/^Dr\.?\s*/i, '').trim()}`
 
@@ -589,7 +593,7 @@ const SummaryRow = ({ label, value, darkMode }) => (
 )
 
 // ─── Appointment Card ─────────────────────────────────────────
-const AppointmentCard = ({ apt, isPatient, canManage, onComplete, onCancel, darkMode }) => {
+const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onCancel, darkMode }) => {
   const patient  = apt.patient?.userId?.name || apt.patient?.patientId || 'Patient'
   const patInit  = patient.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   const doctor   = (apt.doctor?.userId?.name || '').replace(/^Dr\.?\s*/i, '').trim() || 'Doctor'
@@ -664,7 +668,7 @@ const AppointmentCard = ({ apt, isPatient, canManage, onComplete, onCancel, dark
       </div>
 
       {/* Actions */}
-      {isActive && (
+      {isActive && (canManage || canCancel) && (
         <div className="flex items-center gap-2">
           {canManage && (
             <button
@@ -676,14 +680,16 @@ const AppointmentCard = ({ apt, isPatient, canManage, onComplete, onCancel, dark
               <CheckCircle className="w-3.5 h-3.5" /> Complete
             </button>
           )}
-          <button
-            onClick={() => onCancel(apt._id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
-              bg-red-50 text-red-700 hover:bg-red-100
-              dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-          >
-            <XCircle className="w-3.5 h-3.5" /> Cancel
-          </button>
+          {canCancel && (
+            <button
+              onClick={() => onCancel(apt._id)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
+                bg-red-50 text-red-700 hover:bg-red-100
+                dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+            >
+              <XCircle className="w-3.5 h-3.5" /> Cancel
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -694,13 +700,17 @@ const AppointmentCard = ({ apt, isPatient, canManage, onComplete, onCancel, dark
 const Appointments = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
-  const role = user?.role?.toLowerCase()
-  const isPatient = role === 'patient'
-  const canManage = ['admin', 'administrator', 'receptionist', 'doctor'].includes(role)
+  const roleKey = getUserRoleKey(user)
+  const isPatient = roleKey === 'patient'
+  const canManage = ['admin', 'receptionist', 'doctor'].includes(roleKey)
+  // Backend PUT /appointments/:id/cancel allows Admin, Doctor, Receptionist, Patient — not Nurse.
+  const canCancel = isPatient || canManage
+  const capability = getAppointmentsCapability(user)
 
   const [appointments, setAppointments] = useState([])
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState(null)
   const [showBooking, setShowBooking] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -714,6 +724,7 @@ const Appointments = () => {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const [apptRes, doctorRes] = await Promise.all([
         appointmentService.getAllAppointments(),
@@ -721,7 +732,8 @@ const Appointments = () => {
       ])
       setAppointments(apptRes.data || [])
       setDoctors(doctorRes.data || [])
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load appointments')
     } finally {
       setLoading(false)
@@ -805,20 +817,24 @@ const Appointments = () => {
       {/* ── Page header ─────────────────────────────────────── */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>
-            {isPatient ? 'My Appointments' : 'Appointments'}
-          </h1>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
           <p className={`text-sm mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            {isPatient ? 'Your upcoming and past appointments' : 'Manage all patient appointments'}
+            {capability.description}
           </p>
         </div>
-        <button
-          onClick={() => setShowBooking(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
-        >
-          <Plus className="w-4 h-4" />
-          Book Appointment
-        </button>
+        {/* Backend POST /appointments allows Admin, Doctor, Receptionist, Patient — not Nurse. */}
+        {capability.canCreate && (
+          <button
+            onClick={() => setShowBooking(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] hover:bg-[#1a6db5] text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
+          >
+            <Plus className="w-4 h-4" />
+            Book Appointment
+          </button>
+        )}
       </div>
 
       <PageLayout leftPanel={leftPanel}>
@@ -877,13 +893,21 @@ const Appointments = () => {
       </div>
 
       {/* ── Appointment cards ───────────────────────────────── */}
-      {loading ? <SkeletonTable rows={6} cols={6} /> : (
+      {loading ? <SkeletonTable rows={6} cols={6} /> : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchAll}
+        />
+      ) : (
         filtered.length === 0 ? (
           <div className={`${card} py-16 text-center`}>
             <CalendarIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className={`font-semibold ${textCls}`}>No appointments found</p>
             <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              {search || statusFilter ? 'Try adjusting your filters' : 'Click "Book Appointment" to get started'}
+              {search || statusFilter
+                ? 'Try adjusting your filters'
+                : capability.canCreate ? 'Click "Book Appointment" to get started' : 'Appointments will appear here once scheduled'}
             </p>
           </div>
         ) : (
@@ -895,6 +919,7 @@ const Appointments = () => {
                   apt={apt}
                   isPatient={isPatient}
                   canManage={canManage}
+                  canCancel={canCancel}
                   onComplete={id => handleStatusUpdate(id, 'Completed')}
                   onCancel={id => { setCancelTarget({ id }); setCancelReason('') }}
                   darkMode={darkMode}

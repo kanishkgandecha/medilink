@@ -7,6 +7,7 @@ import ProtectedRoute from './components/common/ProtectedRoute'
 import FloatingChatbot from './components/common/FloatingChatbot'
 import { useAuth } from './context/AuthContext'
 import { useTheme } from './context/ThemeContext'
+import { ROUTE_ROLES } from './config/rolePolicy'
 
 // Auth pages — small, load eagerly (shown before auth)
 import Login from './pages/auth/Login'
@@ -29,6 +30,7 @@ const Settings      = lazy(() => import('./pages/Settings'))
 const TestReports   = lazy(() => import('./pages/TestReports'))
 const Profile       = lazy(() => import('./pages/Profile'))
 const AIAgents      = lazy(() => import('./pages/AIAgents'))
+const AccessDenied  = lazy(() => import('./pages/AccessDenied'))
 
 // Page-level loading fallback — matches app chrome (no layout shift)
 const PageLoader = () => (
@@ -69,22 +71,23 @@ function App() {
 
           {/* Protected Routes */}
           <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/patients"   element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Receptionist','Patient','Lab Technician','Ward Manager']}><Patients /></ProtectedRoute>} />
-          <Route path="/doctors"    element={<ProtectedRoute><Doctors /></ProtectedRoute>} />
-          <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
-          <Route path="/wards"      element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Ward Manager']}><Wards /></ProtectedRoute>} />
-          <Route path="/pharmacy"   element={<ProtectedRoute allowedRoles={['Admin','Pharmacist']}><Pharmacy /></ProtectedRoute>} />
-          <Route path="/prescriptions" element={<ProtectedRoute allowedRoles={['Admin','Doctor','Nurse','Patient','Pharmacist']}><Prescriptions /></ProtectedRoute>} />
+          <Route path="/patients"   element={<ProtectedRoute allowedRoles={ROUTE_ROLES.patients}><Patients /></ProtectedRoute>} />
+          <Route path="/doctors"    element={<ProtectedRoute allowedRoles={ROUTE_ROLES.doctors}><Doctors /></ProtectedRoute>} />
+          <Route path="/appointments" element={<ProtectedRoute allowedRoles={ROUTE_ROLES.appointments}><Appointments /></ProtectedRoute>} />
+          <Route path="/wards"      element={<ProtectedRoute allowedRoles={ROUTE_ROLES.wards}><Wards /></ProtectedRoute>} />
+          <Route path="/pharmacy"   element={<ProtectedRoute allowedRoles={ROUTE_ROLES.pharmacy}><Pharmacy /></ProtectedRoute>} />
+          <Route path="/prescriptions" element={<ProtectedRoute allowedRoles={ROUTE_ROLES.prescriptions}><Prescriptions /></ProtectedRoute>} />
 
-          <Route path="/billing"    element={<ProtectedRoute allowedRoles={['Admin','Receptionist','Patient','Pharmacist']}><Billing /></ProtectedRoute>} />
-          <Route path="/staff"      element={<ProtectedRoute allowedRoles={['Admin']}><Staff /></ProtectedRoute>} />
-          <Route path="/reports"    element={<ProtectedRoute allowedRoles={['Admin']}><Reports /></ProtectedRoute>} />
-          <Route path="/test-reports" element={<ProtectedRoute allowedRoles={['Patient','Doctor','Nurse','Admin','Lab Technician']}><TestReports /></ProtectedRoute>} />
-          <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/profile"    element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/billing"    element={<ProtectedRoute allowedRoles={ROUTE_ROLES.billing}><Billing /></ProtectedRoute>} />
+          <Route path="/staff"      element={<ProtectedRoute allowedRoles={ROUTE_ROLES.staff}><Staff /></ProtectedRoute>} />
+          <Route path="/reports"    element={<ProtectedRoute allowedRoles={ROUTE_ROLES.reports}><Reports /></ProtectedRoute>} />
+          <Route path="/test-reports" element={<ProtectedRoute allowedRoles={ROUTE_ROLES.testReports}><TestReports /></ProtectedRoute>} />
+          <Route path="/settings"   element={<ProtectedRoute allowedRoles={ROUTE_ROLES.account}><Settings /></ProtectedRoute>} />
+          <Route path="/profile"    element={<ProtectedRoute allowedRoles={ROUTE_ROLES.account}><Profile /></ProtectedRoute>} />
+          <Route path="/access-denied" element={<ProtectedRoute><AccessDenied /></ProtectedRoute>} />
 
           {/* AI Agent Suite Routes */}
-          <Route path="/ai-agents"  element={<ProtectedRoute><AIAgents /></ProtectedRoute>} />
+          <Route path="/ai-agents"  element={<ProtectedRoute allowedRoles={ROUTE_ROLES.aiAgents}><AIAgents /></ProtectedRoute>} />
           <Route path="/symptom-checker" element={<Navigate to="/ai-agents?tab=symptom-checker" replace />} />
           <Route path="/bed-allocation"  element={<Navigate to="/ai-agents?tab=bed-allocation" replace />} />
           <Route path="/health-risk"     element={<Navigate to="/ai-agents?tab=health-risk" replace />} />

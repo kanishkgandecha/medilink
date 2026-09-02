@@ -1,5 +1,6 @@
 'use strict';
 const prisma = require('../../../config/prisma');
+const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
 async function runPharmacyAlerts() {
   const now = new Date();
@@ -24,8 +25,8 @@ async function runPharmacyAlerts() {
       ? 'info'
       : 'ok';
 
-  return {
-    _source: 'rules',
+  const result = {
+    _source: 'live-records',
     dataComputedAt: new Date().toISOString(),
     severity,
     summary: {
@@ -77,6 +78,13 @@ async function runPharmacyAlerts() {
         category: m.category,
       })),
     },
+  };
+  return {
+    ...result,
+    ...buildSourceMeta(result, {
+      forceSourceType: SOURCE_TYPES.LIVE_RECORDS,
+      limitations: ['Aggregated from current medicine inventory records; expiry and stock thresholds are fixed, deterministic rules.'],
+    }),
   };
 }
 

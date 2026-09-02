@@ -1,7 +1,8 @@
 export const formatDate = (date) => {
   if (!date) return ''
   const d = new Date(date)
-  return d.toLocaleDateString('en-US', {
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
@@ -29,11 +30,16 @@ export const calculateAge = (dateOfBirth) => {
   return age
 }
 
+// MediLink displays amounts in Indian Rupees throughout; see utils/format.js
+// for the canonical formatter (formatINR) used by newer code.
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
+  const n = Number(amount)
+  if (!Number.isFinite(n)) return '₹0'
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD'
-  }).format(amount)
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n)
 }
 
 export const getInitials = (name) => {

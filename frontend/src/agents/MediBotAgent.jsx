@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, User, ArrowRight, Phone, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { chatWithAssistant } from '../services/aiService'
+import { resolveSourceDisplay } from '../config/aiSourceTaxonomy'
 
 const INITIAL_QUICK = [
   'Book an appointment',
@@ -10,10 +11,10 @@ const INITIAL_QUICK = [
   'Billing & payments',
 ]
 
-const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
+const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource = true }) => {
   const navigate = useNavigate()
   const [messages, setMessages] = useState([
-    { id: 1, from: 'bot', text: "Hi! I'm MediBot, your AI health assistant. How can I help you today?", actions: [] }
+    { id: 1, from: 'bot', text: "Hi! I'm MediBot, a guidance and navigation assistant. How can I help you today?", actions: [] }
   ])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
@@ -59,8 +60,7 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
           callback: a.type === 'callback' ? () => { onClose(); onOpenSymptomChecker?.() } : undefined,
         })),
         urgent: ai.urgent || false,
-        source: ai._source || 'rules',
-        degraded: Boolean(ai._degraded),
+        sourceDisplay: showTechnicalSource ? resolveSourceDisplay(ai) : null,
       }
       setMessages(prev => [...prev, botMsg])
       setHistory([...newHistory, { role: 'assistant', content: ai.reply }])
@@ -103,7 +103,7 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
               <p className="text-white text-sm font-bold leading-none">MediBot</p>
               <div className="flex items-center gap-1 mt-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <p className="text-blue-100 text-[10px]">Guidance assistant · AI with rules fallback</p>
+                <p className="text-blue-100 text-[10px]">Guidance and navigation assistant</p>
               </div>
             </div>
           </div>
@@ -136,9 +136,10 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker }) => {
                 }`}>
                   {msg.text}
                 </div>
-                {msg.from === 'bot' && msg.source && (
-                  <p className="px-1 text-[9px] text-gray-400">
-                    {msg.source === 'llm' ? 'External AI + safety rules' : 'Deterministic guidance'}{msg.degraded ? ' · degraded mode' : ''}
+                {msg.from === 'bot' && msg.sourceDisplay && (
+                  <p className="px-1 text-[9px] text-gray-400" title={msg.sourceDisplay.explanation}>
+                    {msg.sourceDisplay.label}
+                    {msg.sourceDisplay.providerUsed ? ` · ${msg.sourceDisplay.providerUsed}` : ''}
                   </p>
                 )}
                 {msg.actions?.length > 0 && (

@@ -27,13 +27,14 @@ const api = async (path, { token, method = 'GET', body } = {}) => {
   return { response, json: await response.json() };
 };
 
-const createUser = async ({ suffix, role }) => {
+const createUser = async ({ suffix, role, subRole }) => {
   const user = await prisma.user.create({ data: {
     name: `Integration ${role}`,
     email: `integration-${suffix}@medilink.invalid`,
     password: 'integration-test-only',
     phone: `IT-${suffix}`,
     role,
+    subRole: subRole || null,
   } });
   fixtureUserIds.push(user.id);
   return { user, token: generateToken(user) };
@@ -49,6 +50,68 @@ test.before(async () => {
     const instance = app.listen(0, '127.0.0.1', () => resolve(instance));
   });
   baseUrl = `http://127.0.0.1:${server.address().port}`;
+});
+
+test('AI endpoints enforce the same role policy advertised by the UI', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const pharmacist = await createUser({ suffix: `ai-pharmacist-${suffix}`, role: 'Staff', subRole: 'Pharmacist' });
+  const receptionist = await createUser({ suffix: `ai-reception-${suffix}`, role: 'Staff', subRole: 'Receptionist' });
+  const billing = await createUser({ suffix: `ai-billing-${suffix}`, role: 'Staff', subRole: 'BillingStaff' });
+
+  const pharmacistRisk = await api('/api/ai/health-risk', {
+    token: pharmacist.token, method: 'POST', body: { age: 40 },
+  });
+  assert.equal(pharmacistRisk.response.status, 403);
+
+  const receptionistBed = await api('/api/ai/bed-allocation', {
+    token: receptionist.token, method: 'POST', body: { condition: 'routine observation' },
+  });
+  assert.equal(receptionistBed.response.status, 403);
+
+  const billingSymptoms = await api('/api/ai/symptom-analysis', {
+    token: billing.token, method: 'POST', body: { symptoms: 'headache' },
+  });
+  assert.equal(billingSymptoms.response.status, 403);
+
+  const billingChat = await api('/api/ai/chat', {
+    token: billing.token, method: 'POST', body: { message: 'Open billing' },
+  });
+  assert.equal(billingChat.response.status, 200);
+});
+
+test('diagnostic staff receive modality-scoped queues without general patient access', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `diagnostic-patient-${suffix}`, role: 'Patient' });
+  const lab = await createUser({ suffix: `diagnostic-lab-${suffix}`, role: 'Staff', subRole: 'LabTechnician' });
+  const radiology = await createUser({ suffix: `diagnostic-radiology-${suffix}`, role: 'Staff', subRole: 'RadiologyTechnician' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-DIAGNOSTIC-${suffix}`,
+    labReports: { create: [
+      { testName: 'CBC', testType: 'Blood Test', status: 'Pending' },
+      { testName: 'Chest X-Ray', testType: 'X-Ray', status: 'Completed' },
+    ] },
+  } });
+
+  const labWorkspace = await api('/api/patients/diagnostic-workspace', { token: lab.token });
+  assert.equal(labWorkspace.response.status, 200);
+  assert.ok(labWorkspace.json.data.recentReports.every((report) => report.testType !== 'X-Ray'));
+  assert.equal('email' in labWorkspace.json.data.patients[0], false);
+  assert.equal('phone' in labWorkspace.json.data.patients[0], false);
+
+  const createdImagingReport = await api(`/api/patients/${patient.id}/lab-report`, {
+    token: radiology.token,
+    method: 'POST',
+    body: { testName: 'Follow-up MRI', testType: 'MRI Scan', status: 'Verified', result: 'Recorded imaging result' },
+  });
+  assert.equal(createdImagingReport.response.status, 200);
+
+  const radiologyRecords = await api(`/api/patients/diagnostic-workspace/${patient.id}`, { token: radiology.token });
+  assert.equal(radiologyRecords.response.status, 200);
+  assert.deepEqual(new Set(radiologyRecords.json.data.labReports.map((report) => report.testType)), new Set(['X-Ray', 'MRI Scan']));
+
+  const broadPatientList = await api('/api/patients', { token: lab.token });
+  assert.equal(broadPatientList.response.status, 403);
 });
 
 test.after(async () => {

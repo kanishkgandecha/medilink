@@ -35,7 +35,7 @@ router.get('/reliability', authorize('Admin'), async (req, res) => {
 });
 
 // ── Patient Assistant (chatbot) ─────────────────────────────────────────────
-router.post('/chat', [
+router.post('/chat', authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Radiology Technician', 'Billing Staff', 'Ward Manager'), [
   body('message').isString().trim().isLength({ min: 1, max: 2000 }).withMessage('message must be between 1 and 2000 characters'),
   body('history').optional().isArray({ max: 10 }).withMessage('history may contain at most 10 entries'),
   body('history.*.role').optional().isIn(['user', 'assistant']).withMessage('history role is invalid'),
@@ -56,7 +56,7 @@ router.post('/chat', [
 });
 
 // ── Symptom Analysis ────────────────────────────────────────────────────────
-router.post('/symptom-analysis', [
+router.post('/symptom-analysis', authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Receptionist'), [
   body('symptoms').isString().trim().isLength({ min: 1, max: 2000 }).withMessage('symptoms must be between 1 and 2000 characters'),
   body('age').optional().isInt({ min: 0, max: 120 }).withMessage('age must be between 0 and 120'),
   body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('gender is invalid'),
@@ -74,7 +74,7 @@ router.post('/symptom-analysis', [
 });
 
 // ── Report Analysis ─────────────────────────────────────────────────────────
-router.post('/report-analysis', [
+router.post('/report-analysis', authorize('Admin', 'Doctor', 'Patient', 'Lab Technician', 'Radiology Technician'), [
   body('reportText').isString().trim().isLength({ min: 1, max: 12000 }).withMessage('reportText must be between 1 and 12000 characters'),
   body('reportType').optional().isString().isLength({ max: 100 }).withMessage('reportType is too long'),
   validate,
@@ -91,7 +91,7 @@ router.post('/report-analysis', [
 });
 
 // ── Health Risk ─────────────────────────────────────────────────────────────
-router.post('/health-risk', [
+router.post('/health-risk', authorize('Admin', 'Doctor', 'Patient'), [
   body('age').isInt({ min: 0, max: 120 }).withMessage('age must be between 0 and 120'),
   body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('gender is invalid'),
   body('chronicConditions').optional().isArray({ max: 20 }).withMessage('chronicConditions may contain at most 20 entries'),
@@ -112,7 +112,7 @@ router.post('/health-risk', [
 });
 
 // ── Bed Allocation ──────────────────────────────────────────────────────────
-router.post('/bed-allocation', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), [
+router.post('/bed-allocation', authorize('Admin', 'Doctor', 'Nurse', 'Ward Manager'), [
   body('condition').isString().trim().isLength({ min: 1, max: 1000 }).withMessage('condition must be between 1 and 1000 characters'),
   body('urgency').optional().isIn(['Routine', 'Standard', 'High', 'Critical', 'Emergency']).withMessage('urgency is invalid'),
   body('age').optional().isInt({ min: 0, max: 120 }).withMessage('age must be between 0 and 120'),
@@ -131,7 +131,7 @@ router.post('/bed-allocation', authorize('Admin', 'Doctor', 'Nurse', 'Receptioni
 });
 
 // ── Appointment Optimizer ───────────────────────────────────────────────────
-router.post('/appointment-optimizer', [
+router.post('/appointment-optimizer', authorize('Admin', 'Doctor', 'Patient', 'Receptionist'), [
   body('symptoms').isString().trim().isLength({ min: 1, max: 2000 }).withMessage('symptoms must be between 1 and 2000 characters'),
   body('department').optional().isString().isLength({ max: 100 }).withMessage('department is too long'),
   validate,
@@ -159,7 +159,7 @@ router.get('/patient-summary/:patientId', requirePatientAccess('Admin', 'Doctor'
 });
 
 // ── Orchestrated flow: Symptom → Appointment Optimizer in one call ──────────
-router.post('/symptom-to-appointment', [
+router.post('/symptom-to-appointment', authorize('Admin', 'Doctor', 'Patient', 'Receptionist'), [
   body('symptoms').isString().trim().isLength({ min: 1, max: 2000 }).withMessage('symptoms must be between 1 and 2000 characters'),
   body('age').optional().isInt({ min: 0, max: 120 }).withMessage('age must be between 0 and 120'),
   body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('gender is invalid'),

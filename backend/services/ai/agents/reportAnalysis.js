@@ -3,6 +3,7 @@ const { callLLM } = require('../llmClient');
 const { REPORT_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
 const { enforceReportSafety } = require('../safety');
 const { parseReportMeasurements } = require('../reportParser');
+const { buildSourceMeta } = require('../sourceClassification');
 
 const REPORT_TYPES = [
   { keys: ['haemoglobin', 'hemoglobin', 'hb', 'wbc', 'rbc', 'platelet', 'hba1c', 'blood count', 'cbc'], type: 'Complete Blood Count (CBC)' },
@@ -107,7 +108,7 @@ async function runReportAnalysis({ reportText, reportType }) {
   );
   const safeNarrative = enforceReportSafety(result.data, reportText);
   const abnormal = parsedFindings.filter((finding) => finding.status === 'Abnormal').length;
-  return {
+  const combined = {
     ...safeNarrative,
     keyFindings: parsedFindings,
     summary: parsedFindings.length
@@ -120,6 +121,16 @@ async function runReportAnalysis({ reportText, reportType }) {
     urgency: abnormal > 0 ? 'Soon' : 'Routine',
     interpretationBasis: 'submitted_values_and_printed_reference_ranges_only',
     parsedMeasurementCount: parsedFindings.length,
+  };
+  return {
+    ...combined,
+    ...buildSourceMeta(combined, {
+      limitations: [
+        'This is decision support, not a diagnosis, and may be incomplete or incorrect.',
+        'Key findings are grounded only in values and reference ranges printed in the submitted text.',
+        'It must be reviewed by an appropriate healthcare professional.',
+      ],
+    }),
   };
 }
 

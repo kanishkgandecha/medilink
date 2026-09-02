@@ -105,7 +105,7 @@ const LeftPanel = () => (
     {/* Floating stat cards */}
     <GlassCard icon={Clock}         value="2 min"  label="Account setup"      className="login-float-card-1 top-[20%] right-5 z-20" />
     <GlassCard icon={Shield}        value="HIPAA"  label="Compliance ready"   className="login-float-card-2 top-[55%] right-5 z-20" />
-    <GlassCard icon={Users}         value="500+"   label="Active patients"    className="login-float-card-3 bottom-[16%] right-5 z-20" />
+    <GlassCard icon={Users}         value="Role"   label="Scoped access"       className="login-float-card-3 bottom-[16%] right-5 z-20" />
 
     {/* Main content */}
     <div className="login-panel-in relative z-10 flex flex-col justify-between h-full p-10">
@@ -184,7 +184,7 @@ const LeftPanel = () => (
 
       {/* Footer */}
       <p className="text-blue-400/35 text-xs">
-        © {new Date().getFullYear()} MediLink · Secure · HIPAA-ready
+        © {new Date().getFullYear()} MediLink · Safety-oriented engineering prototype
       </p>
     </div>
   </div>
@@ -703,7 +703,7 @@ const Register = () => {
 
         {/* Trust badge footer */}
         <div className="login-field-in-5 relative z-10 mt-6 flex items-center gap-3 text-[11px] text-gray-300">
-          {['Secure Registration', 'HIPAA-ready', 'Free forever'].map((t, i) => (
+          {['Secure Registration', 'Prototype System', 'Project Access'].map((t, i) => (
             <React.Fragment key={t}>
               {i > 0 && <span className="w-1 h-1 rounded-full bg-gray-300/60" />}
               <span>{t}</span>

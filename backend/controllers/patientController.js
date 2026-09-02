@@ -50,6 +50,82 @@ exports.getAvailablePatientUsers = asyncHandler(async (req, res) => {
   });
 });
 
+const RADIOLOGY_TYPES = ['x-ray', 'xray', 'ct scan', 'mri scan', 'ultrasound', 'echocardiogram'];
+const isRadiologyReport = (report) => RADIOLOGY_TYPES.includes(String(report.testType || '').toLowerCase());
+const isRadiologyUser = (user) => String(user?.subRole || '').replace(/[^a-z]/gi, '').toLowerCase() === 'radiologytechnician';
+
+const reportsForDiagnosticRole = (reports, user) => (reports || []).filter((report) =>
+  isRadiologyUser(user) ? isRadiologyReport(report) : !isRadiologyReport(report)
+);
+
+exports.getDiagnosticWorkspace = asyncHandler(async (req, res) => {
+  const patients = await prisma.patient.findMany({
+    where: { archivedAt: null, user: { isActive: true } },
+    select: {
+      id: true,
+      patientId: true,
+      user: { select: { name: true } },
+      labReports: { orderBy: { addedAt: 'desc' } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const patientIndex = patients.map((patient) => {
+    const reports = reportsForDiagnosticRole(patient.labReports, req.user);
+    return {
+      _id: patient.id,
+      patientId: patient.patientId,
+      userId: { name: patient.user?.name || 'Unknown patient' },
+      reportCount: reports.length,
+      latestReportAt: reports[0]?.addedAt || null,
+    };
+  });
+
+  const reports = patients.flatMap((patient) =>
+    reportsForDiagnosticRole(patient.labReports, req.user).map((report) => ({
+      ...report,
+      _id: report.id,
+      patient: { _id: patient.id, patientId: patient.patientId, name: patient.user?.name || 'Unknown patient' },
+    }))
+  ).sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+
+  const statusCount = (status) => reports.filter((report) => report.status === status).length;
+  res.json({
+    success: true,
+    data: {
+      patients: patientIndex,
+      recentReports: reports.slice(0, 12),
+      overview: {
+        totalReports: reports.length,
+        pending: statusCount('Pending') + statusCount('Collected'),
+        processing: statusCount('Processing'),
+        completed: statusCount('Completed') + statusCount('Verified') + statusCount('Normal') + statusCount('Abnormal') + statusCount('Borderline'),
+      },
+    },
+  });
+});
+
+exports.getDiagnosticRecords = asyncHandler(async (req, res) => {
+  const patient = await prisma.patient.findFirst({
+    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }], archivedAt: null },
+    select: {
+      id: true,
+      patientId: true,
+      user: { select: { name: true } },
+      labReports: { orderBy: { addedAt: 'desc' } },
+    },
+  });
+  if (!patient) return res.status(404).json({ success: false, message: 'Patient not found' });
+
+  res.json({
+    success: true,
+    data: {
+      patient: { _id: patient.id, patientId: patient.patientId, name: patient.user?.name || 'Unknown patient' },
+      labReports: reportsForDiagnosticRole(patient.labReports, req.user).map((report) => ({ ...report, _id: report.id })),
+    },
+  });
+});
+
 exports.createPatient = asyncHandler(async (req, res) => {
   const {
     userId,

@@ -16,7 +16,7 @@ const QUICK_SYMPTOMS = [
   'Skin rash', 'Joint pain', 'Breathlessness', 'Dizziness', 'Cough',
 ]
 
-const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initialDepartment = '' }) => {
+const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initialDepartment = '', showTechnicalSource = true }) => {
   const navigate = useNavigate()
   const [symptoms, setSymptoms] = useState('')
   const [result, setResult] = useState(null)
@@ -128,8 +128,8 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
             </>
           ) : (
             <>
-              <SourceDisclosure result={result} />
-              {result._degraded && (
+              <SourceDisclosure result={result} visible={showTechnicalSource} />
+              {showTechnicalSource && result._degraded && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-300">
                   External AI is unavailable. Doctor matching uses current MediLink records and deterministic rules.
                 </div>

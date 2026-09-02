@@ -28,7 +28,7 @@ router.route('/')
     body('department').notEmpty().withMessage('Department is required'),
     body('email').optional().isEmail().withMessage('Valid email is required'),
     body('phone').optional().notEmpty().withMessage('Phone is required'),
-    body('subRole').isIn(['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Ward Manager']).withMessage('Valid sub-role is required'),
+    body('subRole').isIn(['Nurse', 'Receptionist', 'Pharmacist', 'Lab Technician', 'Radiology Technician', 'Billing Staff', 'Ward Manager']).withMessage('Valid sub-role is required'),
     body('employmentType').optional().isIn(['Full-Time', 'Part-Time', 'Full_Time', 'Part_Time', 'Contract', 'Intern']),
     body('shift').optional().isIn(['Morning', 'Evening', 'Night', 'Rotational']),
     body('joiningDate').optional().isISO8601().toDate(),

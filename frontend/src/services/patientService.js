@@ -78,6 +78,14 @@ export const getPatientMedicalRecords = async (id) => {
   return await api.get(`/patients/${id}/medical-records`)
 }
 
+export const getDiagnosticWorkspace = async () => {
+  return await api.get('/patients/diagnostic-workspace')
+}
+
+export const getDiagnosticRecords = async (id) => {
+  return await api.get(`/patients/diagnostic-workspace/${id}`)
+}
+
 // Add medical history
 export const addMedicalHistory = async (id, data) => {
   return await api.post(`/patients/${id}/medical-history`, data)

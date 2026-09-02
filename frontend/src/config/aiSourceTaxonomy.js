@@ -1,0 +1,90 @@
+// Central AI-result source taxonomy, mirroring backend/services/ai/sourceClassification.js.
+// Every AI-branded result in the UI should route through classifySource()
+// here rather than re-deriving a label/color/icon locally, so the wording
+// stays honest and consistent everywhere it appears.
+
+export const SOURCE_TYPES = Object.freeze({
+  RULES: 'rules',
+  RECORDS: 'records',
+  LIVE_RECORDS: 'live-records',
+  LLM: 'llm',
+  DEGRADED_FALLBACK: 'degraded-fallback',
+})
+
+export const SOURCE_LABELS = Object.freeze({
+  [SOURCE_TYPES.RULES]: 'Rules',
+  [SOURCE_TYPES.RECORDS]: 'Records',
+  [SOURCE_TYPES.LIVE_RECORDS]: 'Live Records',
+  [SOURCE_TYPES.LLM]: 'LLM',
+  [SOURCE_TYPES.DEGRADED_FALLBACK]: 'Degraded Fallback',
+})
+
+export const SOURCE_EXPLANATIONS = Object.freeze({
+  [SOURCE_TYPES.RULES]: 'Produced by deterministic clinical or operational rules.',
+  [SOURCE_TYPES.RECORDS]: 'Derived from stored MediLink records.',
+  [SOURCE_TYPES.LIVE_RECORDS]: 'Calculated from the latest available application records.',
+  [SOURCE_TYPES.LLM]: 'Generated using a configured language-model provider.',
+  [SOURCE_TYPES.DEGRADED_FALLBACK]: 'The language-model provider was unavailable, so MediLink used its safe rules-based fallback.',
+})
+
+// Tailwind class pairs per source type. Every badge also renders the label
+// as visible text (see SourceBadge) so meaning never depends on color alone.
+export const SOURCE_STYLES = Object.freeze({
+  [SOURCE_TYPES.RULES]: {
+    light: 'bg-slate-100 text-slate-700 border-slate-200',
+    dark: 'bg-slate-800/60 text-slate-300 border-slate-700',
+  },
+  [SOURCE_TYPES.RECORDS]: {
+    light: 'bg-sky-50 text-sky-700 border-sky-200',
+    dark: 'bg-sky-900/30 text-sky-300 border-sky-800',
+  },
+  [SOURCE_TYPES.LIVE_RECORDS]: {
+    light: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    dark: 'bg-emerald-900/30 text-emerald-300 border-emerald-800',
+  },
+  [SOURCE_TYPES.LLM]: {
+    light: 'bg-violet-50 text-violet-700 border-violet-200',
+    dark: 'bg-violet-900/30 text-violet-300 border-violet-800',
+  },
+  [SOURCE_TYPES.DEGRADED_FALLBACK]: {
+    light: 'bg-amber-50 text-amber-800 border-amber-300',
+    dark: 'bg-amber-900/30 text-amber-300 border-amber-700',
+  },
+})
+
+/**
+ * Classify a result carrying either the new taxonomy fields (`sourceType`)
+ * or the legacy raw callLLM contract (`_source` / `_degraded`). Prefer the
+ * explicit `sourceType` an agent already computed server-side; fall back to
+ * deriving it client-side only when that's absent (older cached responses,
+ * or a locally-computed fallback such as HealthRiskAgent's network-failure path).
+ */
+export function classifySource(data) {
+  if (!data) return SOURCE_TYPES.RULES
+  if (Object.values(SOURCE_TYPES).includes(data.sourceType)) return data.sourceType
+  if (data._source === 'llm') return SOURCE_TYPES.LLM
+  if (data._source === 'rules' && data._degraded) return SOURCE_TYPES.DEGRADED_FALLBACK
+  if (data._source === 'rules') return SOURCE_TYPES.RULES
+  if (data._source === 'records') return SOURCE_TYPES.RECORDS
+  if (data._source === 'live-records') return SOURCE_TYPES.LIVE_RECORDS
+  if (data._source === 'local-rules') return SOURCE_TYPES.DEGRADED_FALLBACK
+  return SOURCE_TYPES.RULES
+}
+
+/** Resolve the full display bundle for a result, whatever shape it arrived in. */
+export function resolveSourceDisplay(data) {
+  const sourceType = classifySource(data)
+  const usedLlm = sourceType === SOURCE_TYPES.LLM
+  return {
+    sourceType,
+    label: data?.sourceLabel || SOURCE_LABELS[sourceType],
+    explanation: data?.sourceExplanation || SOURCE_EXPLANATIONS[sourceType],
+    style: SOURCE_STYLES[sourceType],
+    generatedAt: data?.generatedAt || null,
+    providerUsed: usedLlm ? data?.providerUsed || null : null,
+    modelUsed: usedLlm ? data?.modelUsed || null : null,
+    fallbackUsed: sourceType === SOURCE_TYPES.DEGRADED_FALLBACK,
+    requiresHumanReview: data?.requiresHumanReview !== false,
+    limitations: Array.isArray(data?.limitations) ? data.limitations : [],
+  }
+}

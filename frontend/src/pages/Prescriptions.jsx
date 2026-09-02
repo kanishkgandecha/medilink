@@ -14,6 +14,10 @@ import * as prescriptionService from '../services/prescriptionService'
 import * as patientService from '../services/patientService'
 import * as medicineService from '../services/medicineService'
 import { toast } from 'react-toastify'
+import { getUserRoleKey } from '../config/rolePolicy'
+import { getPrescriptionsCapability } from '../config/pageCapabilities'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
 
 const STATUS_BADGE = {
   Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -34,13 +38,15 @@ const EMPTY_MED = { medicineId: '', medicineName: '', dosage: '', frequency: 'Tw
 const Prescriptions = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
-  const role = user?.role?.toLowerCase()
-  const isDoctor = role === 'doctor'
-  const isPatient = role === 'patient'
-  const isPharmacist = role === 'pharmacist' || user?.subRole?.toLowerCase() === 'pharmacist'
+  const roleKey = getUserRoleKey(user)
+  const isDoctor = roleKey === 'doctor'
+  const isPatient = roleKey === 'patient'
+  const isPharmacist = roleKey === 'pharmacist'
+  const capability = getPrescriptionsCapability(user)
 
   const [prescriptions, setPrescriptions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
   const [statusFilter, setStatusFilter] = useState(isPharmacist ? 'Pending' : '')
   const [selected, setSelected] = useState(null)
   const [page, setPage] = useState(1)
@@ -77,11 +83,13 @@ const Prescriptions = () => {
   const loadPrescriptions = async () => {
     try {
       setLoading(true)
+      setFetchError(null)
       const params = statusFilter ? { status: statusFilter } : {}
       const res = await prescriptionService.getAllPrescriptions(params)
       const data = res.data || res.prescriptions || []
       setPrescriptions(data)
-    } catch {
+    } catch (err) {
+      setFetchError(err)
       toast.error('Failed to load prescriptions')
     } finally {
       setLoading(false)
@@ -205,12 +213,11 @@ const Prescriptions = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>Prescriptions</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">
-            {isDoctor ? 'Write and track prescriptions for your patients'
-              : isPatient ? 'Your prescriptions from doctors'
-              : 'Review and fulfill patient prescriptions'}
-          </p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className="text-gray-500 mt-0.5 text-sm">{capability.description}</p>
         </div>
         {isDoctor && (
           <button
@@ -282,7 +289,13 @@ const Prescriptions = () => {
         ))}
       </div>
 
-      {loading ? <SkeletonTable rows={5} cols={4} /> : (
+      {loading ? <SkeletonTable rows={5} cols={4} /> : fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={loadPrescriptions}
+        />
+      ) : (
         <div className={cardBase}>
           {prescriptions.length === 0 ? (
             <div className="text-center py-12">

@@ -7,6 +7,8 @@ const crypto = require('crypto');
 const SUB_ROLE_MAP = {
   Nurse: 'Nurse', Receptionist: 'Receptionist', Pharmacist: 'Pharmacist',
   'Lab Technician': 'LabTechnician', LabTechnician: 'LabTechnician',
+  'Radiology Technician': 'RadiologyTechnician', RadiologyTechnician: 'RadiologyTechnician',
+  'Billing Staff': 'BillingStaff', BillingStaff: 'BillingStaff',
   'Ward Manager': 'WardManager', WardManager: 'WardManager',
 };
 const normalizeEmploymentType = (value) => ({ 'Full-Time': 'Full_Time', 'Part-Time': 'Part_Time' }[value] || value || 'Full_Time');

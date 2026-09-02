@@ -19,6 +19,8 @@ const {
   getPatientMedicalRecords,
   getPatientAppointments,
   getPatientStats,
+  getDiagnosticWorkspace,
+  getDiagnosticRecords,
 } = require('../controllers/patientController');
 const {
   listClinicalNotes, createClinicalDraft, reviewClinicalNote, amendClinicalNote,
@@ -28,6 +30,10 @@ router.use(protect);
 
 // Get available patient users (users with role "Patient" without profile)
 router.get('/available-users', authorize('Admin', 'Receptionist'), getAvailablePatientUsers);
+
+// Privacy-reduced diagnostic queues for laboratory and radiology staff.
+router.get('/diagnostic-workspace', authorize('Lab Technician', 'Radiology Technician'), getDiagnosticWorkspace);
+router.get('/diagnostic-workspace/:id', authorize('Lab Technician', 'Radiology Technician'), getDiagnosticRecords);
 
 // Heal orphaned patient users — create missing profiles (Admin only)
 router.post('/heal-orphans', authorize('Admin'), async (req, res) => {
@@ -55,7 +61,7 @@ router.post('/heal-orphans', authorize('Admin'), async (req, res) => {
 });
 
 // Patient search autocomplete (lightweight)
-router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Lab Technician'), async (req, res) => {
+router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), async (req, res) => {
   try {
     const { q = '' } = req.query;
     if (!q.trim()) return res.json({ success: true, data: [] });
@@ -112,7 +118,6 @@ router
       'Nurse',
       'Receptionist',
       'Patient',
-      'Lab Technician',
       'Ward Manager',
       'Pharmacist'
     ),
@@ -130,12 +135,12 @@ router
 
 router
   .route('/:id')
-  .get(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Lab Technician', 'Ward Manager', 'Pharmacist'), getPatient)
+  .get(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager', 'Pharmacist'), getPatient)
   .put(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), updatePatient)
   .delete(authorize('Admin'), deletePatient);
 
 // Medical records
-router.get('/:id/medical-records', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Lab Technician'), getPatientMedicalRecords);
+router.get('/:id/medical-records', requirePatientAccess('Admin', 'Doctor', 'Nurse'), getPatientMedicalRecords);
 
 // Appointments
 router.get('/:id/appointments', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientAppointments);
@@ -166,7 +171,7 @@ router.delete('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 
 ], deleteMedicalHistory);
 
 // Lab reports
-router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Technician'), [
+router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'), [
   body('testName').trim().isLength({ min: 2, max: 200 }),
   body('testDate').optional({ nullable: true }).isISO8601().toDate(),
   body('reportDate').optional({ nullable: true }).isISO8601().toDate(),

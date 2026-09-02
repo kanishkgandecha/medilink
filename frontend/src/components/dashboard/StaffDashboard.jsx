@@ -4,6 +4,9 @@ import { useAuth } from '../../context/AuthContext'
 import NurseDashboard from './NurseDashboard'
 import ReceptionistDashboard from './ReceptionistDashboard'
 import PharmacistDashboard from './PharmacistDashboard'
+import { getUserRoleKey } from '../../config/rolePolicy'
+import DiagnosticStaffDashboard from './DiagnosticStaffDashboard'
+import BillingStaffDashboard from './BillingStaffDashboard'
 
 const GenericStaffDashboard = ({ subRole, links }) => (
   <div className="space-y-6">
@@ -28,7 +31,7 @@ const GenericStaffDashboard = ({ subRole, links }) => (
 
 const StaffDashboard = () => {
   const { user } = useAuth()
-  const sub = (user?.subRole || user?.role || '').toLowerCase()
+  const sub = getUserRoleKey(user)
 
   switch (sub) {
     case 'nurse':
@@ -37,17 +40,12 @@ const StaffDashboard = () => {
       return <ReceptionistDashboard />
     case 'pharmacist':
       return <PharmacistDashboard />
-    case 'lab technician':
-      return (
-        <GenericStaffDashboard
-          subRole="Lab Technician"
-          links={[
-            { label: 'Test Reports', path: '/test-reports', description: 'View and upload patient lab reports' },
-            { label: 'Patients', path: '/patients', description: 'Browse patient records' },
-          ]}
-        />
-      )
-    case 'ward manager':
+    case 'lab-technician':
+    case 'radiology-technician':
+      return <DiagnosticStaffDashboard />
+    case 'billing-staff':
+      return <BillingStaffDashboard />
+    case 'ward-manager':
       return (
         <GenericStaffDashboard
           subRole="Ward Manager"

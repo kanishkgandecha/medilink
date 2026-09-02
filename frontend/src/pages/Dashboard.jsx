@@ -8,6 +8,7 @@ import ReceptionistDashboard from '../components/dashboard/ReceptionistDashboard
 import PharmacistDashboard from '../components/dashboard/PharmacistDashboard'
 import StaffDashboard from '../components/dashboard/StaffDashboard'
 import Loader from '../components/common/Loader'
+import { getUserRoleKey, ROLE_LABELS } from '../config/rolePolicy'
 
 const Dashboard = () => {
   const { user, loading } = useAuth()
@@ -26,7 +27,7 @@ const Dashboard = () => {
 
   // Render dashboard based on user role
   const renderDashboard = () => {
-    const role = user.role?.toLowerCase()
+    const role = getUserRoleKey(user)
 
     switch (role) {
       case 'admin':
@@ -48,7 +49,10 @@ const Dashboard = () => {
       case 'pharmacist':
         return <PharmacistDashboard />
 
-      case 'staff':
+      case 'lab-technician':
+      case 'radiology-technician':
+      case 'billing-staff':
+      case 'ward-manager':
         return <StaffDashboard />
 
       default:
@@ -56,7 +60,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <p className="text-red-500 font-semibold mb-2">Invalid User Role</p>
-              <p className="text-gray-500">Role: {user.role}</p>
+              <p className="text-gray-500">Role: {ROLE_LABELS[role] || user.role}</p>
               <p className="text-gray-400 text-sm mt-2">Please contact administrator</p>
             </div>
           </div>

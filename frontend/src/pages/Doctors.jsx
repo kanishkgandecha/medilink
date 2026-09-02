@@ -11,6 +11,9 @@ import StatCard from '../components/common/StatCard'
 import CardPagination, { paginateData, CARDS_PER_PAGE } from '../components/common/CardPagination'
 import PageLayout from '../components/common/PageLayout'
 import { SkeletonDashboard } from '../components/common/SkeletonCard'
+import ScopeBadge from '../components/common/ScopeBadge'
+import ErrorState from '../components/common/ErrorState'
+import { getDoctorsCapability } from '../config/pageCapabilities'
 import * as doctorService from '../services/doctorService'
 import { toast } from 'react-toastify'
 
@@ -31,7 +34,7 @@ const EMPTY_SCHEDULE = {
 }
 
 // ── DoctorCard ────────────────────────────────────────────────────────────────
-const DoctorCard = ({ doc, canManage, onSchedule, onEdit, onDelete, darkMode }) => {
+const DoctorCard = ({ doc, canEdit, canDelete, onSchedule, onEdit, onDelete, darkMode }) => {
   const name     = doc.userId?.name || 'Unknown'
   const email    = doc.userId?.email || ''
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -97,29 +100,35 @@ const DoctorCard = ({ doc, canManage, onSchedule, onEdit, onDelete, darkMode }) 
       </div>
 
       {/* Actions */}
-      {canManage && (
+      {(canEdit || canDelete) && (
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onSchedule(doc)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all
-              ${darkMode ? 'bg-gray-700 text-emerald-400 hover:bg-emerald-900/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
-          >
-            <Calendar className="w-3.5 h-3.5" /> Schedule
-          </button>
-          <button
-            onClick={() => onEdit(doc)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all
-              ${darkMode ? 'bg-gray-700 text-[#2E86DE] hover:bg-blue-900/30' : 'bg-[#EBF5FB] text-[#2E86DE] hover:bg-blue-100'}`}
-          >
-            <Edit className="w-3.5 h-3.5" /> Edit
-          </button>
-          <button
-            onClick={() => onDelete(doc._id)}
-            className={`p-2 rounded-lg transition-all
-              ${darkMode ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          {canEdit && (
+            <>
+              <button
+                onClick={() => onSchedule(doc)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all
+                  ${darkMode ? 'bg-gray-700 text-emerald-400 hover:bg-emerald-900/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+              >
+                <Calendar className="w-3.5 h-3.5" /> Schedule
+              </button>
+              <button
+                onClick={() => onEdit(doc)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all
+                  ${darkMode ? 'bg-gray-700 text-[#2E86DE] hover:bg-blue-900/30' : 'bg-[#EBF5FB] text-[#2E86DE] hover:bg-blue-100'}`}
+              >
+                <Edit className="w-3.5 h-3.5" /> Edit
+              </button>
+            </>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => onDelete(doc._id)}
+              className={`p-2 rounded-lg transition-all
+                ${darkMode ? 'text-red-400 hover:bg-red-900/20' : 'text-red-500 hover:bg-red-50'}`}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -130,10 +139,12 @@ const DoctorCard = ({ doc, canManage, onSchedule, onEdit, onDelete, darkMode }) 
 const Doctors = () => {
   const { darkMode } = useTheme()
   const { user } = useAuth()
-  const canManage = ['Admin', 'Receptionist'].includes(user?.role) || ['Admin', 'Receptionist'].includes(user?.subRole)
+  const capability = getDoctorsCapability(user)
+  const { canCreate, canEdit, canDelete } = capability
 
   const [doctors, setDoctors]             = useState([])
   const [loading, setLoading]             = useState(false)
+  const [fetchError, setFetchError]       = useState(null)
   const [submitting, setSubmitting]       = useState(false)
   const [showAddModal, setShowAddModal]   = useState(false)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
@@ -154,10 +165,11 @@ const Doctors = () => {
 
   const fetchDoctors = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       const data = await doctorService.getAllDoctors({ limit: 200 })
       setDoctors(data.data || [])
-    } catch { toast.error('Failed to fetch doctors') }
+    } catch (err) { setFetchError(err); toast.error('Failed to fetch doctors') }
     finally { setLoading(false) }
   }
 
@@ -249,10 +261,13 @@ const Doctors = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className={`text-2xl font-bold ${textCls}`}>Doctor Management</h1>
-          <p className={`text-sm mt-0.5 ${subCls}`}>Manage doctor profiles and schedules</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className={`text-2xl font-bold ${textCls}`}>{capability.title}</h1>
+            <ScopeBadge label={capability.scope.label} tone={capability.scope.tone} />
+          </div>
+          <p className={`text-sm mt-0.5 ${subCls}`}>{capability.description}</p>
         </div>
-        {canManage && (
+        {canCreate && (
           <button
             onClick={() => { setSelectedDoctor(null); setFormData(EMPTY_FORM); setShowAddModal(true) }}
             className="flex items-center gap-2 px-4 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all active:scale-[0.97]"
@@ -303,12 +318,20 @@ const Doctors = () => {
       </div>
 
       {/* Card grid */}
-      {filtered.length === 0 ? (
+      {fetchError ? (
+        <ErrorState
+          variant={fetchError.response?.status === 403 ? 'denied' : 'error'}
+          message={fetchError.response?.data?.message || 'Check your connection and try again.'}
+          onRetry={fetchDoctors}
+        />
+      ) : filtered.length === 0 ? (
         <div className={`flex flex-col items-center justify-center py-16 rounded-xl border
           ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <UserPlus className="w-10 h-10 text-gray-300 mb-3" />
           <p className={`font-medium ${textCls}`}>No doctors found</p>
-          <p className={`text-sm mt-1 ${subCls}`}>{hasFilters ? 'Try adjusting your filters' : 'Add your first doctor to get started'}</p>
+          <p className={`text-sm mt-1 ${subCls}`}>
+            {hasFilters ? 'Try adjusting your filters' : canCreate ? 'Add your first doctor to get started' : 'Doctors will appear here once added'}
+          </p>
         </div>
       ) : (
         <>
@@ -317,7 +340,8 @@ const Doctors = () => {
               <DoctorCard
                 key={doc._id}
                 doc={doc}
-                canManage={canManage}
+                canEdit={canEdit}
+                canDelete={canDelete}
                 onSchedule={d => { setSelectedDoctor(d); setShowScheduleModal(true) }}
                 onEdit={openEdit}
                 onDelete={id => setConfirmDelete(id)}

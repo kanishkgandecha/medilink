@@ -103,9 +103,9 @@ const LeftPanel = () => (
     />
 
     {/* Floating stat cards */}
-    <GlassCard icon={Users}         value="500+"   label="Active patients"     className="login-float-card-1 top-[20%] right-5 z-20" />
-    <GlassCard icon={CalendarCheck} value="124"    label="Today's bookings"    className="login-float-card-2 top-[55%] right-5 z-20" />
-    <GlassCard icon={Activity}      value="99.8%"  label="System uptime"       className="login-float-card-3 bottom-[16%] right-5 z-20" />
+    <GlassCard icon={Users}         value="Role"   label="Scoped access"        className="login-float-card-1 top-[20%] right-5 z-20" />
+    <GlassCard icon={CalendarCheck} value="Safe"   label="Validated workflows" className="login-float-card-2 top-[55%] right-5 z-20" />
+    <GlassCard icon={Activity}      value="Audit"  label="Traceable changes"    className="login-float-card-3 bottom-[16%] right-5 z-20" />
 
     {/* Main content */}
     <div className="login-panel-in relative z-10 flex flex-col justify-between h-full p-10">
@@ -163,7 +163,7 @@ const LeftPanel = () => (
           {[
             { icon: Heart,  text: 'Patient-centred care management'   },
             { icon: Shield, text: 'Role-based secure access control'  },
-            { icon: Zap,    text: 'Real-time scheduling & billing'    },
+            { icon: Zap,    text: 'Transactional scheduling & billing' },
           ].map(({ icon: Icon, text }) => (
             <div key={text} className="flex items-center gap-3">
               <div
@@ -180,7 +180,7 @@ const LeftPanel = () => (
 
       {/* Footer */}
       <p className="text-blue-400/35 text-xs">
-        © {new Date().getFullYear()} MediLink · Secure · HIPAA-ready
+        © {new Date().getFullYear()} MediLink · Safety-oriented engineering prototype
       </p>
     </div>
   </div>
@@ -447,7 +447,7 @@ const Login = () => {
 
         {/* Trust badge footer */}
         <div className="login-field-in-5 relative z-10 mt-6 flex items-center gap-3 text-[11px] text-gray-300">
-          {['Secure Login', 'HIPAA-ready', 'Role-based Access'].map((t, i) => (
+          {['Secure Login', 'Prototype System', 'Role-based Access'].map((t, i) => (
             <React.Fragment key={t}>
               {i > 0 && <span className="w-1 h-1 rounded-full bg-gray-300/60" />}
               <span>{t}</span>

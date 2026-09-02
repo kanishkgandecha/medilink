@@ -13,6 +13,7 @@ import { changePassword } from '../../services/authService'
 import { toast } from 'react-toastify'
 import logoLight from '../../assets/logo/logo-icon-bg-light.png'
 import logoDark  from '../../assets/logo/logo-icon-bg-dark.png'
+import { getUserRoleKey, ROLE_LABELS } from '../../config/rolePolicy'
 
 // ── Role → nav items ─────────────────────────────────────────────────────────
 const MENUS = {
@@ -66,13 +67,22 @@ const MENUS = {
     { id: 'prescriptions',label: 'Prescriptions',icon: FileText,      path: '/prescriptions'},
     { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'test-reports', label: 'Test Reports', icon: FileText,      path: '/test-reports' },
-    { id: 'patients',     label: 'Patients',     icon: Users,         path: '/patients'     },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'test-reports', label: 'Imaging Reports', icon: FlaskConical, path: '/test-reports' },
+  ],
+  'billing-staff': [
+    { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
+    { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
+    { id: 'billing',      label: 'Billing',      icon: DollarSign,    path: '/billing'      },
+  ],
+  'ward-manager': [
     { id: 'dashboard',    label: 'Dashboard',    icon: Home,          path: '/dashboard'    },
     { id: 'ai-agents',    label: 'AI Agents',    icon: Sparkles,      path: '/ai-agents'    },
     { id: 'wards',        label: 'Wards & Beds', icon: Bed,           path: '/wards'        },
@@ -118,10 +128,16 @@ const ROLE_NOTIFS = {
     { id: 'r1', title: '8 check-ins today',      desc: '3 patients pending arrival',          time: '20m ago', color: 'blue'   },
     { id: 'r2', title: 'Slot freed up',            desc: '1 appointment was cancelled',        time: '1h ago',  color: 'orange' },
   ],
-  'lab technician': [
+  'lab-technician': [
     { id: 'l1', title: '3 tests pending',        desc: 'Reports awaiting processing',         time: '10m ago', color: 'blue'  },
   ],
-  'ward manager': [
+  'radiology-technician': [
+    { id: 'rt1', title: 'Imaging queue', desc: 'Review assigned imaging reports', time: 'Now', color: 'blue' },
+  ],
+  'billing-staff': [
+    { id: 'b1', title: 'Billing workspace', desc: 'Review invoices and payment status', time: 'Now', color: 'emerald' },
+  ],
+  'ward-manager': [
     { id: 'w1', title: 'Ward A at capacity',     desc: 'No beds available — divert patients', time: '30m ago', color: 'red'   },
     { id: 'w2', title: '2 discharges scheduled',  desc: 'Beds free after 2 PM',               time: '1h ago',  color: 'teal'  },
   ],
@@ -160,14 +176,10 @@ const TopNav = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const userRole    = user?.role?.toLowerCase()    || 'patient'
-  const userSubRole = user?.subRole?.toLowerCase() || ''
-  const menuKey     = userRole === 'staff'
-    ? (userSubRole && MENUS[userSubRole] ? userSubRole : 'patient')
-    : userRole
-  const items = MENUS[menuKey] || MENUS.patient
+  const menuKey = getUserRoleKey(user)
+  const items = MENUS[menuKey] || []
 
-  const roleKey        = (user?.subRole || user?.role || '').toLowerCase()
+  const roleKey        = menuKey
   const allNotifs      = ROLE_NOTIFS[roleKey] || FALLBACK_NOTIFS
   const visibleNotifs  = allNotifs.filter(n => !dismissed.includes(n.id))
   const notifCount     = visibleNotifs.length
@@ -207,7 +219,7 @@ const TopNav = () => {
   }
 
   const initials    = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'
-  const displayRole = user?.subRole || user?.role || 'Staff'
+  const displayRole = ROLE_LABELS[menuKey] || user?.subRole || user?.role || 'Staff'
   const logo        = darkMode ? logoDark : logoLight
 
   const inputCls = `w-full px-4 py-2.5 rounded-xl border text-sm pr-10
@@ -341,6 +353,10 @@ const TopNav = () => {
                       <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-[#2C3E50]'}`}>
                         Notifications
                       </span>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide leading-none
+                        ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                        Demo
+                      </span>
                       {notifCount > 0 && (
                         <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#2E86DE] text-white leading-none">
                           {notifCount}
@@ -357,6 +373,10 @@ const TopNav = () => {
                       </button>
                     )}
                   </div>
+
+                  <p className={`px-4 pt-2 pb-1 text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Example notifications for this role — not generated from live system events.
+                  </p>
 
                   {/* Notif list */}
                   <div className="max-h-72 overflow-y-auto">
@@ -376,7 +396,7 @@ const TopNav = () => {
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-[#2C3E50]'}`}>{n.title}</p>
                           <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-[#7B8A8B]'}`}>{n.desc}</p>
-                          <p className={`text-[10px] mt-1 font-medium ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>{n.time}</p>
+                          <p className={`text-[10px] mt-1 font-medium ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>Example · {n.time}</p>
                         </div>
                         <button
                           onClick={() => dismissNotif(n.id)}
