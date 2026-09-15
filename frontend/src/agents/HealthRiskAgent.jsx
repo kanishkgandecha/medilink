@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { Activity, X, Loader2, AlertTriangle, CheckCircle2, TrendingUp, RotateCcw, ArrowRight, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { assessHealthRisk } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 import HumanReviewNotice from '../components/ai/HumanReviewNotice'
+import useModalA11y from '../hooks/useModalA11y'
 
 // ─── Risk scoring ─────────────────────────────────────────────────────────────
 const CHRONIC_CONDITIONS = [
@@ -86,6 +88,8 @@ const HealthRiskAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const [symptoms, setSymptoms] = useState([])
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   const toggleChronic = (id) =>
     setChronic(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
@@ -134,19 +138,24 @@ const HealthRiskAgent = ({ open, onClose, showTechnicalSource = true }) => {
 
   const canContinue = step === 0 ? (parseInt(age) >= 1 && parseInt(age) <= 120) : true
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-600 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <Activity className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">Health Risk Predictor</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Transparent Rules</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <Activity className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+            <h2 id={titleId} className="font-bold text-white text-base">Health Risk Predictor</h2>
+            <span className="hidden sm:inline text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Transparent Rules</span>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
+          <button onClick={onClose} aria-label="Close health risk predictor" className="text-white/70 hover:text-white transition p-1 flex-shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -384,7 +393,8 @@ const HealthRiskAgent = ({ open, onClose, showTechnicalSource = true }) => {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -70,4 +70,17 @@ describe('CardPagination', () => {
     fireEvent.click(screen.getByText('2'))
     expect(onPage).toHaveBeenCalledWith(2)
   })
+
+  it('gives Previous/Next controls accessible names and marks the active page', () => {
+    renderPagination({ total: CARDS_PER_PAGE * 3, page: 2, onPage: vi.fn() })
+    expect(screen.getByRole('button', { name: 'Previous page' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('button', { name: 'Page 1' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('exposes the control group as a labelled navigation landmark', () => {
+    renderPagination({ total: CARDS_PER_PAGE * 3, page: 1, onPage: vi.fn() })
+    expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
+  })
 })

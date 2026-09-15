@@ -1,6 +1,9 @@
-import { afterEach } from 'vitest'
+import { afterEach, expect } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
+import { toHaveNoViolations } from 'jest-axe'
+
+expect.extend(toHaveNoViolations)
 
 // Without this, React Testing Library only auto-unmounts between tests when
 // vitest's `globals: true` is set (so its afterEach hook is on globalThis).

@@ -301,6 +301,13 @@ const FloatingChatbot = () => {
     if (open) setTimeout(() => inputRef.current?.focus(), 200)
   }, [open])
 
+  useEffect(() => {
+    if (!open) return undefined
+    const handler = (e) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
+
   // ── Message helpers ──────────────────────────────────────────────────────
 
   const addBotMsg = useCallback((text, widget = null) => {
@@ -603,7 +610,7 @@ const FloatingChatbot = () => {
     <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 flex-shrink-0">
       <div className="flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0">
-          <img src={logoIconBgLight} alt="MediLink" className="w-full h-full object-cover" draggable={false} />
+          <img src={logoIconBgLight} alt="" className="w-full h-full object-cover" draggable={false} />
         </div>
         <div>
           <p className="text-white text-sm font-bold leading-none">MediLink Assistant</p>
@@ -619,25 +626,28 @@ const FloatingChatbot = () => {
           <button
             onClick={() => setExpanded(v => !v)}
             title={expanded ? 'Minimize' : 'Expand'}
+            aria-label={expanded ? 'Minimize assistant' : 'Expand assistant'}
             className="text-white/70 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10"
           >
-            {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {expanded ? <Minimize2 className="w-4 h-4" aria-hidden="true" /> : <Maximize2 className="w-4 h-4" aria-hidden="true" />}
           </button>
         )}
         {booking.step !== STEPS.IDLE && (
           <button
             onClick={cancelBookingFromHeader}
             title="Cancel booking"
+            aria-label="Cancel booking"
             className="text-white/70 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
         <button
           onClick={() => setOpen(false)}
+          aria-label="Close assistant"
           className="text-white/70 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -659,7 +669,7 @@ const FloatingChatbot = () => {
   )
 
   const messageList = (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" role="log" aria-live="polite" aria-label="Conversation with MediLink Assistant">
       {messages.map(msg => (
         <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
           {msg.role === 'bot' && (
@@ -748,6 +758,9 @@ const FloatingChatbot = () => {
 
       {/* ── Mobile: slide-up sheet ───────────────────────────────────────────── */}
       <div
+        role="dialog"
+        aria-label="MediLink Assistant"
+        aria-hidden={!open}
         className={`fixed inset-x-0 bottom-0 z-[60] flex flex-col md:hidden overflow-hidden
           rounded-t-[28px] transition-transform duration-300 ease-out will-change-transform
           ${sheetSlid && open ? 'translate-y-0' : 'translate-y-full'}
@@ -774,7 +787,9 @@ const FloatingChatbot = () => {
             ${dm ? 'border-gray-800' : 'border-gray-100'}`}
           style={{ paddingTop: '12px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
+          <label htmlFor="chatbot-input-mobile" className="sr-only">Message to MediLink Assistant</label>
           <input
+            id="chatbot-input-mobile"
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -787,12 +802,13 @@ const FloatingChatbot = () => {
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || typing}
+            aria-label="Send message"
             className="w-10 h-10 flex items-center justify-center rounded-xl
               bg-gradient-to-br from-blue-600 to-cyan-600 text-white
               disabled:opacity-40 hover:from-blue-700 hover:to-cyan-700
               transition-all active:scale-95 flex-shrink-0 shadow-sm shadow-blue-500/30"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -800,6 +816,8 @@ const FloatingChatbot = () => {
       {/* ── Desktop: floating panel (unchanged behavior) ─────────────────────── */}
       {open && (
         <div
+          role="dialog"
+          aria-label="MediLink Assistant"
           className={`fixed bottom-24 right-6 z-50 hidden md:flex flex-col rounded-2xl border overflow-hidden transition-all duration-300
             ${dm ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}
           style={desktopPanelStyle}
@@ -812,7 +830,9 @@ const FloatingChatbot = () => {
           {/* Desktop input */}
           <div className={`flex items-center gap-2.5 px-3.5 py-3 border-t flex-shrink-0
             ${dm ? 'border-gray-800' : 'border-gray-100'}`}>
+            <label htmlFor="chatbot-input-desktop" className="sr-only">Message to MediLink Assistant</label>
             <input
+              id="chatbot-input-desktop"
               ref={!isMobile ? inputRef : undefined}
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -825,12 +845,13 @@ const FloatingChatbot = () => {
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || typing}
+              aria-label="Send message"
               className="w-10 h-10 flex items-center justify-center rounded-xl
                 bg-gradient-to-br from-blue-600 to-cyan-600 text-white
                 disabled:opacity-40 hover:from-blue-700 hover:to-cyan-700
                 transition-all active:scale-95 flex-shrink-0 shadow-sm shadow-blue-500/30"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -846,14 +867,16 @@ const FloatingChatbot = () => {
         <button
           onClick={() => setOpen(v => !v)}
           title="MediLink Assistant"
+          aria-label={open ? 'Close MediLink Assistant' : 'Open MediLink Assistant'}
+          aria-expanded={open}
           className={`relative w-14 h-14 rounded-full flex items-center justify-center
             transition-all duration-300 hover:scale-110 active:scale-95
             ${open ? 'bg-gradient-to-br from-gray-600 to-gray-700' : 'bg-[#2E86DE]'}`}
           style={{ boxShadow: open ? '0 8px 32px rgba(0,0,0,0.35)' : '0 8px 32px rgba(46,134,222,0.55)' }}
         >
           {open
-            ? <X className="w-6 h-6 text-white" />
-            : <img src={logoIconBgLight} alt="MediLink Assistant" className="w-8 h-8 rounded-xl object-cover" draggable={false} />
+            ? <X className="w-6 h-6 text-white" aria-hidden="true" />
+            : <img src={logoIconBgLight} alt="" className="w-8 h-8 rounded-xl object-cover" draggable={false} />
           }
         </button>
       </div>

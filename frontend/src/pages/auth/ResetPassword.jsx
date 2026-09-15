@@ -121,7 +121,7 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen flex bg-white animate-enter">
       {/* Left panel */}
-      <div className="w-[460px] flex-shrink-0 flex flex-col">
+      <div className="hidden lg:flex w-[460px] flex-shrink-0 flex-col">
         <LeftPanel />
       </div>
 
@@ -170,10 +170,10 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     onClick={() => setShowPw(v => !v)}
-                    tabIndex={-1}
+                    aria-label={showPw ? 'Hide password' : 'Show password'}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPw ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                   </button>
                 </FloatField>
 
@@ -187,10 +187,10 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirm(v => !v)}
-                    tabIndex={-1}
+                    aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirm ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                   </button>
                 </FloatField>
 

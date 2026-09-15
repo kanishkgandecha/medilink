@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Search, Briefcase, User, Phone, Mail } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { formatINR } from '../../utils/format'
 
 const StaffList = ({ staff, onStaffSelect }) => {
   const { darkMode } = useTheme()
@@ -61,9 +62,13 @@ const StaffList = ({ staff, onStaffSelect }) => {
           <div
             key={member._id}
             onClick={() => onStaffSelect(member)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStaffSelect(member) } }}
+            aria-label={`View details for ${member.name}`}
             className={`p-4 rounded-lg border cursor-pointer transition ${
-              darkMode 
-                ? 'border-gray-700 bg-gray-800 hover:bg-gray-750' 
+              darkMode
+                ? 'border-gray-700 bg-gray-800 hover:bg-gray-750'
                 : 'border-gray-200 bg-white hover:shadow-lg'
             }`}
           >
@@ -103,21 +108,27 @@ const StaffList = ({ staff, onStaffSelect }) => {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">Salary:</span>
                 <span className="font-semibold text-green-600">
-                  ${member.salary.toLocaleString()}
+                  {formatINR(member.salary)}
                 </span>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex space-x-2">
-              <button className={`flex-1 flex items-center justify-center space-x-1 py-2 rounded-lg border ${
+              <button
+                aria-label={`Call ${member.name}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`flex-1 flex items-center justify-center space-x-1 py-2 rounded-lg border ${
                 darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
               } transition text-sm`}>
-                <Phone className="w-4 h-4" />
+                <Phone className="w-4 h-4" aria-hidden="true" />
               </button>
-              <button className={`flex-1 flex items-center justify-center space-x-1 py-2 rounded-lg border ${
+              <button
+                aria-label={`Email ${member.name}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`flex-1 flex items-center justify-center space-x-1 py-2 rounded-lg border ${
                 darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
               } transition text-sm`}>
-                <Mail className="w-4 h-4" />
+                <Mail className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>

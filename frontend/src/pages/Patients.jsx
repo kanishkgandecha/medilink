@@ -14,6 +14,7 @@ import PageLayout from '../components/common/PageLayout'
 import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
 import { getPatientsCapability } from '../config/pageCapabilities'
+import { formatEnumLabel } from '../utils/format'
 
 const EMPTY_FORM = {
   // User fields (only on create)
@@ -52,7 +53,7 @@ const PatientCard = ({ patient, canEdit, canDelete, onView, onMedical, onEdit, o
         </div>
         {blood && (
           <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 flex-shrink-0">
-            {blood}
+            {formatEnumLabel(blood)}
           </span>
         )}
       </div>
@@ -103,8 +104,9 @@ const PatientCard = ({ patient, canEdit, canDelete, onView, onMedical, onEdit, o
             onClick={() => onEdit(patient)}
             className={`p-1.5 rounded-lg transition-all text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
             title="Edit"
+            aria-label={`Edit ${name}`}
           >
-            <Edit className="w-3.5 h-3.5" />
+            <Edit className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         )}
         {canDelete && (
@@ -112,8 +114,9 @@ const PatientCard = ({ patient, canEdit, canDelete, onView, onMedical, onEdit, o
             onClick={() => onDelete(patient._id)}
             className="p-1.5 rounded-lg transition-all text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
             title="Archive"
+            aria-label={`Archive ${name}`}
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         )}
       </div>

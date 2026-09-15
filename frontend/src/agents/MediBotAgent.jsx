@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Send, Bot, User, ArrowRight, Phone, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { chatWithAssistant } from '../services/aiService'
 import { resolveSourceDisplay } from '../config/aiSourceTaxonomy'
+import useModalA11y from '../hooks/useModalA11y'
 
 const INITIAL_QUICK = [
   'Book an appointment',
@@ -22,6 +24,8 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource
   const [history, setHistory] = useState([])
   const endRef = useRef(null)
   const inputRef = useRef(null)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   useEffect(() => {
     if (open) {
@@ -88,32 +92,37 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
 
         {/* Header */}
         <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <Bot className="w-4 h-4 text-white" aria-hidden="true" />
             </div>
-            <div>
-              <p className="text-white text-sm font-bold leading-none">MediBot</p>
+            <div className="min-w-0">
+              <p id={titleId} className="text-white text-sm font-bold leading-none">MediBot</p>
               <div className="flex items-center gap-1 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <p className="text-blue-100 text-[10px]">Guidance and navigation assistant</p>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                <p className="text-blue-100 text-[10px] truncate">Guidance and navigation assistant</p>
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
+          <button onClick={onClose} aria-label="Close MediBot" className="text-white/70 hover:text-white transition p-1 flex-shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" role="log" aria-live="polite" aria-label="Conversation with MediBot">
           {messages.map(msg => (
             <div key={msg.id} className={`flex gap-2 ${msg.from === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.from === 'bot' && (
@@ -161,12 +170,12 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource
           ))}
 
           {typing && (
-            <div className="flex gap-2">
+            <div className="flex gap-2" role="status" aria-label="MediBot is typing">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-3.5 h-3.5 text-white" />
+                <Bot className="w-3.5 h-3.5 text-white" aria-hidden="true" />
               </div>
               <div className="px-3 py-2.5 rounded-2xl rounded-tl-sm bg-gray-100 dark:bg-gray-800">
-                <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" aria-hidden="true" />
               </div>
             </div>
           )}
@@ -190,7 +199,9 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource
 
         {/* Input */}
         <div className="flex items-center gap-2 px-3 py-2.5 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+          <label htmlFor="medibot-input" className="sr-only">Message to MediBot</label>
           <input
+            id="medibot-input"
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -201,13 +212,15 @@ const MediBotAgent = ({ open, onClose, onOpenSymptomChecker, showTechnicalSource
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || typing}
+            aria-label="Send message"
             className="w-8 h-8 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white disabled:opacity-40 hover:from-blue-700 hover:to-cyan-700 transition active:scale-95"
           >
             <Send className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

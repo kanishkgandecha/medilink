@@ -257,13 +257,17 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
           {/* Patient search (non-patient roles only) */}
           {!isPatient && (
             <div className="relative" ref={suggestionRef}>
-              <label className={lbl}>Search Patient *</label>
+              <label htmlFor="patient-search-input" className={lbl}>Search Patient *</label>
               <div className={`relative flex items-center rounded-lg border ${
                 darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
               }`}>
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 shrink-0" />
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 shrink-0" aria-hidden="true" />
                 <input
+                  id="patient-search-input"
                   type="text"
+                  role="combobox"
+                  aria-expanded={showSuggestions}
+                  aria-autocomplete="list"
                   value={patientQuery}
                   onChange={e => handlePatientQuery(e.target.value)}
                   onFocus={() => patientQuery && setShowSuggestions(true)}
@@ -273,8 +277,8 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
                   }`}
                 />
                 {(patientQuery || patientSelected) && (
-                  <button onClick={clearPatient} className="absolute right-3 text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
+                  <button onClick={clearPatient} aria-label="Clear patient selection" className="absolute right-3 text-gray-400 hover:text-gray-600">
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                 )}
               </div>

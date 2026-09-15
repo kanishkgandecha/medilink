@@ -198,6 +198,8 @@ const FloatField = ({ label, name, type = 'text', value, onChange, error, autoCo
         onChange={onChange}
         placeholder=" "
         autoComplete={autoComplete}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : undefined}
         className={`peer block w-full px-4 pt-6 pb-2 text-sm rounded-xl border text-gray-900
           focus:outline-none transition-all duration-200
           ${children ? 'pr-11' : ''}
@@ -223,8 +225,8 @@ const FloatField = ({ label, name, type = 'text', value, onChange, error, autoCo
       {children}
     </div>
     {error && (
-      <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1.5 pl-0.5">
-        <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
+      <p id={`${name}-error`} role="alert" className="mt-1.5 text-xs text-red-500 flex items-center gap-1.5 pl-0.5">
+        <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" aria-hidden="true" />
         {error}
       </p>
     )}
@@ -308,7 +310,7 @@ const Login = () => {
             <div className="absolute inset-0 rounded-2xl bg-blue-500/20 blur-lg scale-110" />
             <img
               src={logoIconBgLight}
-              alt="MediLink"
+              alt=""
               className="relative w-14 h-14 rounded-2xl object-contain"
               draggable={false}
             />
@@ -366,10 +368,10 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
-                  tabIndex={-1}
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
                 >
-                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPw ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                 </button>
               </FloatField>
             </div>

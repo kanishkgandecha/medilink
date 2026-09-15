@@ -249,6 +249,11 @@ const TestReports = () => {
               key={report._id || i}
               className={`${card} p-5 cursor-pointer hover:border-blue-400 transition-all`}
               onClick={() => setSelectedReport(selectedReport?._id === report._id ? null : report)}
+              role="button"
+              tabIndex={0}
+              aria-expanded={selectedReport?._id === report._id || selectedReport === report}
+              aria-label={`${report.testName || 'Test report'}, ${(selectedReport?._id === report._id || selectedReport === report) ? 'collapse' : 'expand'} details`}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedReport(selectedReport?._id === report._id ? null : report) } }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">

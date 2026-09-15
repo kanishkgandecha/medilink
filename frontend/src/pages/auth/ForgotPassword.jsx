@@ -85,7 +85,7 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen flex bg-white animate-enter">
       {/* Left panel */}
-      <div className="w-[460px] flex-shrink-0 flex flex-col">
+      <div className="hidden lg:flex w-[460px] flex-shrink-0 flex-col">
         <LeftPanel />
       </div>
 

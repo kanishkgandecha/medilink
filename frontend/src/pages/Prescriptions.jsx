@@ -317,6 +317,11 @@ const Prescriptions = () => {
                     <div
                       className={`p-4 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50'} rounded-xl transition-colors`}
                       onClick={() => setSelected(isExpanded ? null : rx)}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={isExpanded}
+                      aria-label={`Prescription ${rx.prescriptionId}, ${isExpanded ? 'collapse' : 'expand'} details`}
+                      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setSelected(isExpanded ? null : rx) } }}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
@@ -367,7 +372,7 @@ const Prescriptions = () => {
                             Cancel
                           </button>
                         )}
-                        <Eye className={`w-4 h-4 transition-transform ${isExpanded ? 'text-blue-500 rotate-0' : 'text-gray-400'}`} />
+                        <Eye className={`w-4 h-4 transition-transform ${isExpanded ? 'text-blue-500 rotate-0' : 'text-gray-400'}`} aria-hidden="true" />
                       </div>
                     </div>
 

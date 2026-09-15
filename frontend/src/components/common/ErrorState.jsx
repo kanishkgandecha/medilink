@@ -19,8 +19,8 @@ const ErrorState = ({ message, onRetry, variant = 'error', title, className = ''
     : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'
 
   return (
-    <div className={`${card} border rounded-xl py-16 px-6 text-center ${className}`}>
-      <Icon className={`w-10 h-10 mx-auto mb-3 ${isDenied ? 'text-amber-500' : 'text-red-500'}`} />
+    <div role="alert" className={`${card} border rounded-xl py-16 px-6 text-center ${className}`}>
+      <Icon className={`w-10 h-10 mx-auto mb-3 ${isDenied ? 'text-amber-500' : 'text-red-500'}`} aria-hidden="true" />
       <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {title || (isDenied ? 'You don’t have access to this data' : 'Couldn’t load this page')}
       </p>

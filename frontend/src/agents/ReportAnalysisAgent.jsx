@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { FlaskConical, Sparkles, Loader2, X, CheckCircle2, AlertTriangle, Clock, RotateCcw, FileText, Share2, ChevronDown } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { analyzeReport } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 import HumanReviewNotice from '../components/ai/HumanReviewNotice'
 import { resolveSourceDisplay } from '../config/aiSourceTaxonomy'
+import useModalA11y from '../hooks/useModalA11y'
 
 const STATUS_STYLE = {
   Normal:     { text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', icon: CheckCircle2 },
@@ -44,6 +46,8 @@ const ReportAnalysisAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   const resetState = () => {
     setReportText('')
@@ -109,19 +113,24 @@ const ReportAnalysisAgent = ({ open, onClose, showTechnicalSource = true }) => {
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-600 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <FlaskConical className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">AI Report Analysis</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Submitted Values Only</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <FlaskConical className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+            <h2 id={titleId} className="font-bold text-white text-base">AI Report Analysis</h2>
+            <span className="hidden sm:inline text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">Submitted Values Only</span>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1">
+          <button onClick={onClose} aria-label="Close report analysis" className="text-white/70 hover:text-white transition p-1 flex-shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -280,7 +289,8 @@ const ReportAnalysisAgent = ({ open, onClose, showTechnicalSource = true }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -772,9 +772,11 @@ const Billing = () => {
               <summary className={`text-xs cursor-pointer select-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}>
                 + Add custom item (not in database)
               </summary>
-              <div className="grid grid-cols-12 gap-2 mt-2">
-                <div className="col-span-5">
+              <div className="grid grid-cols-2 sm:grid-cols-12 gap-2 mt-2">
+                <div className="col-span-2 sm:col-span-5">
+                  <label htmlFor="custom-item-name-compact" className="sr-only">Item name</label>
                   <input
+                    id="custom-item-name-compact"
                     type="text"
                     value={newItem.description}
                     onChange={e => setNewItem(it => ({ ...it, description: e.target.value }))}
@@ -782,8 +784,10 @@ const Billing = () => {
                     className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1 sm:col-span-2">
+                  <label htmlFor="custom-item-qty-compact" className="sr-only">Quantity</label>
                   <input
+                    id="custom-item-qty-compact"
                     type="number" min="1"
                     value={newItem.quantity}
                     onChange={e => setNewItem(it => ({ ...it, quantity: parseInt(e.target.value) || 1 }))}
@@ -791,8 +795,10 @@ const Billing = () => {
                     className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                   />
                 </div>
-                <div className="col-span-3">
+                <div className="col-span-1 sm:col-span-3">
+                  <label htmlFor="custom-item-price-compact" className="sr-only">Price in rupees</label>
                   <input
+                    id="custom-item-price-compact"
                     type="number" min="0" step="0.01"
                     value={newItem.unitPrice}
                     onChange={e => setNewItem(it => ({ ...it, unitPrice: parseFloat(e.target.value) || 0 }))}
@@ -800,12 +806,13 @@ const Billing = () => {
                     className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                   />
                 </div>
-                <div className="col-span-2 flex items-center">
+                <div className="col-span-2 sm:col-span-2 flex items-center">
                   <button
                     onClick={addItem}
+                    aria-label="Add item"
                     className="w-full py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-xs font-semibold"
                   >
-                    <Plus className="w-4 h-4 mx-auto" />
+                    <Plus className="w-4 h-4 mx-auto" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -814,10 +821,11 @@ const Billing = () => {
         ) : (
           <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-900/30' : 'border-gray-200 bg-gray-50'}`}>
             <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Add Item</p>
-            <div className="grid grid-cols-12 gap-2">
-              <div className="col-span-4">
-                <label className="block text-xs text-gray-500 mb-1">Service / Item</label>
+            <div className="grid grid-cols-2 sm:grid-cols-12 gap-2">
+              <div className="col-span-2 sm:col-span-4">
+                <label htmlFor="billing-item-template" className="block text-xs text-gray-500 mb-1">Service / Item</label>
                 <select
+                  id="billing-item-template"
                   value={newItem.description}
                   onChange={e => {
                     const tmpl = SERVICE_TEMPLATES.find(t => t.name === e.target.value)
@@ -834,9 +842,10 @@ const Billing = () => {
                   {SERVICE_TEMPLATES.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
                 </select>
               </div>
-              <div className="col-span-3">
-                <label className="block text-xs text-gray-500 mb-1">Custom name</label>
+              <div className="col-span-2 sm:col-span-3">
+                <label htmlFor="billing-item-custom-name" className="block text-xs text-gray-500 mb-1">Custom name</label>
                 <input
+                  id="billing-item-custom-name"
                   type="text"
                   value={newItem.description}
                   onChange={e => setNewItem(it => ({ ...it, description: e.target.value }))}
@@ -844,30 +853,33 @@ const Billing = () => {
                   className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                 />
               </div>
-              <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">Qty</label>
+              <div className="col-span-1 sm:col-span-2">
+                <label htmlFor="billing-item-qty" className="block text-xs text-gray-500 mb-1">Qty</label>
                 <input
+                  id="billing-item-qty"
                   type="number" min="1"
                   value={newItem.quantity}
                   onChange={e => setNewItem(it => ({ ...it, quantity: parseInt(e.target.value) || 1 }))}
                   className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                 />
               </div>
-              <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">Price (₹)</label>
+              <div className="col-span-1 sm:col-span-2">
+                <label htmlFor="billing-item-price" className="block text-xs text-gray-500 mb-1">Price (₹)</label>
                 <input
+                  id="billing-item-price"
                   type="number" min="0" step="0.01"
                   value={newItem.unitPrice}
                   onChange={e => setNewItem(it => ({ ...it, unitPrice: parseFloat(e.target.value) || 0 }))}
                   className={`w-full px-3 py-2 rounded-xl border text-xs outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all duration-200 ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900 hover:border-gray-300'}`}
                 />
               </div>
-              <div className="col-span-1 flex items-end">
+              <div className="col-span-2 sm:col-span-1 flex items-end">
                 <button
                   onClick={addItem}
+                  aria-label="Add item"
                   className="w-full py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-xs font-semibold"
                 >
-                  <Plus className="w-4 h-4 mx-auto" />
+                  <Plus className="w-4 h-4 mx-auto" aria-hidden="true" />
                 </button>
               </div>
             </div>

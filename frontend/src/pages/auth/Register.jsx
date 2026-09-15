@@ -202,6 +202,8 @@ const FloatField = ({ label, name, type = 'text', value, onChange, error, autoCo
         onChange={onChange}
         placeholder=" "
         autoComplete={autoComplete}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : undefined}
         className={`peer block w-full px-4 pt-6 pb-2 text-sm rounded-xl border text-gray-900
           focus:outline-none transition-all duration-200
           ${children ? 'pr-11' : ''}
@@ -227,8 +229,8 @@ const FloatField = ({ label, name, type = 'text', value, onChange, error, autoCo
       {children}
     </div>
     {error && (
-      <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1.5 pl-0.5">
-        <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
+      <p id={`${name}-error`} role="alert" className="mt-1.5 text-xs text-red-500 flex items-center gap-1.5 pl-0.5">
+        <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" aria-hidden="true" />
         {error}
       </p>
     )}
@@ -408,7 +410,7 @@ const Register = () => {
             <div className="absolute inset-0 rounded-2xl bg-blue-500/20 blur-lg scale-110" />
             <img
               src={logoIconBgLight}
-              alt="MediLink"
+              alt=""
               className="relative w-14 h-14 rounded-2xl object-contain"
               draggable={false}
             />
@@ -606,11 +608,11 @@ const Register = () => {
                   >
                     <button
                       type="button"
-                      tabIndex={-1}
                       onClick={() => setShowPw(p => ({ ...p, password: !p.password }))}
+                      aria-label={showPw.password ? 'Hide password' : 'Show password'}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
                     >
-                      {showPw.password ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPw.password ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                     </button>
                   </FloatField>
                   <PasswordStrength password={formData.password} />
@@ -628,15 +630,18 @@ const Register = () => {
                   >
                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                       {passwordsMatch && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" aria-hidden="true" />
+                          <span className="sr-only">Passwords match</span>
+                        </>
                       )}
                       <button
                         type="button"
-                        tabIndex={-1}
                         onClick={() => setShowPw(p => ({ ...p, confirmPassword: !p.confirmPassword }))}
+                        aria-label={showPw.confirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                         className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
                       >
-                        {showPw.confirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPw.confirmPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                       </button>
                     </div>
                   </FloatField>

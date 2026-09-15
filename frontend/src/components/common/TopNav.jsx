@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useId } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Home, Users, UserPlus, Calendar, Bed, Pill,
@@ -14,6 +14,7 @@ import { toast } from 'react-toastify'
 import logoLight from '../../assets/logo/logo-icon-bg-light.png'
 import logoDark  from '../../assets/logo/logo-icon-bg-dark.png'
 import { getUserRoleKey, ROLE_LABELS } from '../../config/rolePolicy'
+import useModalA11y from '../../hooks/useModalA11y'
 
 // ── Role → nav items ─────────────────────────────────────────────────────────
 const MENUS = {
@@ -166,14 +167,25 @@ const TopNav = () => {
 
   const profileRef = useRef(null)
   const notifRef   = useRef(null)
+  const pwTitleId  = useId()
+  const pwPanelRef = useModalA11y(showPwModal, () => setShowPwModal(false))
 
   useEffect(() => {
     const handler = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false)
       if (notifRef.current   && !notifRef.current.contains(e.target))   setNotifOpen(false)
     }
+    const escHandler = (e) => {
+      if (e.key !== 'Escape') return
+      setProfileOpen(false)
+      setNotifOpen(false)
+    }
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('keydown', escHandler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', escHandler)
+    }
   }, [])
 
   const menuKey = getUserRoleKey(user)
@@ -273,7 +285,7 @@ const TopNav = () => {
             className={`flex items-center gap-2 px-4 py-[7px] rounded-full flex-shrink-0
               transition-all duration-150 ${logoPill}`}
           >
-            <img src={logo} alt="MediLink"
+            <img src={logo} alt=""
               className="w-[18px] h-[18px] rounded object-contain flex-shrink-0" draggable={false} />
             <span className={`text-[13px] font-bold tracking-tight ${darkMode ? 'text-white' : 'text-[#1e293b]'}`}>
               MediLink
@@ -306,35 +318,40 @@ const TopNav = () => {
             {/* Settings pill */}
             <button
               onClick={() => navigate('/settings')}
+              aria-label="Settings"
               className={`flex items-center gap-1.5 px-3 py-[7px] rounded-full
                 text-[13px] font-medium transition-all duration-150 ${iconPill}`}
             >
-              <Settings className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={1.75} />
+              <Settings className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span className="hidden md:block">Settings</span>
             </button>
 
             {/* Dark/light toggle */}
             <button
               onClick={toggleDarkMode}
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={darkMode ? 'Light mode' : 'Dark mode'}
               className={`w-8 h-8 rounded-full flex items-center justify-center
                 transition-all duration-150 flex-shrink-0 ${iconPill}`}
             >
-              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              {darkMode ? <Sun className="w-3.5 h-3.5" aria-hidden="true" /> : <Moon className="w-3.5 h-3.5" aria-hidden="true" />}
             </button>
 
             {/* Notifications */}
             <div className="relative flex-shrink-0" ref={notifRef}>
               <button
                 onClick={() => { setNotifOpen(v => !v); setProfileOpen(false) }}
+                aria-label={`Notifications${notifCount > 0 ? ` (${notifCount} unread)` : ''}`}
+                aria-haspopup="true"
+                aria-expanded={notifOpen}
                 title="Notifications"
                 className={`w-8 h-8 rounded-full flex items-center justify-center
                   transition-all duration-150 flex-shrink-0 ${iconPill}`}
               >
                 <span className="relative block">
-                  <Bell className="w-3.5 h-3.5" />
+                  <Bell className="w-3.5 h-3.5" aria-hidden="true" />
                   {notifCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full
                       bg-[#2E86DE] border-2 border-white dark:border-gray-800
                       flex items-center justify-center text-white text-[9px] font-bold leading-none">
                       {notifCount > 9 ? '9+' : notifCount}
@@ -400,10 +417,11 @@ const TopNav = () => {
                         </div>
                         <button
                           onClick={() => dismissNotif(n.id)}
+                          aria-label={`Dismiss notification: ${n.title}`}
                           className={`p-1 rounded-lg flex-shrink-0 transition-colors
                             ${darkMode ? 'text-gray-600 hover:text-gray-400 hover:bg-gray-700' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       </div>
                     ))}
@@ -416,6 +434,9 @@ const TopNav = () => {
             <div className="relative flex-shrink-0" ref={profileRef}>
               <button
                 onClick={() => { setProfileOpen(v => !v); setNotifOpen(false) }}
+                aria-label={`Account menu for ${user?.name || 'your account'}`}
+                aria-haspopup="true"
+                aria-expanded={profileOpen}
                 className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2E86DE] to-[#1ABC9C]
                   flex items-center justify-center text-white text-[11px] font-bold
                   shadow-[0_2px_8px_rgba(46,134,222,0.35)] hover:shadow-[0_4px_14px_rgba(46,134,222,0.45)]
@@ -486,23 +507,30 @@ const TopNav = () => {
 
       {/* ── Change Password Modal ────────────────────────────────────────────── */}
       {showPwModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={pwTitleId}
+        >
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
             onClick={() => setShowPwModal(false)}
           />
           <div
-            className={`relative w-full max-w-md rounded-2xl shadow-2xl
+            ref={pwPanelRef}
+            tabIndex={-1}
+            className={`relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl shadow-2xl
               ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
             style={{ boxShadow: '0 32px 64px rgba(44,62,80,0.2)' }}
           >
-            <div className={`px-6 pt-6 pb-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-              <div className="flex items-center gap-3">
+            <div className={`px-6 pt-6 pb-4 border-b flex items-start justify-between gap-3 flex-shrink-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 text-[#2E86DE]" />
+                  <Lock className="w-4 h-4 text-[#2E86DE]" aria-hidden="true" />
                 </div>
-                <div>
-                  <h2 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                <div className="min-w-0">
+                  <h2 id={pwTitleId} className={`text-base font-bold ${darkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                     Change Password
                   </h2>
                   <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -510,30 +538,41 @@ const TopNav = () => {
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowPwModal(false)}
+                aria-label="Close dialog"
+                className={`p-1.5 rounded-lg flex-shrink-0 transition-colors
+                  ${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-4 overflow-y-auto scrollbar-thin">
               {[
                 { key: 'current', label: 'Current Password',    placeholder: 'Enter current password' },
                 { key: 'next',    label: 'New Password',         placeholder: 'At least 6 characters'  },
                 { key: 'confirm', label: 'Confirm New Password', placeholder: 'Re-enter new password'  },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
-                  <label className={`block text-xs font-semibold mb-1.5 uppercase tracking-wide
+                  <label htmlFor={`pw-${key}`} className={`block text-xs font-semibold mb-1.5 uppercase tracking-wide
                     ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     {label}
                   </label>
                   <div className="relative">
                     <input
+                      id={`pw-${key}`}
                       type={showPw[key] ? 'text' : 'password'}
                       value={pwForm[key]}
                       onChange={e => setPwForm(f => ({ ...f, [key]: e.target.value }))}
                       className={inputCls}
                       placeholder={placeholder}
+                      autoComplete={key === 'current' ? 'current-password' : 'new-password'}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPw(s => ({ ...s, [key]: !s[key] }))}
+                      aria-label={showPw[key] ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
                       className={`absolute right-3 top-1/2 -translate-y-1/2
                         ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-700'}`}
                     >
@@ -544,7 +583,7 @@ const TopNav = () => {
               ))}
             </div>
 
-            <div className={`px-6 py-4 border-t flex justify-end gap-3 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+            <div className={`px-6 py-4 border-t flex flex-wrap justify-end gap-3 flex-shrink-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
               <button
                 onClick={() => setShowPwModal(false)}
                 className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-all

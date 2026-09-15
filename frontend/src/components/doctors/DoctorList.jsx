@@ -47,9 +47,13 @@ const DoctorList = ({ doctors, onDoctorSelect }) => {
           <div
             key={doctor._id}
             onClick={() => onDoctorSelect(doctor)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDoctorSelect(doctor) } }}
+            aria-label={`View details for Dr. ${doctor.name}`}
             className={`p-5 rounded-xl border cursor-pointer transition ${
-              darkMode 
-                ? 'border-gray-700 bg-gray-800 hover:bg-gray-750' 
+              darkMode
+                ? 'border-gray-700 bg-gray-800 hover:bg-gray-750'
                 : 'border-gray-200 bg-white hover:shadow-lg'
             }`}
           >
@@ -90,14 +94,22 @@ const DoctorList = ({ doctors, onDoctorSelect }) => {
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex space-x-2">
               <button className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-[#2E86DE] text-white rounded-xl hover:bg-[#1a6db5] transition-all duration-200 text-sm shadow-[0_2px_8px_rgba(46,134,222,0.3)]">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" aria-hidden="true" />
                 <span>Book</span>
               </button>
-              <button className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} transition`}>
-                <Phone className="w-4 h-4" />
+              <button
+                aria-label={`Call Dr. ${doctor.name}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} transition`}
+              >
+                <Phone className="w-4 h-4" aria-hidden="true" />
               </button>
-              <button className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} transition`}>
-                <Mail className="w-4 h-4" />
+              <button
+                aria-label={`Email Dr. ${doctor.name}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} transition`}
+              >
+                <Mail className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>

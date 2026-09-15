@@ -55,13 +55,15 @@ const TableComponent = ({
 
       {/* ── Toolbar ──────────────────────────────────────── */}
       {(searchable || actions) && (
-        <div className={`flex items-center gap-3 px-5 py-3.5 border-b
+        <div className={`flex flex-wrap items-center gap-3 px-5 py-3.5 border-b
           ${darkMode ? 'border-gray-700/60 bg-gray-800' : 'border-[#E2E8F0] bg-[#F5F7FA]'}`}>
 
           {searchable && (
             <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B8A8B] pointer-events-none" />
+              <label htmlFor="table-search" className="sr-only">{searchPlaceholder}</label>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B8A8B] pointer-events-none" aria-hidden="true" />
               <input
+                id="table-search"
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -75,6 +77,7 @@ const TableComponent = ({
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
+                  aria-label="Clear search"
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#2C3E50] transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -173,18 +176,19 @@ const TableComponent = ({
 
       {/* ── Pagination ───────────────────────────────────── */}
       {totalPages > 1 && (
-        <div className={`flex items-center justify-between px-5 py-3 border-t
+        <div className={`flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t
           ${darkMode ? 'border-gray-700/60 bg-gray-800' : 'border-[#E2E8F0] bg-[#F5F7FA]'}`}>
 
           <p className={`text-xs font-medium ${darkMode ? 'text-gray-500' : 'text-[#7B8A8B]'}`}>
             {(clampedPage - 1) * PAGE_SIZE + 1}–{Math.min(clampedPage * PAGE_SIZE, filteredData.length)} of {filteredData.length}
           </p>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" role="navigation" aria-label="Table pagination">
             <PagBtn
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={clampedPage === 1}
               darkMode={darkMode}
+              label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
             </PagBtn>
@@ -195,6 +199,7 @@ const TableComponent = ({
                 onClick={() => setPage(p)}
                 active={p === clampedPage}
                 darkMode={darkMode}
+                label={`Page ${p}`}
               >
                 {p}
               </PagBtn>
@@ -204,6 +209,7 @@ const TableComponent = ({
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={clampedPage === totalPages}
               darkMode={darkMode}
+              label="Next page"
             >
               <ChevronRight className="w-4 h-4" />
             </PagBtn>
@@ -214,10 +220,12 @@ const TableComponent = ({
   )
 }
 
-const PagBtn = ({ children, onClick, disabled, active, darkMode }) => (
+const PagBtn = ({ children, onClick, disabled, active, darkMode, label }) => (
   <button
     onClick={onClick}
     disabled={disabled}
+    aria-label={label}
+    aria-current={active ? 'page' : undefined}
     className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-semibold
       transition-all duration-150 flex items-center justify-center
       ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}

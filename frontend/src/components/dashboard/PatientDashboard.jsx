@@ -16,6 +16,7 @@ import HealthRiskAgent           from '../../agents/HealthRiskAgent'
 import BedAllocationAgent        from '../../agents/BedAllocationAgent'
 import AppointmentOptimizerAgent from '../../agents/AppointmentOptimizerAgent'
 import PatientSummaryAgent       from '../../agents/PatientSummaryAgent'
+import { formatEnumLabel } from '../../utils/format'
 
 const CONDITION_COLOR = {
   Active:   'bg-red-100 text-red-700',
@@ -145,7 +146,7 @@ const PatientDashboard = () => {
                     </div>
                     <div>
                       <p className={`text-[11px] ${subCls}`}>Blood Group</p>
-                      <p className="text-base font-bold text-red-500">{bloodGroup}</p>
+                      <p className="text-base font-bold text-red-500">{formatEnumLabel(bloodGroup)}</p>
                     </div>
                   </div>
                 )}
@@ -350,7 +351,7 @@ const PatientDashboard = () => {
                     <Droplets className="w-3.5 h-3.5 text-red-500" />
                     <span className={subCls}>Blood Group</span>
                   </div>
-                  <span className="font-bold text-red-500">{bloodGroup}</span>
+                  <span className="font-bold text-red-500">{formatEnumLabel(bloodGroup)}</span>
                 </div>
               )}
             </div>

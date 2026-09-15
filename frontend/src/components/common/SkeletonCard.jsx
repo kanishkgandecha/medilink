@@ -8,7 +8,7 @@ const Skel = ({ className }) => (
 export const SkeletonStatCard = () => {
   const { darkMode } = useTheme()
   return (
-    <div className={`border rounded-2xl p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+    <div role="status" aria-label="Loading" className={`border rounded-2xl p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1 space-y-3">
           <Skel className="h-3 w-24" />
@@ -24,7 +24,7 @@ export const SkeletonStatCard = () => {
 export const SkeletonRow = ({ lines = 3 }) => {
   const { darkMode } = useTheme()
   return (
-    <div className={`border rounded-2xl p-6 space-y-4 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+    <div role="status" aria-label="Loading" className={`border rounded-2xl p-6 space-y-4 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
       <Skel className="h-5 w-36" />
       {Array.from({ length: lines }).map((_, i) => (
         <div key={i} className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
@@ -45,7 +45,7 @@ export const SkeletonRow = ({ lines = 3 }) => {
 export const SkeletonTable = ({ rows = 5, cols = 4 }) => {
   const { darkMode } = useTheme()
   return (
-    <div className={`border rounded-2xl overflow-hidden ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+    <div role="status" aria-label="Loading" className={`border rounded-2xl overflow-hidden ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
       {/* Toolbar */}
       <div className={`flex items-center gap-3 px-5 py-3.5 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
         <Skel className="h-9 w-56 !rounded-xl" />
@@ -72,7 +72,7 @@ export const SkeletonTable = ({ rows = 5, cols = 4 }) => {
 }
 
 export const SkeletonDashboard = () => (
-  <div className="space-y-6">
+  <div className="space-y-6" role="status" aria-label="Loading dashboard">
     <div className="space-y-2">
       <Skel className="h-7 w-52" />
       <Skel className="h-4 w-72" />
