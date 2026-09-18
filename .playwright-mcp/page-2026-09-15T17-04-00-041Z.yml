@@ -1,0 +1,258 @@
+- generic [ref=f15e3]:
+  - generic [ref=f15e4]:
+    - banner [ref=f15e5]:
+      - generic [ref=f15e6]:
+        - link "MediLink" [ref=f15e7] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f15e9]:
+          - link "Dashboard" [ref=f15e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f15e11] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Medicines" [ref=f15e12] [cursor=pointer]:
+            - /url: /pharmacy
+          - link "Prescriptions" [ref=f15e13] [cursor=pointer]:
+            - /url: /prescriptions
+          - link "Billing" [ref=f15e14] [cursor=pointer]:
+            - /url: /billing
+        - generic [ref=f15e15]:
+          - button "Settings" [ref=f15e16] [cursor=pointer]
+          - button "Switch to dark mode" [ref=f15e21] [cursor=pointer]
+          - button "Notifications (2 unread)" [ref=f15e25] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f15e30]: "2"
+          - button "Account menu for Amit Joshi" [ref=f15e32] [cursor=pointer]: AJ
+    - main [ref=f15e33]:
+      - generic [ref=f15e35]:
+        - generic [ref=f15e37]:
+          - generic [ref=f15e38]:
+            - heading "Prescriptions" [level=1] [ref=f15e39]
+            - generic [ref=f15e40]: All prescriptions · Dispense queue
+          - paragraph [ref=f15e44]: Dispense queue drawn from every pending prescription
+        - generic [ref=f15e45]:
+          - complementary [ref=f15e46]:
+            - generic [ref=f15e47]:
+              - generic [ref=f15e48]:
+                - paragraph [ref=f15e51]: Total
+                - paragraph [ref=f15e56]: "50"
+              - generic [ref=f15e57]:
+                - paragraph [ref=f15e60]: Pending
+                - paragraph [ref=f15e65]: "50"
+              - generic [ref=f15e66]:
+                - paragraph [ref=f15e69]: Fulfilled
+                - paragraph [ref=f15e74]: "0"
+              - generic [ref=f15e75]:
+                - paragraph [ref=f15e78]: Cancelled
+                - paragraph [ref=f15e84]: "0"
+          - generic [ref=f15e85]:
+            - generic [ref=f15e86]:
+              - button "Pending" [ref=f15e87] [cursor=pointer]
+              - button "Partially-Filled" [ref=f15e88] [cursor=pointer]
+              - button "Fulfilled" [ref=f15e89] [cursor=pointer]
+              - button "All" [ref=f15e90] [cursor=pointer]
+            - generic [ref=f15e92]:
+              - generic [ref=f15e93]:
+                - button "Prescription RX-MU2WQ6OF-7VAMU, collapse details" [expanded] [active] [ref=f15e476] [cursor=pointer]:
+                  - generic [ref=f15e95]:
+                    - generic [ref=f15e96]:
+                      - generic [ref=f15e97]: RX-MU2WQ6OF-7VAMU
+                      - paragraph [ref=f15e98]: Manish Deshmukh
+                      - generic [ref=f15e99]: Pending
+                    - generic [ref=f15e100]:
+                      - generic [ref=f15e101]: Dr. Vikramaditya Mehta
+                      - generic [ref=f15e102]: ·
+                      - generic [ref=f15e103]: Today
+                    - generic [ref=f15e108]: Dolo 650mg
+                  - button "Dispense" [ref=f15e114]
+                - generic [ref=f15e479]:
+                  - paragraph [ref=f15e480]: Medicines
+                  - generic [ref=f15e486]:
+                    - paragraph [ref=f15e487]: Dolo 650mg
+                    - paragraph [ref=f15e488]: 1 tablet · Twice daily · 7 days
+                    - paragraph [ref=f15e489]: QA regression disposable prescription (retry after fix)
+              - button "Prescription RX-2026-10149, expand details" [ref=f15e119] [cursor=pointer]:
+                - generic [ref=f15e120]:
+                  - generic [ref=f15e121]:
+                    - generic [ref=f15e122]: RX-2026-10149
+                    - paragraph [ref=f15e123]: Nisha Das
+                    - generic [ref=f15e124]: Pending
+                  - generic [ref=f15e125]:
+                    - generic [ref=f15e126]: Dr. Farhan Qureshi
+                    - generic [ref=f15e127]: ·
+                    - generic [ref=f15e128]: 3 Aug 2026
+                    - generic [ref=f15e133]: ·
+                    - generic [ref=f15e134]: Routine Management
+                  - generic [ref=f15e135]:
+                    - generic [ref=f15e136]: Ondem 4mg
+                    - generic [ref=f15e140]: Telma 40mg
+                - button "Dispense" [ref=f15e145]
+              - button "Prescription RX-2026-10146, expand details" [ref=f15e150] [cursor=pointer]:
+                - generic [ref=f15e151]:
+                  - generic [ref=f15e152]:
+                    - generic [ref=f15e153]: RX-2026-10146
+                    - paragraph [ref=f15e154]: Anand Rane
+                    - generic [ref=f15e155]: Pending
+                  - generic [ref=f15e156]:
+                    - generic [ref=f15e157]: Dr. Rajesh Chandra
+                    - generic [ref=f15e158]: ·
+                    - generic [ref=f15e159]: 3 Aug 2026
+                    - generic [ref=f15e164]: ·
+                    - generic [ref=f15e165]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e166]:
+                    - generic [ref=f15e167]: Thyronorm 50mcg
+                    - generic [ref=f15e171]: Atorva 10mg
+                - button "Dispense" [ref=f15e176]
+              - button "Prescription RX-2026-10143, expand details" [ref=f15e181] [cursor=pointer]:
+                - generic [ref=f15e182]:
+                  - generic [ref=f15e183]:
+                    - generic [ref=f15e184]: RX-2026-10143
+                    - paragraph [ref=f15e185]: Reena Bhatia
+                    - generic [ref=f15e186]: Pending
+                  - generic [ref=f15e187]:
+                    - generic [ref=f15e188]: Dr. Priya Nair
+                    - generic [ref=f15e189]: ·
+                    - generic [ref=f15e190]: 3 Aug 2026
+                    - generic [ref=f15e195]: ·
+                    - generic [ref=f15e196]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e197]:
+                    - generic [ref=f15e198]: Ciplox 500mg
+                    - generic [ref=f15e202]: Shelcal 500mg
+                - button "Dispense" [ref=f15e207]
+              - button "Prescription RX-2026-10140, expand details" [ref=f15e212] [cursor=pointer]:
+                - generic [ref=f15e213]:
+                  - generic [ref=f15e214]:
+                    - generic [ref=f15e215]: RX-2026-10140
+                    - paragraph [ref=f15e216]: Manish Deshmukh
+                    - generic [ref=f15e217]: Pending
+                  - generic [ref=f15e218]:
+                    - generic [ref=f15e219]: Dr. Vikramaditya Mehta
+                    - generic [ref=f15e220]: ·
+                    - generic [ref=f15e221]: 3 Aug 2026
+                    - generic [ref=f15e226]: ·
+                    - generic [ref=f15e227]: Routine Management
+                  - generic [ref=f15e228]:
+                    - generic [ref=f15e229]: Ecosprin 75mg
+                    - generic [ref=f15e233]: Montair LC
+                - button "Dispense" [ref=f15e238]
+              - button "Prescription RX-2026-10137, expand details" [ref=f15e243] [cursor=pointer]:
+                - generic [ref=f15e244]:
+                  - generic [ref=f15e245]:
+                    - generic [ref=f15e246]: RX-2026-10137
+                    - paragraph [ref=f15e247]: Ananya Patel
+                    - generic [ref=f15e248]: Pending
+                  - generic [ref=f15e249]:
+                    - generic [ref=f15e250]: Dr. Vivek Rane
+                    - generic [ref=f15e251]: ·
+                    - generic [ref=f15e252]: 3 Aug 2026
+                    - generic [ref=f15e257]: ·
+                    - generic [ref=f15e258]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e259]:
+                    - generic [ref=f15e260]: Dolo 650mg
+                    - generic [ref=f15e264]: Augmentin 625mg
+                - button "Dispense" [ref=f15e269]
+              - button "Prescription RX-2026-10134, expand details" [ref=f15e274] [cursor=pointer]:
+                - generic [ref=f15e275]:
+                  - generic [ref=f15e276]:
+                    - generic [ref=f15e277]: RX-2026-10134
+                    - paragraph [ref=f15e278]: Rohan Deshmukh
+                    - generic [ref=f15e279]: Pending
+                  - generic [ref=f15e280]:
+                    - generic [ref=f15e281]: Dr. Smita Bannerjee
+                    - generic [ref=f15e282]: ·
+                    - generic [ref=f15e283]: 3 Aug 2026
+                    - generic [ref=f15e288]: ·
+                    - generic [ref=f15e289]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e290]:
+                    - generic [ref=f15e291]: Ondem 4mg
+                    - generic [ref=f15e295]: Telma 40mg
+                - button "Dispense" [ref=f15e300]
+              - button "Prescription RX-2026-10131, expand details" [ref=f15e305] [cursor=pointer]:
+                - generic [ref=f15e306]:
+                  - generic [ref=f15e307]:
+                    - generic [ref=f15e308]: RX-2026-10131
+                    - paragraph [ref=f15e309]: Reena Nambiar
+                    - generic [ref=f15e310]: Pending
+                  - generic [ref=f15e311]:
+                    - generic [ref=f15e312]: Dr. Amitava Das
+                    - generic [ref=f15e313]: ·
+                    - generic [ref=f15e314]: 3 Aug 2026
+                    - generic [ref=f15e319]: ·
+                    - generic [ref=f15e320]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e321]:
+                    - generic [ref=f15e322]: Thyronorm 50mcg
+                    - generic [ref=f15e326]: Atorva 10mg
+                - button "Dispense" [ref=f15e331]
+              - button "Prescription RX-2026-10128, expand details" [ref=f15e336] [cursor=pointer]:
+                - generic [ref=f15e337]:
+                  - generic [ref=f15e338]:
+                    - generic [ref=f15e339]: RX-2026-10128
+                    - paragraph [ref=f15e340]: Anand Pillai
+                    - generic [ref=f15e341]: Pending
+                  - generic [ref=f15e342]:
+                    - generic [ref=f15e343]: Dr. Manoj Bhatia
+                    - generic [ref=f15e344]: ·
+                    - generic [ref=f15e345]: 3 Aug 2026
+                    - generic [ref=f15e350]: ·
+                    - generic [ref=f15e351]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e352]:
+                    - generic [ref=f15e353]: Ciplox 500mg
+                    - generic [ref=f15e357]: Shelcal 500mg
+                - button "Dispense" [ref=f15e362]
+              - button "Prescription RX-2026-10125, expand details" [ref=f15e367] [cursor=pointer]:
+                - generic [ref=f15e368]:
+                  - generic [ref=f15e369]:
+                    - generic [ref=f15e370]: RX-2026-10125
+                    - paragraph [ref=f15e371]: Kavita Bannerjee
+                    - generic [ref=f15e372]: Pending
+                  - generic [ref=f15e373]:
+                    - generic [ref=f15e374]: Dr. Deepali Joshi
+                    - generic [ref=f15e375]: ·
+                    - generic [ref=f15e376]: 3 Aug 2026
+                    - generic [ref=f15e381]: ·
+                    - generic [ref=f15e382]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e383]:
+                    - generic [ref=f15e384]: Ecosprin 75mg
+                    - generic [ref=f15e388]: Montair LC
+                - button "Dispense" [ref=f15e393]
+              - button "Prescription RX-2026-10122, expand details" [ref=f15e398] [cursor=pointer]:
+                - generic [ref=f15e399]:
+                  - generic [ref=f15e400]:
+                    - generic [ref=f15e401]: RX-2026-10122
+                    - paragraph [ref=f15e402]: Rajesh Rao
+                    - generic [ref=f15e403]: Pending
+                  - generic [ref=f15e404]:
+                    - generic [ref=f15e405]: Dr. Suresh Iyer
+                    - generic [ref=f15e406]: ·
+                    - generic [ref=f15e407]: 3 Aug 2026
+                    - generic [ref=f15e412]: ·
+                    - generic [ref=f15e413]: Acute Upper Respiratory Tract Infection
+                  - generic [ref=f15e414]:
+                    - generic [ref=f15e415]: Dolo 650mg
+                    - generic [ref=f15e419]: Augmentin 625mg
+                - button "Dispense" [ref=f15e424]
+              - button "Prescription RX-2026-10119, expand details" [ref=f15e429] [cursor=pointer]:
+                - generic [ref=f15e430]:
+                  - generic [ref=f15e431]:
+                    - generic [ref=f15e432]: RX-2026-10119
+                    - paragraph [ref=f15e433]: Divya Trivedi
+                    - generic [ref=f15e434]: Pending
+                  - generic [ref=f15e435]:
+                    - generic [ref=f15e436]: Dr. Siddharth Pillai
+                    - generic [ref=f15e437]: ·
+                    - generic [ref=f15e438]: 3 Aug 2026
+                    - generic [ref=f15e443]: ·
+                    - generic [ref=f15e444]: Routine Management
+                  - generic [ref=f15e445]:
+                    - generic [ref=f15e446]: Ondem 4mg
+                    - generic [ref=f15e450]: Telma 40mg
+                - button "Dispense" [ref=f15e455]
+            - navigation "Pagination" [ref=f15e459]:
+              - paragraph [ref=f15e460]: 1–12 of 50
+              - generic [ref=f15e461]:
+                - button "Previous page" [disabled] [ref=f15e462]
+                - button "Page 1" [ref=f15e465] [cursor=pointer]: "1"
+                - button "Page 2" [ref=f15e466] [cursor=pointer]: "2"
+                - button "Page 3" [ref=f15e467] [cursor=pointer]: "3"
+                - button "Page 4" [ref=f15e468] [cursor=pointer]: "4"
+                - button "Page 5" [ref=f15e469] [cursor=pointer]: "5"
+                - button "Next page" [ref=f15e470] [cursor=pointer]
+  - button "Open MediLink Assistant" [ref=f15e475] [cursor=pointer]

@@ -1,0 +1,257 @@
+- generic [ref=f17e1]:
+  - generic [ref=f17e3]:
+    - generic [ref=f17e4]:
+      - banner [ref=f17e5]:
+        - generic [ref=f17e6]:
+          - link "MediLink" [ref=f17e7] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f17e9]:
+            - link "Dashboard" [ref=f17e10] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f17e11] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Test Reports" [ref=f17e12] [cursor=pointer]:
+              - /url: /test-reports
+          - generic [ref=f17e13]:
+            - button "Settings" [ref=f17e14] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f17e19] [cursor=pointer]
+            - button "Notifications (1 unread)" [ref=f17e23] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f17e28]: "1"
+            - button "Account menu for Ramesh Kulkarni" [ref=f17e30] [cursor=pointer]: RK
+      - main [ref=f17e31]:
+        - generic [ref=f17e33]:
+          - generic [ref=f17e34]:
+            - generic [ref=f17e35]:
+              - generic [ref=f17e36]:
+                - heading "Test Reports" [level=1] [ref=f17e37]
+                - generic [ref=f17e38]: Diagnostic queue · Lab
+              - paragraph [ref=f17e44]: Create and review patient laboratory reports
+            - generic [ref=f17e45]:
+              - button "AI Analysis" [ref=f17e46] [cursor=pointer]
+              - button "Add Report" [ref=f17e103] [cursor=pointer]
+          - generic [ref=f17e49]:
+            - complementary [ref=f17e50]:
+              - generic [ref=f17e51]:
+                - generic [ref=f17e52]:
+                  - paragraph [ref=f17e55]: Total Reports
+                  - paragraph [ref=f17e59]: "0"
+                - generic [ref=f17e60]:
+                  - paragraph [ref=f17e63]: Pending
+                  - paragraph [ref=f17e68]: "0"
+                - generic [ref=f17e69]:
+                  - paragraph [ref=f17e72]: Processing
+                  - paragraph [ref=f17e76]: "0"
+                - generic [ref=f17e77]:
+                  - paragraph [ref=f17e80]: Completed
+                  - paragraph [ref=f17e85]: "0"
+            - generic [ref=f17e86]:
+              - generic [ref=f17e88]:
+                - textbox "Search patient by name or ID…" [ref=f17e92]
+                - combobox [ref=f17e93]:
+                  - option "— Select patient —"
+                  - option "QA Regression Test Patient · PAT731258990207" [selected]
+                  - option "Nisha Das · PT-IND-1149"
+                  - option "Pradeep Patel · PT-IND-1148"
+                  - option "Manju Saxena · PT-IND-1147"
+                  - option "Anand Rane · PT-IND-1146"
+                  - option "Neha Qureshi · PT-IND-1145"
+                  - option "Vikram Sundaram · PT-IND-1144"
+                  - option "Reena Bhatia · PT-IND-1143"
+                  - option "Pradeep Kapoor · PT-IND-1142"
+                  - option "Bhavna Mehta · PT-IND-1141"
+                  - option "Manish Deshmukh · PT-IND-1140"
+                  - option "Sangeeta Tripathi · PT-IND-1139"
+                  - option "Manish Reddy · PT-IND-1138"
+                  - option "Ananya Patel · PT-IND-1137"
+                  - option "Karan Deshmukh · PT-IND-1136"
+                  - option "Ritu Iyer · PT-IND-1135"
+                  - option "Rohan Deshmukh · PT-IND-1134"
+                  - option "Kiran Nambiar · PT-IND-1133"
+                  - option "Deepak Sharma · PT-IND-1132"
+                  - option "Reena Nambiar · PT-IND-1131"
+                  - option "Nitin Qureshi · PT-IND-1130"
+                  - option "Priyanka Kapoor · PT-IND-1129"
+                  - option "Anand Pillai · PT-IND-1128"
+                  - option "Priya Mehta · PT-IND-1127"
+                  - option "Siddharth Swaminathan · PT-IND-1126"
+                  - option "Kavita Bannerjee · PT-IND-1125"
+                  - option "Siddharth Nambiar · PT-IND-1124"
+                  - option "Nisha Tripathi · PT-IND-1123"
+                  - option "Rajesh Rao · PT-IND-1122"
+                  - option "Rohini Verma · PT-IND-1121"
+                  - option "Farhan Reddy · PT-IND-1120"
+                  - option "Divya Trivedi · PT-IND-1119"
+                  - option "Rohan Reddy · PT-IND-1118"
+                  - option "Ananya Nambiar · PT-IND-1117"
+                  - option "Harish Chandra · PT-IND-1116"
+                  - option "Swati Gupta · PT-IND-1115"
+                  - option "Rahul Patel · PT-IND-1114"
+                  - option "Ritu Trivedi · PT-IND-1113"
+                  - option "Aditya Iyer · PT-IND-1112"
+                  - option "Ritu Pillai · PT-IND-1111"
+                  - option "Suresh Bannerjee · PT-IND-1110"
+                  - option "Geeta Sengupta · PT-IND-1109"
+                  - option "Aditya Pillai · PT-IND-1108"
+                  - option "Ananya Sharma · PT-IND-1107"
+                  - option "Vikas Bhatia · PT-IND-1106"
+                  - option "Ananya Chandra · PT-IND-1105"
+                  - option "Harish Sharma · PT-IND-1104"
+                  - option "Rohini Mehta · PT-IND-1103"
+                  - option "Alok Joshi · PT-IND-1102"
+                  - option "Shweta Nambiar · PT-IND-1101"
+                  - option "Mahesh Kulkarni · PT-IND-1100"
+                  - option "Preeti Rao · PT-IND-1099"
+                  - option "Pankaj Swaminathan · PT-IND-1098"
+                  - option "Priyanka Rane · PT-IND-1097"
+                  - option "Rahul Sengupta · PT-IND-1096"
+                  - option "Anjali Sharma · PT-IND-1095"
+                  - option "Siddharth Deshmukh · PT-IND-1094"
+                  - option "Kiran Pillai · PT-IND-1093"
+                  - option "Pradeep Nair · PT-IND-1092"
+                  - option "Ananya Das · PT-IND-1091"
+                  - option "Pankaj Gupta · PT-IND-1090"
+                  - option "Geeta Agrawal · PT-IND-1089"
+                  - option "Alok Bhatia · PT-IND-1088"
+                  - option "Smita Agrawal · PT-IND-1087"
+                  - option "Harish Rane · PT-IND-1086"
+                  - option "Ananya Chandra · PT-IND-1085"
+                  - option "Vijay Bannerjee · PT-IND-1084"
+                  - option "Preeti Tripathi · PT-IND-1083"
+                  - option "Mahesh Joshi · PT-IND-1082"
+                  - option "Divya Das · PT-IND-1081"
+                  - option "Arjun Sengupta · PT-IND-1080"
+                  - option "Neha Nambiar · PT-IND-1079"
+                  - option "Vikas Deshmukh · PT-IND-1078"
+                  - option "Bhavna Rao · PT-IND-1077"
+                  - option "Vikas Gupta · PT-IND-1076"
+                  - option "Anjali Rane · PT-IND-1075"
+                  - option "Rohan Das · PT-IND-1074"
+                  - option "Neha Saxena · PT-IND-1073"
+                  - option "Rahul Saxena · PT-IND-1072"
+                  - option "Manju Tripathi · PT-IND-1071"
+                  - option "Devendra Singh · PT-IND-1070"
+                  - option "Pooja Rao · PT-IND-1069"
+                  - option "Devendra Patel · PT-IND-1068"
+                  - option "Sangeeta Singh · PT-IND-1067"
+                  - option "Rajesh Nambiar · PT-IND-1066"
+                  - option "Fatima Deshmukh · PT-IND-1065"
+                  - option "Tarun Rane · PT-IND-1064"
+                  - option "Meena Saxena · PT-IND-1063"
+                  - option "Ashok Sundaram · PT-IND-1062"
+                  - option "Anjali Sen · PT-IND-1061"
+                  - option "Rohan Sharma · PT-IND-1060"
+                  - option "Sunita Rao · PT-IND-1059"
+                  - option "Gaurav Nair · PT-IND-1058"
+                  - option "Neha Gupta · PT-IND-1057"
+                  - option "Nitin Sen · PT-IND-1056"
+                  - option "Ritu Kapoor · PT-IND-1055"
+                  - option "Mahesh Singh · PT-IND-1054"
+                  - option "Ananya Nambiar · PT-IND-1053"
+                  - option "Vikram Sen · PT-IND-1052"
+                  - option "Meena Nambiar · PT-IND-1051"
+                  - option "Manish Das · PT-IND-1050"
+                  - option "Rohini Bhatia · PT-IND-1049"
+                  - option "Manish Mehta · PT-IND-1048"
+                  - option "Pooja Pillai · PT-IND-1047"
+                  - option "Dinesh Mehta · PT-IND-1046"
+                  - option "Kavita Nair · PT-IND-1045"
+                  - option "Vikas Patel · PT-IND-1044"
+                  - option "Meena Bhatia · PT-IND-1043"
+                  - option "Ashok Qureshi · PT-IND-1042"
+                  - option "Kavita Bhatia · PT-IND-1041"
+                  - option "Rajesh Verma · PT-IND-1040"
+                  - option "Manju Nambiar · PT-IND-1039"
+                  - option "Karan Tripathi · PT-IND-1038"
+                  - option "Vandana Reddy · PT-IND-1037"
+                  - option "Vikas Gupta · PT-IND-1036"
+                  - option "Vandana Rao · PT-IND-1035"
+                  - option "Vijay Nambiar · PT-IND-1034"
+                  - option "Priyanka Pillai · PT-IND-1033"
+                  - option "Arjun Nambiar · PT-IND-1032"
+                  - option "Vandana Saxena · PT-IND-1031"
+                  - option "Rahul Joshi · PT-IND-1030"
+                  - option "Smita Kapoor · PT-IND-1029"
+                  - option "Rahul Patel · PT-IND-1028"
+                  - option "Nisha Deshmukh · PT-IND-1027"
+                  - option "Sunil Agrawal · PT-IND-1026"
+                  - option "Ritu Deshmukh · PT-IND-1025"
+                  - option "Vikas Mehta · PT-IND-1024"
+                  - option "Vandana Mehta · PT-IND-1023"
+                  - option "Farhan Qureshi · PT-IND-1022"
+                  - option "Aarti Agrawal · PT-IND-1021"
+                  - option "Aditya Sundaram · PT-IND-1020"
+                  - option "Vandana Rane · PT-IND-1019"
+                  - option "Amit Singh · PT-IND-1018"
+                  - option "Shweta Bhatia · PT-IND-1017"
+                  - option "Rahul Tripathi · PT-IND-1016"
+                  - option "Smita Kulkarni · PT-IND-1015"
+                  - option "Nitin Sen · PT-IND-1014"
+                  - option "Preeti Iyer · PT-IND-1013"
+                  - option "Arjun Tripathi · PT-IND-1012"
+                  - option "Rohini Deshmukh · PT-IND-1011"
+                  - option "Dinesh Kulkarni · PT-IND-1010"
+                  - option "Ritu Qureshi · PT-IND-1009"
+                  - option "Harish Rane · PT-IND-1008"
+                  - option "Fatima Singh · PT-IND-1007"
+                  - option "Vijay Kapoor · PT-IND-1006"
+                  - option "Krutika Das · PT-IND-1005"
+                  - option "Siddharth Bhatia · PT-IND-1004"
+                  - option "Arjun Kapoor · PT-IND-1003"
+                  - option "Kavita Reddy · PT-IND-1002"
+                  - option "Meena Swaminathan · PT-IND-1001"
+                  - option "Rahul Gupta · PT-IND-1000"
+              - generic [ref=f17e94]:
+                - paragraph [ref=f17e107]: No test reports found
+                - paragraph [ref=f17e108]: Click "Add Report" to add a lab report
+    - button "Open MediLink Assistant" [ref=f17e102] [cursor=pointer]
+  - dialog [ref=f17e109]:
+    - generic [ref=f17e111]:
+      - generic [ref=f17e112]:
+        - heading "Add Lab Report" [level=3] [ref=f17e113]
+        - button "Close dialog" [active] [ref=f17e114] [cursor=pointer]
+      - generic [ref=f17e118]:
+        - generic [ref=f17e119]:
+          - generic [ref=f17e120]:
+            - generic [ref=f17e121]:
+              - generic [ref=f17e122]: Test Name *
+              - textbox "e.g., Complete Blood Count" [ref=f17e123]
+            - generic [ref=f17e124]:
+              - generic [ref=f17e125]: Test Type
+              - combobox [ref=f17e126]:
+                - option "Blood Test" [selected]
+                - option "Urine Test"
+                - option "ECG"
+                - option "Biopsy"
+                - option "Culture & Sensitivity"
+                - option "Lipid Profile"
+                - option "Thyroid Function"
+                - option "Liver Function"
+                - option "Kidney Function"
+                - option "Other"
+            - generic [ref=f17e127]:
+              - generic [ref=f17e128]: Laboratory
+              - textbox "Lab name" [ref=f17e129]
+            - generic [ref=f17e130]:
+              - generic [ref=f17e131]: Report Date
+              - textbox [ref=f17e132]: 2026-09-15
+          - generic [ref=f17e133]:
+            - generic [ref=f17e134]: Result
+            - textbox "Enter test results..." [ref=f17e135]
+          - generic [ref=f17e136]:
+            - generic [ref=f17e137]:
+              - generic [ref=f17e138]: Reference Range
+              - textbox "e.g., 4.5–11.0 × 10³/µL" [ref=f17e139]
+            - generic [ref=f17e140]:
+              - generic [ref=f17e141]: Status
+              - combobox [ref=f17e142]:
+                - option "Pending" [selected]
+                - option "Collected"
+                - option "Processing"
+                - option "Completed"
+                - option "Verified"
+          - generic [ref=f17e143]:
+            - generic [ref=f17e144]: Notes
+            - textbox "Additional notes..." [ref=f17e145]
+        - generic [ref=f17e146]:
+          - button "Cancel" [ref=f17e147] [cursor=pointer]
+          - button "Save Report" [ref=f17e148] [cursor=pointer]

@@ -119,7 +119,8 @@ router
       'Receptionist',
       'Patient',
       'Ward Manager',
-      'Pharmacist'
+      'Pharmacist',
+      'BillingStaff'
     ),
     getPatients
   )

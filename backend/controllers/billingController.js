@@ -4,7 +4,13 @@ const { getPagination } = require('../utils/pagination');
 const { runSerializableTransaction } = require('../utils/transactions');
 
 const isPharmacistRole = (user) => user.role === 'Pharmacist' || user.subRole === 'Pharmacist';
-const resolvedRole = (user) => (user.role === 'Staff' ? user.subRole : user.role);
+// Billing.createdByRole is typed against the top-level Prisma `Role` enum
+// (Admin/Doctor/Nurse/Receptionist/Patient/Pharmacist/Staff), which does not
+// include any SubRole value (BillingStaff/LabTechnician/RadiologyTechnician/
+// WardManager). Returning the sub-role here — as this used to — throws a
+// PrismaClientValidationError for every one of those sub-roles, so every
+// Staff/BillingStaff bill-creation attempt failed with a 500.
+const resolvedRole = (user) => user.role || null;
 
 const formatPopulatedBill = (bill) => {
   if (!bill) return null;

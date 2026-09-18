@@ -1,0 +1,86 @@
+- generic [ref=e12]:
+  - generic [ref=e170] [cursor=pointer]:
+    - alert [ref=e171]:
+      - generic [ref=e175]: Staff member deactivated
+    - button "close" [ref=e176]
+    - progressbar "notification timer" [ref=e179]
+  - generic [ref=e13]:
+    - banner [ref=e14]:
+      - generic [ref=e15]:
+        - link "MediLink" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=e18]:
+          - link "Dashboard" [ref=e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=e20] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Patients" [ref=e21] [cursor=pointer]:
+            - /url: /patients
+          - link "Doctors" [ref=e22] [cursor=pointer]:
+            - /url: /doctors
+          - link "Staff" [ref=e23] [cursor=pointer]:
+            - /url: /staff
+          - link "Appointments" [ref=e24] [cursor=pointer]:
+            - /url: /appointments
+          - link "Wards & Beds" [ref=e25] [cursor=pointer]:
+            - /url: /wards
+          - link "Pharmacy" [ref=e26] [cursor=pointer]:
+            - /url: /pharmacy
+          - link "Billing" [ref=e27] [cursor=pointer]:
+            - /url: /billing
+          - link "Reports" [ref=e28] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=e29]:
+          - button "Settings" [ref=e30] [cursor=pointer]
+          - button "Switch to dark mode" [ref=e35] [cursor=pointer]
+          - button "Notifications (3 unread)" [ref=e39] [cursor=pointer]:
+            - generic [aria-hidden] [ref=e44]: "3"
+          - button "Account menu for System Admin" [ref=e46] [cursor=pointer]: SA
+    - main [ref=e47]:
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - heading "Staff Management" [level=1] [ref=e184]
+              - generic [ref=e185]: All staff
+            - paragraph [ref=e189]: Manage staff records, shifts, and departments
+          - button "Add Staff Member" [ref=e190] [cursor=pointer]
+        - generic [ref=e192]:
+          - complementary [ref=e193]:
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - paragraph [ref=e198]: Total Staff
+                - paragraph [ref=e205]: "70"
+              - generic [ref=e206]:
+                - paragraph [ref=e209]: Nurses
+                - paragraph [ref=e214]: "0"
+              - generic [ref=e215]:
+                - paragraph [ref=e218]: Support Staff
+                - paragraph [ref=e222]: "70"
+              - generic [ref=e223]:
+                - paragraph [ref=e226]: On Duty
+                - paragraph [ref=e231]: "70"
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - textbox "Search staff…" [ref=e240]: QA Regression
+              - combobox [ref=e241]:
+                - option "All Sub-Roles" [selected]
+                - option "Nurse"
+                - option "Receptionist"
+                - option "Pharmacist"
+                - option "Lab Technician"
+                - option "Radiology Technician"
+                - option "Billing Staff"
+                - option "Ward Manager"
+              - combobox [ref=e242]:
+                - option "All Shifts" [selected]
+                - option "Morning"
+                - option "Evening"
+                - option "Night"
+                - option "Rotational"
+              - button "Clear" [ref=e243] [cursor=pointer]
+              - generic [ref=e247]: 0 of 70 members
+            - generic [ref=e248]:
+              - paragraph [ref=e254]: No staff members found
+              - paragraph [ref=e255]: Try adjusting your filters
+  - button "Open MediLink Assistant" [ref=e151] [cursor=pointer]

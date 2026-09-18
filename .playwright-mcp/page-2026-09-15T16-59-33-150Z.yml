@@ -1,0 +1,904 @@
+- generic [ref=f9e1]:
+  - generic [ref=f9e3]:
+    - generic [ref=f9e4]:
+      - banner [ref=f9e5]:
+        - generic [ref=f9e6]:
+          - link "MediLink" [ref=f9e7] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f9e9]:
+            - link "Dashboard" [ref=f9e10] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f9e11] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Patients" [ref=f9e12] [cursor=pointer]:
+              - /url: /patients
+            - link "Ward Status" [ref=f9e13] [cursor=pointer]:
+              - /url: /wards
+            - link "Prescriptions" [ref=f9e14] [cursor=pointer]:
+              - /url: /prescriptions
+            - link "Appointments" [ref=f9e15] [cursor=pointer]:
+              - /url: /appointments
+          - generic [ref=f9e16]:
+            - button "Settings" [ref=f9e17] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f9e22] [cursor=pointer]
+            - button "Notifications (2 unread)" [ref=f9e26] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f9e31]: "2"
+            - button "Account menu for Sister Deepa Pillai" [ref=f9e33] [cursor=pointer]: SD
+      - main [ref=f9e34]:
+        - generic [ref=f9e36]:
+          - generic [ref=f9e38]:
+            - generic [ref=f9e39]:
+              - heading "Ward & Bed Management" [level=1] [ref=f9e40]
+              - generic [ref=f9e41]: All wards
+            - paragraph [ref=f9e45]: Monitor ward status and patient-bed assignments in real time
+          - generic [ref=f9e46]:
+            - complementary [ref=f9e47]:
+              - generic [ref=f9e48]:
+                - generic [ref=f9e49]:
+                  - paragraph [ref=f9e52]: Total Beds
+                  - paragraph [ref=f9e56]: "35"
+                - generic [ref=f9e57]:
+                  - paragraph [ref=f9e60]: Occupied
+                  - paragraph [ref=f9e67]: "0"
+                - generic [ref=f9e68]:
+                  - paragraph [ref=f9e71]: Available
+                  - paragraph [ref=f9e75]: "35"
+                - generic [ref=f9e76]:
+                  - paragraph [ref=f9e79]: Occupancy
+                  - paragraph [ref=f9e83]: 0%
+            - generic [ref=f9e84]:
+              - generic [ref=f9e85]:
+                - generic [ref=f9e86]:
+                  - generic [ref=f9e87]:
+                    - generic [ref=f9e88]:
+                      - generic [ref=f9e89]:
+                        - heading "Emergency Trauma Care" [level=3] [ref=f9e90]
+                        - paragraph [ref=f9e91]: EMG-102 · Floor 1
+                      - generic [ref=f9e92]: Emergency
+                    - generic [ref=f9e93]:
+                      - generic [ref=f9e94]:
+                        - paragraph [ref=f9e95]: "5"
+                        - paragraph [ref=f9e96]: Total
+                      - generic [ref=f9e97]:
+                        - paragraph [ref=f9e98]: "0"
+                        - paragraph [ref=f9e99]: Occupied
+                      - generic [ref=f9e100]:
+                        - paragraph [ref=f9e101]: "5"
+                        - paragraph [ref=f9e102]: Free
+                    - paragraph [ref=f9e105]: 0% occupied · ₹4500/day
+                    - button "Hide Beds" [ref=f9e892] [cursor=pointer]
+                  - generic [ref=f9e893]:
+                    - paragraph [ref=f9e894]: Beds in this ward
+                    - generic [ref=f9e895]:
+                      - generic [ref=f9e896]:
+                        - generic [ref=f9e897]:
+                          - generic [ref=f9e898]: EMG-102-B1
+                          - generic [ref=f9e902]: Available
+                        - paragraph [ref=f9e908]: No patient assigned
+                        - button "Assign Patient" [ref=f9e909] [cursor=pointer]
+                      - generic [ref=f9e913]:
+                        - generic [ref=f9e914]:
+                          - generic [ref=f9e915]: EMG-102-B2
+                          - generic [ref=f9e919]: Available
+                        - paragraph [ref=f9e925]: No patient assigned
+                        - button "Assign Patient" [ref=f9e926] [cursor=pointer]
+                      - generic [ref=f9e930]:
+                        - generic [ref=f9e931]:
+                          - generic [ref=f9e932]: EMG-102-B3
+                          - generic [ref=f9e936]: Available
+                        - paragraph [ref=f9e942]: No patient assigned
+                        - button "Assign Patient" [ref=f9e943] [cursor=pointer]
+                      - generic [ref=f9e947]:
+                        - generic [ref=f9e948]:
+                          - generic [ref=f9e949]: EMG-102-B4
+                          - generic [ref=f9e953]: Available
+                        - paragraph [ref=f9e959]: No patient assigned
+                        - button "Assign Patient" [ref=f9e960] [cursor=pointer]
+                      - generic [ref=f9e964]:
+                        - generic [ref=f9e965]:
+                          - generic [ref=f9e966]: EMG-102-B5
+                          - generic [ref=f9e970]: Available
+                        - paragraph [ref=f9e976]: No patient assigned
+                        - button "Assign Patient" [ref=f9e977] [cursor=pointer]
+                - generic [ref=f9e109]:
+                  - generic [ref=f9e110]:
+                    - generic [ref=f9e111]:
+                      - heading "General Male Ward" [level=3] [ref=f9e112]
+                      - paragraph [ref=f9e113]: GEN-301 · Floor 3
+                    - generic [ref=f9e114]: General
+                  - generic [ref=f9e115]:
+                    - generic [ref=f9e116]:
+                      - paragraph [ref=f9e117]: "5"
+                      - paragraph [ref=f9e118]: Total
+                    - generic [ref=f9e119]:
+                      - paragraph [ref=f9e120]: "0"
+                      - paragraph [ref=f9e121]: Occupied
+                    - generic [ref=f9e122]:
+                      - paragraph [ref=f9e123]: "5"
+                      - paragraph [ref=f9e124]: Free
+                  - paragraph [ref=f9e127]: 0% occupied · ₹1000/day
+                  - button "View Beds" [ref=f9e129] [cursor=pointer]
+                - generic [ref=f9e131]:
+                  - generic [ref=f9e132]:
+                    - generic [ref=f9e133]:
+                      - heading "General Female Ward" [level=3] [ref=f9e134]
+                      - paragraph [ref=f9e135]: GEN-302 · Floor 3
+                    - generic [ref=f9e136]: General
+                  - generic [ref=f9e137]:
+                    - generic [ref=f9e138]:
+                      - paragraph [ref=f9e139]: "5"
+                      - paragraph [ref=f9e140]: Total
+                    - generic [ref=f9e141]:
+                      - paragraph [ref=f9e142]: "0"
+                      - paragraph [ref=f9e143]: Occupied
+                    - generic [ref=f9e144]:
+                      - paragraph [ref=f9e145]: "5"
+                      - paragraph [ref=f9e146]: Free
+                  - paragraph [ref=f9e149]: 0% occupied · ₹1000/day
+                  - button "View Beds" [ref=f9e151] [cursor=pointer]
+                - generic [ref=f9e153]:
+                  - generic [ref=f9e154]:
+                    - generic [ref=f9e155]:
+                      - heading "Cardiac ICU" [level=3] [ref=f9e156]
+                      - paragraph [ref=f9e157]: ICU-101 · Floor 1
+                    - generic [ref=f9e158]: ICU
+                  - generic [ref=f9e159]:
+                    - generic [ref=f9e160]:
+                      - paragraph [ref=f9e161]: "5"
+                      - paragraph [ref=f9e162]: Total
+                    - generic [ref=f9e163]:
+                      - paragraph [ref=f9e164]: "0"
+                      - paragraph [ref=f9e165]: Occupied
+                    - generic [ref=f9e166]:
+                      - paragraph [ref=f9e167]: "5"
+                      - paragraph [ref=f9e168]: Free
+                  - paragraph [ref=f9e171]: 0% occupied · ₹5000/day
+                  - button "View Beds" [ref=f9e173] [cursor=pointer]
+                - generic [ref=f9e175]:
+                  - generic [ref=f9e176]:
+                    - generic [ref=f9e177]:
+                      - heading "Maternity Ward" [level=3] [ref=f9e178]
+                      - paragraph [ref=f9e179]: MAT-401 · Floor 4
+                    - generic [ref=f9e180]: General
+                  - generic [ref=f9e181]:
+                    - generic [ref=f9e182]:
+                      - paragraph [ref=f9e183]: "5"
+                      - paragraph [ref=f9e184]: Total
+                    - generic [ref=f9e185]:
+                      - paragraph [ref=f9e186]: "0"
+                      - paragraph [ref=f9e187]: Occupied
+                    - generic [ref=f9e188]:
+                      - paragraph [ref=f9e189]: "5"
+                      - paragraph [ref=f9e190]: Free
+                  - paragraph [ref=f9e193]: 0% occupied · ₹2000/day
+                  - button "View Beds" [ref=f9e195] [cursor=pointer]
+                - generic [ref=f9e197]:
+                  - generic [ref=f9e198]:
+                    - generic [ref=f9e199]:
+                      - heading "Paediatric Suite" [level=3] [ref=f9e200]
+                      - paragraph [ref=f9e201]: PED-201 · Floor 2
+                    - generic [ref=f9e202]: General
+                  - generic [ref=f9e203]:
+                    - generic [ref=f9e204]:
+                      - paragraph [ref=f9e205]: "5"
+                      - paragraph [ref=f9e206]: Total
+                    - generic [ref=f9e207]:
+                      - paragraph [ref=f9e208]: "0"
+                      - paragraph [ref=f9e209]: Occupied
+                    - generic [ref=f9e210]:
+                      - paragraph [ref=f9e211]: "5"
+                      - paragraph [ref=f9e212]: Free
+                  - paragraph [ref=f9e215]: 0% occupied · ₹2500/day
+                  - button "View Beds" [ref=f9e217] [cursor=pointer]
+                - generic [ref=f9e219]:
+                  - generic [ref=f9e220]:
+                    - generic [ref=f9e221]:
+                      - heading "Private Deluxe Suite" [level=3] [ref=f9e222]
+                      - paragraph [ref=f9e223]: PVT-501 · Floor 5
+                    - generic [ref=f9e224]: Private
+                  - generic [ref=f9e225]:
+                    - generic [ref=f9e226]:
+                      - paragraph [ref=f9e227]: "5"
+                      - paragraph [ref=f9e228]: Total
+                    - generic [ref=f9e229]:
+                      - paragraph [ref=f9e230]: "0"
+                      - paragraph [ref=f9e231]: Occupied
+                    - generic [ref=f9e232]:
+                      - paragraph [ref=f9e233]: "5"
+                      - paragraph [ref=f9e234]: Free
+                  - paragraph [ref=f9e237]: 0% occupied · ₹7500/day
+                  - button "View Beds" [ref=f9e239] [cursor=pointer]
+              - generic [ref=f9e240]:
+                - generic [ref=f9e241]:
+                  - generic [ref=f9e242]:
+                    - heading "All Beds Overview" [level=2] [ref=f9e243]
+                    - paragraph [ref=f9e244]: 0 occupied · 35 available
+                  - generic [ref=f9e245]:
+                    - combobox [ref=f9e246]:
+                      - option "All Wards" [selected]
+                      - option "Emergency Trauma Care"
+                      - option "General Male Ward"
+                      - option "General Female Ward"
+                      - option "Cardiac ICU"
+                      - option "Maternity Ward"
+                      - option "Paediatric Suite"
+                      - option "Private Deluxe Suite"
+                    - generic [ref=f9e247]:
+                      - button "All" [ref=f9e248] [cursor=pointer]
+                      - button "Available" [ref=f9e249] [cursor=pointer]
+                      - button "Occupied" [ref=f9e250] [cursor=pointer]
+                - generic [ref=f9e251]:
+                  - generic [ref=f9e252]: Available
+                  - generic [ref=f9e255]: Occupied
+                - generic [ref=f9e258]:
+                  - generic [ref=f9e259]:
+                    - generic [ref=f9e260]:
+                      - heading "Emergency Trauma Care" [level=3] [ref=f9e261]
+                      - generic [ref=f9e262]: EMG-102 · Emergency
+                    - generic [ref=f9e263]:
+                      - generic [ref=f9e264]:
+                        - generic [ref=f9e265]:
+                          - generic [ref=f9e266]: EMG-102-B1
+                          - generic [ref=f9e270]: Available
+                        - paragraph [ref=f9e276]: No patient assigned
+                        - button "Assign Patient" [ref=f9e277] [cursor=pointer]
+                      - generic [ref=f9e281]:
+                        - generic [ref=f9e282]:
+                          - generic [ref=f9e283]: EMG-102-B2
+                          - generic [ref=f9e287]: Available
+                        - paragraph [ref=f9e293]: No patient assigned
+                        - button "Assign Patient" [ref=f9e294] [cursor=pointer]
+                      - generic [ref=f9e298]:
+                        - generic [ref=f9e299]:
+                          - generic [ref=f9e300]: EMG-102-B3
+                          - generic [ref=f9e304]: Available
+                        - paragraph [ref=f9e310]: No patient assigned
+                        - button "Assign Patient" [ref=f9e311] [cursor=pointer]
+                      - generic [ref=f9e315]:
+                        - generic [ref=f9e316]:
+                          - generic [ref=f9e317]: EMG-102-B4
+                          - generic [ref=f9e321]: Available
+                        - paragraph [ref=f9e327]: No patient assigned
+                        - button "Assign Patient" [ref=f9e328] [cursor=pointer]
+                      - generic [ref=f9e332]:
+                        - generic [ref=f9e333]:
+                          - generic [ref=f9e334]: EMG-102-B5
+                          - generic [ref=f9e338]: Available
+                        - paragraph [ref=f9e344]: No patient assigned
+                        - button "Assign Patient" [ref=f9e345] [cursor=pointer]
+                  - generic [ref=f9e349]:
+                    - generic [ref=f9e350]:
+                      - heading "General Male Ward" [level=3] [ref=f9e351]
+                      - generic [ref=f9e352]: GEN-301 · General
+                    - generic [ref=f9e353]:
+                      - generic [ref=f9e354]:
+                        - generic [ref=f9e355]:
+                          - generic [ref=f9e356]: GEN-301-B1
+                          - generic [ref=f9e360]: Available
+                        - paragraph [ref=f9e366]: No patient assigned
+                        - button "Assign Patient" [ref=f9e367] [cursor=pointer]
+                      - generic [ref=f9e371]:
+                        - generic [ref=f9e372]:
+                          - generic [ref=f9e373]: GEN-301-B2
+                          - generic [ref=f9e377]: Available
+                        - paragraph [ref=f9e383]: No patient assigned
+                        - button "Assign Patient" [ref=f9e384] [cursor=pointer]
+                      - generic [ref=f9e388]:
+                        - generic [ref=f9e389]:
+                          - generic [ref=f9e390]: GEN-301-B3
+                          - generic [ref=f9e394]: Available
+                        - paragraph [ref=f9e400]: No patient assigned
+                        - button "Assign Patient" [ref=f9e401] [cursor=pointer]
+                      - generic [ref=f9e405]:
+                        - generic [ref=f9e406]:
+                          - generic [ref=f9e407]: GEN-301-B4
+                          - generic [ref=f9e411]: Available
+                        - paragraph [ref=f9e417]: No patient assigned
+                        - button "Assign Patient" [ref=f9e418] [cursor=pointer]
+                      - generic [ref=f9e422]:
+                        - generic [ref=f9e423]:
+                          - generic [ref=f9e424]: GEN-301-B5
+                          - generic [ref=f9e428]: Available
+                        - paragraph [ref=f9e434]: No patient assigned
+                        - button "Assign Patient" [ref=f9e435] [cursor=pointer]
+                  - generic [ref=f9e439]:
+                    - generic [ref=f9e440]:
+                      - heading "General Female Ward" [level=3] [ref=f9e441]
+                      - generic [ref=f9e442]: GEN-302 · General
+                    - generic [ref=f9e443]:
+                      - generic [ref=f9e444]:
+                        - generic [ref=f9e445]:
+                          - generic [ref=f9e446]: GEN-302-B1
+                          - generic [ref=f9e450]: Available
+                        - paragraph [ref=f9e456]: No patient assigned
+                        - button "Assign Patient" [ref=f9e457] [cursor=pointer]
+                      - generic [ref=f9e461]:
+                        - generic [ref=f9e462]:
+                          - generic [ref=f9e463]: GEN-302-B2
+                          - generic [ref=f9e467]: Available
+                        - paragraph [ref=f9e473]: No patient assigned
+                        - button "Assign Patient" [ref=f9e474] [cursor=pointer]
+                      - generic [ref=f9e478]:
+                        - generic [ref=f9e479]:
+                          - generic [ref=f9e480]: GEN-302-B3
+                          - generic [ref=f9e484]: Available
+                        - paragraph [ref=f9e490]: No patient assigned
+                        - button "Assign Patient" [ref=f9e491] [cursor=pointer]
+                      - generic [ref=f9e495]:
+                        - generic [ref=f9e496]:
+                          - generic [ref=f9e497]: GEN-302-B4
+                          - generic [ref=f9e501]: Available
+                        - paragraph [ref=f9e507]: No patient assigned
+                        - button "Assign Patient" [ref=f9e508] [cursor=pointer]
+                      - generic [ref=f9e512]:
+                        - generic [ref=f9e513]:
+                          - generic [ref=f9e514]: GEN-302-B5
+                          - generic [ref=f9e518]: Available
+                        - paragraph [ref=f9e524]: No patient assigned
+                        - button "Assign Patient" [ref=f9e525] [cursor=pointer]
+                  - generic [ref=f9e529]:
+                    - generic [ref=f9e530]:
+                      - heading "Cardiac ICU" [level=3] [ref=f9e531]
+                      - generic [ref=f9e532]: ICU-101 · ICU
+                    - generic [ref=f9e533]:
+                      - generic [ref=f9e534]:
+                        - generic [ref=f9e535]:
+                          - generic [ref=f9e536]: ICU-101-B1
+                          - generic [ref=f9e540]: Available
+                        - paragraph [ref=f9e546]: No patient assigned
+                        - button "Assign Patient" [ref=f9e547] [cursor=pointer]
+                      - generic [ref=f9e551]:
+                        - generic [ref=f9e552]:
+                          - generic [ref=f9e553]: ICU-101-B2
+                          - generic [ref=f9e557]: Available
+                        - paragraph [ref=f9e563]: No patient assigned
+                        - button "Assign Patient" [ref=f9e564] [cursor=pointer]
+                      - generic [ref=f9e568]:
+                        - generic [ref=f9e569]:
+                          - generic [ref=f9e570]: ICU-101-B3
+                          - generic [ref=f9e574]: Available
+                        - paragraph [ref=f9e580]: No patient assigned
+                        - button "Assign Patient" [ref=f9e581] [cursor=pointer]
+                      - generic [ref=f9e585]:
+                        - generic [ref=f9e586]:
+                          - generic [ref=f9e587]: ICU-101-B4
+                          - generic [ref=f9e591]: Available
+                        - paragraph [ref=f9e597]: No patient assigned
+                        - button "Assign Patient" [ref=f9e598] [cursor=pointer]
+                      - generic [ref=f9e602]:
+                        - generic [ref=f9e603]:
+                          - generic [ref=f9e604]: ICU-101-B5
+                          - generic [ref=f9e608]: Available
+                        - paragraph [ref=f9e614]: No patient assigned
+                        - button "Assign Patient" [ref=f9e615] [cursor=pointer]
+                  - generic [ref=f9e619]:
+                    - generic [ref=f9e620]:
+                      - heading "Maternity Ward" [level=3] [ref=f9e621]
+                      - generic [ref=f9e622]: MAT-401 · General
+                    - generic [ref=f9e623]:
+                      - generic [ref=f9e624]:
+                        - generic [ref=f9e625]:
+                          - generic [ref=f9e626]: MAT-401-B1
+                          - generic [ref=f9e630]: Available
+                        - paragraph [ref=f9e636]: No patient assigned
+                        - button "Assign Patient" [ref=f9e637] [cursor=pointer]
+                      - generic [ref=f9e641]:
+                        - generic [ref=f9e642]:
+                          - generic [ref=f9e643]: MAT-401-B2
+                          - generic [ref=f9e647]: Available
+                        - paragraph [ref=f9e653]: No patient assigned
+                        - button "Assign Patient" [ref=f9e654] [cursor=pointer]
+                      - generic [ref=f9e658]:
+                        - generic [ref=f9e659]:
+                          - generic [ref=f9e660]: MAT-401-B3
+                          - generic [ref=f9e664]: Available
+                        - paragraph [ref=f9e670]: No patient assigned
+                        - button "Assign Patient" [ref=f9e671] [cursor=pointer]
+                      - generic [ref=f9e675]:
+                        - generic [ref=f9e676]:
+                          - generic [ref=f9e677]: MAT-401-B4
+                          - generic [ref=f9e681]: Available
+                        - paragraph [ref=f9e687]: No patient assigned
+                        - button "Assign Patient" [ref=f9e688] [cursor=pointer]
+                      - generic [ref=f9e692]:
+                        - generic [ref=f9e693]:
+                          - generic [ref=f9e694]: MAT-401-B5
+                          - generic [ref=f9e698]: Available
+                        - paragraph [ref=f9e704]: No patient assigned
+                        - button "Assign Patient" [ref=f9e705] [cursor=pointer]
+                  - generic [ref=f9e709]:
+                    - generic [ref=f9e710]:
+                      - heading "Paediatric Suite" [level=3] [ref=f9e711]
+                      - generic [ref=f9e712]: PED-201 · General
+                    - generic [ref=f9e713]:
+                      - generic [ref=f9e714]:
+                        - generic [ref=f9e715]:
+                          - generic [ref=f9e716]: PED-201-B1
+                          - generic [ref=f9e720]: Available
+                        - paragraph [ref=f9e726]: No patient assigned
+                        - button "Assign Patient" [ref=f9e727] [cursor=pointer]
+                      - generic [ref=f9e731]:
+                        - generic [ref=f9e732]:
+                          - generic [ref=f9e733]: PED-201-B2
+                          - generic [ref=f9e737]: Available
+                        - paragraph [ref=f9e743]: No patient assigned
+                        - button "Assign Patient" [ref=f9e744] [cursor=pointer]
+                      - generic [ref=f9e748]:
+                        - generic [ref=f9e749]:
+                          - generic [ref=f9e750]: PED-201-B3
+                          - generic [ref=f9e754]: Available
+                        - paragraph [ref=f9e760]: No patient assigned
+                        - button "Assign Patient" [ref=f9e761] [cursor=pointer]
+                      - generic [ref=f9e765]:
+                        - generic [ref=f9e766]:
+                          - generic [ref=f9e767]: PED-201-B4
+                          - generic [ref=f9e771]: Available
+                        - paragraph [ref=f9e777]: No patient assigned
+                        - button "Assign Patient" [ref=f9e778] [cursor=pointer]
+                      - generic [ref=f9e782]:
+                        - generic [ref=f9e783]:
+                          - generic [ref=f9e784]: PED-201-B5
+                          - generic [ref=f9e788]: Available
+                        - paragraph [ref=f9e794]: No patient assigned
+                        - button "Assign Patient" [ref=f9e795] [cursor=pointer]
+                  - generic [ref=f9e799]:
+                    - generic [ref=f9e800]:
+                      - heading "Private Deluxe Suite" [level=3] [ref=f9e801]
+                      - generic [ref=f9e802]: PVT-501 · Private
+                    - generic [ref=f9e803]:
+                      - generic [ref=f9e804]:
+                        - generic [ref=f9e805]:
+                          - generic [ref=f9e806]: PVT-501-B1
+                          - generic [ref=f9e810]: Available
+                        - paragraph [ref=f9e816]: No patient assigned
+                        - button "Assign Patient" [ref=f9e817] [cursor=pointer]
+                      - generic [ref=f9e821]:
+                        - generic [ref=f9e822]:
+                          - generic [ref=f9e823]: PVT-501-B2
+                          - generic [ref=f9e827]: Available
+                        - paragraph [ref=f9e833]: No patient assigned
+                        - button "Assign Patient" [ref=f9e834] [cursor=pointer]
+                      - generic [ref=f9e838]:
+                        - generic [ref=f9e839]:
+                          - generic [ref=f9e840]: PVT-501-B3
+                          - generic [ref=f9e844]: Available
+                        - paragraph [ref=f9e850]: No patient assigned
+                        - button "Assign Patient" [ref=f9e851] [cursor=pointer]
+                      - generic [ref=f9e855]:
+                        - generic [ref=f9e856]:
+                          - generic [ref=f9e857]: PVT-501-B4
+                          - generic [ref=f9e861]: Available
+                        - paragraph [ref=f9e867]: No patient assigned
+                        - button "Assign Patient" [ref=f9e868] [cursor=pointer]
+                      - generic [ref=f9e872]:
+                        - generic [ref=f9e873]:
+                          - generic [ref=f9e874]: PVT-501-B5
+                          - generic [ref=f9e878]: Available
+                        - paragraph [ref=f9e884]: No patient assigned
+                        - button "Assign Patient" [ref=f9e885] [cursor=pointer]
+    - button "Open MediLink Assistant" [ref=f9e891] [cursor=pointer]
+  - dialog [ref=f9e981]:
+    - generic [ref=f9e983]:
+      - generic [ref=f9e984]:
+        - heading "Assign Patient — Bed EMG-102-B1" [level=3] [ref=f9e985]
+        - button "Close dialog" [active] [ref=f9e986] [cursor=pointer]
+      - generic [ref=f9e991]:
+        - generic [ref=f9e992]:
+          - generic [ref=f9e996]:
+            - paragraph [ref=f9e997]: EMG-102-B1
+            - paragraph [ref=f9e998]: Emergency Trauma Care · Emergency
+          - button "AI Recommendation" [ref=f9e999] [cursor=pointer]
+        - generic [ref=f9e1002]:
+          - generic [ref=f9e1003]: Search Patient
+          - textbox "Search by name, phone or patient ID…" [ref=f9e1008]
+        - generic [ref=f9e1010]:
+          - button [ref=f9e1011] [cursor=pointer]:
+            - generic [ref=f9e1016]:
+              - paragraph [ref=f9e1017]: Nisha Das
+              - paragraph [ref=f9e1018]: PT-IND-1149 · 32y · Female · 9810000149
+          - button [ref=f9e1019] [cursor=pointer]:
+            - generic [ref=f9e1024]:
+              - paragraph [ref=f9e1025]: Pradeep Patel
+              - paragraph [ref=f9e1026]: PT-IND-1148 · 33y · Male · 9810000148
+          - button [ref=f9e1027] [cursor=pointer]:
+            - generic [ref=f9e1032]:
+              - paragraph [ref=f9e1033]: Manju Saxena
+              - paragraph [ref=f9e1034]: PT-IND-1147 · 34y · Female · 9810000147
+          - button [ref=f9e1035] [cursor=pointer]:
+            - generic [ref=f9e1040]:
+              - paragraph [ref=f9e1041]: Anand Rane
+              - paragraph [ref=f9e1042]: PT-IND-1146 · 35y · Male · 9810000146
+          - button [ref=f9e1043] [cursor=pointer]:
+            - generic [ref=f9e1048]:
+              - paragraph [ref=f9e1049]: Neha Qureshi
+              - paragraph [ref=f9e1050]: PT-IND-1145 · 36y · Female · 9810000145
+          - button [ref=f9e1051] [cursor=pointer]:
+            - generic [ref=f9e1056]:
+              - paragraph [ref=f9e1057]: Vikram Sundaram
+              - paragraph [ref=f9e1058]: PT-IND-1144 · 37y · Male · 9810000144
+          - button [ref=f9e1059] [cursor=pointer]:
+            - generic [ref=f9e1064]:
+              - paragraph [ref=f9e1065]: Reena Bhatia
+              - paragraph [ref=f9e1066]: PT-IND-1143 · 37y · Female · 9810000143
+          - button [ref=f9e1067] [cursor=pointer]:
+            - generic [ref=f9e1072]:
+              - paragraph [ref=f9e1073]: Pradeep Kapoor
+              - paragraph [ref=f9e1074]: PT-IND-1142 · 38y · Male · 9810000142
+          - button [ref=f9e1075] [cursor=pointer]:
+            - generic [ref=f9e1080]:
+              - paragraph [ref=f9e1081]: Bhavna Mehta
+              - paragraph [ref=f9e1082]: PT-IND-1141 · 39y · Female · 9810000141
+          - button [ref=f9e1083] [cursor=pointer]:
+            - generic [ref=f9e1088]:
+              - paragraph [ref=f9e1089]: Manish Deshmukh
+              - paragraph [ref=f9e1090]: PT-IND-1140 · 41y · Male · 9810000140
+          - button [ref=f9e1091] [cursor=pointer]:
+            - generic [ref=f9e1096]:
+              - paragraph [ref=f9e1097]: Sangeeta Tripathi
+              - paragraph [ref=f9e1098]: PT-IND-1139 · 42y · Female · 9810000139
+          - button [ref=f9e1099] [cursor=pointer]:
+            - generic [ref=f9e1104]:
+              - paragraph [ref=f9e1105]: Manish Reddy
+              - paragraph [ref=f9e1106]: PT-IND-1138 · 43y · Male · 9810000138
+          - button [ref=f9e1107] [cursor=pointer]:
+            - generic [ref=f9e1112]:
+              - paragraph [ref=f9e1113]: Ananya Patel
+              - paragraph [ref=f9e1114]: PT-IND-1137 · 44y · Female · 9810000137
+          - button [ref=f9e1115] [cursor=pointer]:
+            - generic [ref=f9e1120]:
+              - paragraph [ref=f9e1121]: Karan Deshmukh
+              - paragraph [ref=f9e1122]: PT-IND-1136 · 45y · Male · 9810000136
+          - button [ref=f9e1123] [cursor=pointer]:
+            - generic [ref=f9e1128]:
+              - paragraph [ref=f9e1129]: Ritu Iyer
+              - paragraph [ref=f9e1130]: PT-IND-1135 · 46y · Female · 9810000135
+          - button [ref=f9e1131] [cursor=pointer]:
+            - generic [ref=f9e1136]:
+              - paragraph [ref=f9e1137]: Rohan Deshmukh
+              - paragraph [ref=f9e1138]: PT-IND-1134 · 47y · Male · 9810000134
+          - button [ref=f9e1139] [cursor=pointer]:
+            - generic [ref=f9e1144]:
+              - paragraph [ref=f9e1145]: Kiran Nambiar
+              - paragraph [ref=f9e1146]: PT-IND-1133 · 48y · Female · 9810000133
+          - button [ref=f9e1147] [cursor=pointer]:
+            - generic [ref=f9e1152]:
+              - paragraph [ref=f9e1153]: Deepak Sharma
+              - paragraph [ref=f9e1154]: PT-IND-1132 · 49y · Male · 9810000132
+          - button [ref=f9e1155] [cursor=pointer]:
+            - generic [ref=f9e1160]:
+              - paragraph [ref=f9e1161]: Reena Nambiar
+              - paragraph [ref=f9e1162]: PT-IND-1131 · 49y · Female · 9810000131
+          - button [ref=f9e1163] [cursor=pointer]:
+            - generic [ref=f9e1168]:
+              - paragraph [ref=f9e1169]: Nitin Qureshi
+              - paragraph [ref=f9e1170]: PT-IND-1130 · 50y · Male · 9810000130
+          - button [ref=f9e1171] [cursor=pointer]:
+            - generic [ref=f9e1176]:
+              - paragraph [ref=f9e1177]: Priyanka Kapoor
+              - paragraph [ref=f9e1178]: PT-IND-1129 · 51y · Female · 9810000129
+          - button [ref=f9e1179] [cursor=pointer]:
+            - generic [ref=f9e1184]:
+              - paragraph [ref=f9e1185]: Anand Pillai
+              - paragraph [ref=f9e1186]: PT-IND-1128 · 52y · Male · 9810000128
+          - button [ref=f9e1187] [cursor=pointer]:
+            - generic [ref=f9e1192]:
+              - paragraph [ref=f9e1193]: Priya Mehta
+              - paragraph [ref=f9e1194]: PT-IND-1127 · 54y · Female · 9810000127
+          - button [ref=f9e1195] [cursor=pointer]:
+            - generic [ref=f9e1200]:
+              - paragraph [ref=f9e1201]: Siddharth Swaminathan
+              - paragraph [ref=f9e1202]: PT-IND-1126 · 55y · Male · 9810000126
+          - button [ref=f9e1203] [cursor=pointer]:
+            - generic [ref=f9e1208]:
+              - paragraph [ref=f9e1209]: Kavita Bannerjee
+              - paragraph [ref=f9e1210]: PT-IND-1125 · 56y · Female · 9810000125
+          - button [ref=f9e1211] [cursor=pointer]:
+            - generic [ref=f9e1216]:
+              - paragraph [ref=f9e1217]: Siddharth Nambiar
+              - paragraph [ref=f9e1218]: PT-IND-1124 · 57y · Male · 9810000124
+          - button [ref=f9e1219] [cursor=pointer]:
+            - generic [ref=f9e1224]:
+              - paragraph [ref=f9e1225]: Nisha Tripathi
+              - paragraph [ref=f9e1226]: PT-IND-1123 · 58y · Female · 9810000123
+          - button [ref=f9e1227] [cursor=pointer]:
+            - generic [ref=f9e1232]:
+              - paragraph [ref=f9e1233]: Rajesh Rao
+              - paragraph [ref=f9e1234]: PT-IND-1122 · 59y · Male · 9810000122
+          - button [ref=f9e1235] [cursor=pointer]:
+            - generic [ref=f9e1240]:
+              - paragraph [ref=f9e1241]: Rohini Verma
+              - paragraph [ref=f9e1242]: PT-IND-1121 · 60y · Female · 9810000121
+          - button [ref=f9e1243] [cursor=pointer]:
+            - generic [ref=f9e1248]:
+              - paragraph [ref=f9e1249]: Farhan Reddy
+              - paragraph [ref=f9e1250]: PT-IND-1120 · 61y · Male · 9810000120
+          - button [ref=f9e1251] [cursor=pointer]:
+            - generic [ref=f9e1256]:
+              - paragraph [ref=f9e1257]: Divya Trivedi
+              - paragraph [ref=f9e1258]: PT-IND-1119 · 21y · Female · 9810000119
+          - button [ref=f9e1259] [cursor=pointer]:
+            - generic [ref=f9e1264]:
+              - paragraph [ref=f9e1265]: Rohan Reddy
+              - paragraph [ref=f9e1266]: PT-IND-1118 · 22y · Male · 9810000118
+          - button [ref=f9e1267] [cursor=pointer]:
+            - generic [ref=f9e1272]:
+              - paragraph [ref=f9e1273]: Ananya Nambiar
+              - paragraph [ref=f9e1274]: PT-IND-1117 · 23y · Female · 9810000117
+          - button [ref=f9e1275] [cursor=pointer]:
+            - generic [ref=f9e1280]:
+              - paragraph [ref=f9e1281]: Harish Chandra
+              - paragraph [ref=f9e1282]: PT-IND-1116 · 25y · Male · 9810000116
+          - button [ref=f9e1283] [cursor=pointer]:
+            - generic [ref=f9e1288]:
+              - paragraph [ref=f9e1289]: Swati Gupta
+              - paragraph [ref=f9e1290]: PT-IND-1115 · 26y · Female · 9810000115
+          - button [ref=f9e1291] [cursor=pointer]:
+            - generic [ref=f9e1296]:
+              - paragraph [ref=f9e1297]: Rahul Patel
+              - paragraph [ref=f9e1298]: PT-IND-1114 · 27y · Male · 9810000114
+          - button [ref=f9e1299] [cursor=pointer]:
+            - generic [ref=f9e1304]:
+              - paragraph [ref=f9e1305]: Ritu Trivedi
+              - paragraph [ref=f9e1306]: PT-IND-1113 · 28y · Female · 9810000113
+          - button [ref=f9e1307] [cursor=pointer]:
+            - generic [ref=f9e1312]:
+              - paragraph [ref=f9e1313]: Aditya Iyer
+              - paragraph [ref=f9e1314]: PT-IND-1112 · 29y · Male · 9810000112
+          - button [ref=f9e1315] [cursor=pointer]:
+            - generic [ref=f9e1320]:
+              - paragraph [ref=f9e1321]: Ritu Pillai
+              - paragraph [ref=f9e1322]: PT-IND-1111 · 30y · Female · 9810000111
+          - button [ref=f9e1323] [cursor=pointer]:
+            - generic [ref=f9e1328]:
+              - paragraph [ref=f9e1329]: Suresh Bannerjee
+              - paragraph [ref=f9e1330]: PT-IND-1110 · 31y · Male · 9810000110
+          - button [ref=f9e1331] [cursor=pointer]:
+            - generic [ref=f9e1336]:
+              - paragraph [ref=f9e1337]: Geeta Sengupta
+              - paragraph [ref=f9e1338]: PT-IND-1109 · 32y · Female · 9810000109
+          - button [ref=f9e1339] [cursor=pointer]:
+            - generic [ref=f9e1344]:
+              - paragraph [ref=f9e1345]: Aditya Pillai
+              - paragraph [ref=f9e1346]: PT-IND-1108 · 33y · Male · 9810000108
+          - button [ref=f9e1347] [cursor=pointer]:
+            - generic [ref=f9e1352]:
+              - paragraph [ref=f9e1353]: Ananya Sharma
+              - paragraph [ref=f9e1354]: PT-IND-1107 · 33y · Female · 9810000107
+          - button [ref=f9e1355] [cursor=pointer]:
+            - generic [ref=f9e1360]:
+              - paragraph [ref=f9e1361]: Vikas Bhatia
+              - paragraph [ref=f9e1362]: PT-IND-1106 · 34y · Male · 9810000106
+          - button [ref=f9e1363] [cursor=pointer]:
+            - generic [ref=f9e1368]:
+              - paragraph [ref=f9e1369]: Ananya Chandra
+              - paragraph [ref=f9e1370]: PT-IND-1105 · 35y · Female · 9810000105
+          - button [ref=f9e1371] [cursor=pointer]:
+            - generic [ref=f9e1376]:
+              - paragraph [ref=f9e1377]: Harish Sharma
+              - paragraph [ref=f9e1378]: PT-IND-1104 · 36y · Male · 9810000104
+          - button [ref=f9e1379] [cursor=pointer]:
+            - generic [ref=f9e1384]:
+              - paragraph [ref=f9e1385]: Rohini Mehta
+              - paragraph [ref=f9e1386]: PT-IND-1103 · 38y · Female · 9810000103
+          - button [ref=f9e1387] [cursor=pointer]:
+            - generic [ref=f9e1392]:
+              - paragraph [ref=f9e1393]: Alok Joshi
+              - paragraph [ref=f9e1394]: PT-IND-1102 · 39y · Male · 9810000102
+          - button [ref=f9e1395] [cursor=pointer]:
+            - generic [ref=f9e1400]:
+              - paragraph [ref=f9e1401]: Shweta Nambiar
+              - paragraph [ref=f9e1402]: PT-IND-1101 · 40y · Female · 9810000101
+          - button [ref=f9e1403] [cursor=pointer]:
+            - generic [ref=f9e1408]:
+              - paragraph [ref=f9e1409]: Mahesh Kulkarni
+              - paragraph [ref=f9e1410]: PT-IND-1100 · 41y · Male · 9810000100
+          - button [ref=f9e1411] [cursor=pointer]:
+            - generic [ref=f9e1416]:
+              - paragraph [ref=f9e1417]: Preeti Rao
+              - paragraph [ref=f9e1418]: PT-IND-1099 · 42y · Female · 9810000099
+          - button [ref=f9e1419] [cursor=pointer]:
+            - generic [ref=f9e1424]:
+              - paragraph [ref=f9e1425]: Pankaj Swaminathan
+              - paragraph [ref=f9e1426]: PT-IND-1098 · 43y · Male · 9810000098
+          - button [ref=f9e1427] [cursor=pointer]:
+            - generic [ref=f9e1432]:
+              - paragraph [ref=f9e1433]: Priyanka Rane
+              - paragraph [ref=f9e1434]: PT-IND-1097 · 44y · Female · 9810000097
+          - button [ref=f9e1435] [cursor=pointer]:
+            - generic [ref=f9e1440]:
+              - paragraph [ref=f9e1441]: Rahul Sengupta
+              - paragraph [ref=f9e1442]: PT-IND-1096 · 45y · Male · 9810000096
+          - button [ref=f9e1443] [cursor=pointer]:
+            - generic [ref=f9e1448]:
+              - paragraph [ref=f9e1449]: Anjali Sharma
+              - paragraph [ref=f9e1450]: PT-IND-1095 · 45y · Female · 9810000095
+          - button [ref=f9e1451] [cursor=pointer]:
+            - generic [ref=f9e1456]:
+              - paragraph [ref=f9e1457]: Siddharth Deshmukh
+              - paragraph [ref=f9e1458]: PT-IND-1094 · 46y · Male · 9810000094
+          - button [ref=f9e1459] [cursor=pointer]:
+            - generic [ref=f9e1464]:
+              - paragraph [ref=f9e1465]: Kiran Pillai
+              - paragraph [ref=f9e1466]: PT-IND-1093 · 47y · Female · 9810000093
+          - button [ref=f9e1467] [cursor=pointer]:
+            - generic [ref=f9e1472]:
+              - paragraph [ref=f9e1473]: Pradeep Nair
+              - paragraph [ref=f9e1474]: PT-IND-1092 · 49y · Male · 9810000092
+          - button [ref=f9e1475] [cursor=pointer]:
+            - generic [ref=f9e1480]:
+              - paragraph [ref=f9e1481]: Ananya Das
+              - paragraph [ref=f9e1482]: PT-IND-1091 · 50y · Female · 9810000091
+          - button [ref=f9e1483] [cursor=pointer]:
+            - generic [ref=f9e1488]:
+              - paragraph [ref=f9e1489]: Pankaj Gupta
+              - paragraph [ref=f9e1490]: PT-IND-1090 · 51y · Male · 9810000090
+          - button [ref=f9e1491] [cursor=pointer]:
+            - generic [ref=f9e1496]:
+              - paragraph [ref=f9e1497]: Geeta Agrawal
+              - paragraph [ref=f9e1498]: PT-IND-1089 · 52y · Female · 9810000089
+          - button [ref=f9e1499] [cursor=pointer]:
+            - generic [ref=f9e1504]:
+              - paragraph [ref=f9e1505]: Alok Bhatia
+              - paragraph [ref=f9e1506]: PT-IND-1088 · 53y · Male · 9810000088
+          - button [ref=f9e1507] [cursor=pointer]:
+            - generic [ref=f9e1512]:
+              - paragraph [ref=f9e1513]: Smita Agrawal
+              - paragraph [ref=f9e1514]: PT-IND-1087 · 54y · Female · 9810000087
+          - button [ref=f9e1515] [cursor=pointer]:
+            - generic [ref=f9e1520]:
+              - paragraph [ref=f9e1521]: Harish Rane
+              - paragraph [ref=f9e1522]: PT-IND-1086 · 55y · Male · 9810000086
+          - button [ref=f9e1523] [cursor=pointer]:
+            - generic [ref=f9e1528]:
+              - paragraph [ref=f9e1529]: Ananya Chandra
+              - paragraph [ref=f9e1530]: PT-IND-1085 · 56y · Female · 9810000085
+          - button [ref=f9e1531] [cursor=pointer]:
+            - generic [ref=f9e1536]:
+              - paragraph [ref=f9e1537]: Vijay Bannerjee
+              - paragraph [ref=f9e1538]: PT-IND-1084 · 57y · Male · 9810000084
+          - button [ref=f9e1539] [cursor=pointer]:
+            - generic [ref=f9e1544]:
+              - paragraph [ref=f9e1545]: Preeti Tripathi
+              - paragraph [ref=f9e1546]: PT-IND-1083 · 57y · Female · 9810000083
+          - button [ref=f9e1547] [cursor=pointer]:
+            - generic [ref=f9e1552]:
+              - paragraph [ref=f9e1553]: Mahesh Joshi
+              - paragraph [ref=f9e1554]: PT-IND-1082 · 58y · Male · 9810000082
+          - button [ref=f9e1555] [cursor=pointer]:
+            - generic [ref=f9e1560]:
+              - paragraph [ref=f9e1561]: Divya Das
+              - paragraph [ref=f9e1562]: PT-IND-1081 · 59y · Female · 9810000081
+          - button [ref=f9e1563] [cursor=pointer]:
+            - generic [ref=f9e1568]:
+              - paragraph [ref=f9e1569]: Arjun Sengupta
+              - paragraph [ref=f9e1570]: PT-IND-1080 · 60y · Male · 9810000080
+          - button [ref=f9e1571] [cursor=pointer]:
+            - generic [ref=f9e1576]:
+              - paragraph [ref=f9e1577]: Neha Nambiar
+              - paragraph [ref=f9e1578]: PT-IND-1079 · 22y · Female · 9810000079
+          - button [ref=f9e1579] [cursor=pointer]:
+            - generic [ref=f9e1584]:
+              - paragraph [ref=f9e1585]: Vikas Deshmukh
+              - paragraph [ref=f9e1586]: PT-IND-1078 · 23y · Male · 9810000078
+          - button [ref=f9e1587] [cursor=pointer]:
+            - generic [ref=f9e1592]:
+              - paragraph [ref=f9e1593]: Bhavna Rao
+              - paragraph [ref=f9e1594]: PT-IND-1077 · 24y · Female · 9810000077
+          - button [ref=f9e1595] [cursor=pointer]:
+            - generic [ref=f9e1600]:
+              - paragraph [ref=f9e1601]: Vikas Gupta
+              - paragraph [ref=f9e1602]: PT-IND-1076 · 25y · Male · 9810000076
+          - button [ref=f9e1603] [cursor=pointer]:
+            - generic [ref=f9e1608]:
+              - paragraph [ref=f9e1609]: Anjali Rane
+              - paragraph [ref=f9e1610]: PT-IND-1075 · 26y · Female · 9810000075
+          - button [ref=f9e1611] [cursor=pointer]:
+            - generic [ref=f9e1616]:
+              - paragraph [ref=f9e1617]: Rohan Das
+              - paragraph [ref=f9e1618]: PT-IND-1074 · 27y · Male · 9810000074
+          - button [ref=f9e1619] [cursor=pointer]:
+            - generic [ref=f9e1624]:
+              - paragraph [ref=f9e1625]: Neha Saxena
+              - paragraph [ref=f9e1626]: PT-IND-1073 · 28y · Female · 9810000073
+          - button [ref=f9e1627] [cursor=pointer]:
+            - generic [ref=f9e1632]:
+              - paragraph [ref=f9e1633]: Rahul Saxena
+              - paragraph [ref=f9e1634]: PT-IND-1072 · 29y · Male · 9810000072
+          - button [ref=f9e1635] [cursor=pointer]:
+            - generic [ref=f9e1640]:
+              - paragraph [ref=f9e1641]: Manju Tripathi
+              - paragraph [ref=f9e1642]: PT-IND-1071 · 29y · Female · 9810000071
+          - button [ref=f9e1643] [cursor=pointer]:
+            - generic [ref=f9e1648]:
+              - paragraph [ref=f9e1649]: Devendra Singh
+              - paragraph [ref=f9e1650]: PT-IND-1070 · 30y · Male · 9810000070
+          - button [ref=f9e1651] [cursor=pointer]:
+            - generic [ref=f9e1656]:
+              - paragraph [ref=f9e1657]: Pooja Rao
+              - paragraph [ref=f9e1658]: PT-IND-1069 · 31y · Female · 9810000069
+          - button [ref=f9e1659] [cursor=pointer]:
+            - generic [ref=f9e1664]:
+              - paragraph [ref=f9e1665]: Devendra Patel
+              - paragraph [ref=f9e1666]: PT-IND-1068 · 33y · Male · 9810000068
+          - button [ref=f9e1667] [cursor=pointer]:
+            - generic [ref=f9e1672]:
+              - paragraph [ref=f9e1673]: Sangeeta Singh
+              - paragraph [ref=f9e1674]: PT-IND-1067 · 34y · Female · 9810000067
+          - button [ref=f9e1675] [cursor=pointer]:
+            - generic [ref=f9e1680]:
+              - paragraph [ref=f9e1681]: Rajesh Nambiar
+              - paragraph [ref=f9e1682]: PT-IND-1066 · 35y · Male · 9810000066
+          - button [ref=f9e1683] [cursor=pointer]:
+            - generic [ref=f9e1688]:
+              - paragraph [ref=f9e1689]: Fatima Deshmukh
+              - paragraph [ref=f9e1690]: PT-IND-1065 · 36y · Female · 9810000065
+          - button [ref=f9e1691] [cursor=pointer]:
+            - generic [ref=f9e1696]:
+              - paragraph [ref=f9e1697]: Tarun Rane
+              - paragraph [ref=f9e1698]: PT-IND-1064 · 37y · Male · 9810000064
+          - button [ref=f9e1699] [cursor=pointer]:
+            - generic [ref=f9e1704]:
+              - paragraph [ref=f9e1705]: Meena Saxena
+              - paragraph [ref=f9e1706]: PT-IND-1063 · 38y · Female · 9810000063
+          - button [ref=f9e1707] [cursor=pointer]:
+            - generic [ref=f9e1712]:
+              - paragraph [ref=f9e1713]: Ashok Sundaram
+              - paragraph [ref=f9e1714]: PT-IND-1062 · 39y · Male · 9810000062
+          - button [ref=f9e1715] [cursor=pointer]:
+            - generic [ref=f9e1720]:
+              - paragraph [ref=f9e1721]: Anjali Sen
+              - paragraph [ref=f9e1722]: PT-IND-1061 · 40y · Female · 9810000061
+          - button [ref=f9e1723] [cursor=pointer]:
+            - generic [ref=f9e1728]:
+              - paragraph [ref=f9e1729]: Rohan Sharma
+              - paragraph [ref=f9e1730]: PT-IND-1060 · 41y · Male · 9810000060
+          - button [ref=f9e1731] [cursor=pointer]:
+            - generic [ref=f9e1736]:
+              - paragraph [ref=f9e1737]: Sunita Rao
+              - paragraph [ref=f9e1738]: PT-IND-1059 · 41y · Female · 9810000059
+          - button [ref=f9e1739] [cursor=pointer]:
+            - generic [ref=f9e1744]:
+              - paragraph [ref=f9e1745]: Gaurav Nair
+              - paragraph [ref=f9e1746]: PT-IND-1058 · 42y · Male · 9810000058
+          - button [ref=f9e1747] [cursor=pointer]:
+            - generic [ref=f9e1752]:
+              - paragraph [ref=f9e1753]: Neha Gupta
+              - paragraph [ref=f9e1754]: PT-IND-1057 · 43y · Female · 9810000057
+          - button [ref=f9e1755] [cursor=pointer]:
+            - generic [ref=f9e1760]:
+              - paragraph [ref=f9e1761]: Nitin Sen
+              - paragraph [ref=f9e1762]: PT-IND-1056 · 45y · Male · 9810000056
+          - button [ref=f9e1763] [cursor=pointer]:
+            - generic [ref=f9e1768]:
+              - paragraph [ref=f9e1769]: Ritu Kapoor
+              - paragraph [ref=f9e1770]: PT-IND-1055 · 46y · Female · 9810000055
+          - button [ref=f9e1771] [cursor=pointer]:
+            - generic [ref=f9e1776]:
+              - paragraph [ref=f9e1777]: Mahesh Singh
+              - paragraph [ref=f9e1778]: PT-IND-1054 · 47y · Male · 9810000054
+          - button [ref=f9e1779] [cursor=pointer]:
+            - generic [ref=f9e1784]:
+              - paragraph [ref=f9e1785]: Ananya Nambiar
+              - paragraph [ref=f9e1786]: PT-IND-1053 · 48y · Female · 9810000053
+          - button [ref=f9e1787] [cursor=pointer]:
+            - generic [ref=f9e1792]:
+              - paragraph [ref=f9e1793]: Vikram Sen
+              - paragraph [ref=f9e1794]: PT-IND-1052 · 49y · Male · 9810000052
+          - button [ref=f9e1795] [cursor=pointer]:
+            - generic [ref=f9e1800]:
+              - paragraph [ref=f9e1801]: Meena Nambiar
+              - paragraph [ref=f9e1802]: PT-IND-1051 · 50y · Female · 9810000051
+          - button [ref=f9e1803] [cursor=pointer]:
+            - generic [ref=f9e1808]:
+              - paragraph [ref=f9e1809]: Manish Das
+              - paragraph [ref=f9e1810]: PT-IND-1050 · 51y · Male · 9810000050
+        - generic [ref=f9e1811]:
+          - generic [ref=f9e1812]:
+            - generic [ref=f9e1813]: Admission Date *
+            - textbox [ref=f9e1814]: 2026-09-15
+          - generic [ref=f9e1815]:
+            - generic [ref=f9e1816]: Expected Discharge
+            - textbox [ref=f9e1817]
+        - generic [ref=f9e1818]:
+          - button "Cancel" [ref=f9e1819] [cursor=pointer]
+          - button "Assign to Bed" [disabled] [ref=f9e1820]

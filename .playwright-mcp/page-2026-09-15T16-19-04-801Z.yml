@@ -1,0 +1,64 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e3]:
+    - generic [ref=f1e751] [cursor=pointer]:
+      - alert [ref=f1e752]:
+        - generic [ref=f1e756]: Logged out successfully
+      - button "close" [ref=f1e757]
+      - progressbar "notification timer" [ref=f1e760]
+    - generic [ref=f1e761]:
+      - generic [ref=f1e763]:
+        - generic [ref=f1e771]:
+          - paragraph [ref=f1e772]: Role
+          - paragraph [ref=f1e773]: Scoped access
+        - generic [ref=f1e780]:
+          - paragraph [ref=f1e781]: Safe
+          - paragraph [ref=f1e782]: Validated workflows
+        - generic [ref=f1e788]:
+          - paragraph [ref=f1e789]: Audit
+          - paragraph [ref=f1e790]: Traceable changes
+        - generic [ref=f1e792]:
+          - generic [ref=f1e793]: MediLink
+          - generic [ref=f1e798]:
+            - generic [ref=f1e799]: Healthcare Platform
+            - generic [ref=f1e802]:
+              - heading "Smart Healthcare, Simplified." [level=2] [ref=f1e803]: Smart Healthcare,Simplified.
+              - paragraph [ref=f1e804]: One platform for patients, appointments, billing, and clinical workflows.
+            - paragraph [ref=f1e806]: Live system monitor
+            - generic [ref=f1e810]:
+              - generic [ref=f1e811]: Patient-centred care management
+              - generic [ref=f1e816]: Role-based secure access control
+              - generic [ref=f1e821]: Transactional scheduling & billing
+          - paragraph [ref=f1e826]: © 2026 MediLink · Safety-oriented engineering prototype
+      - generic [ref=f1e827]:
+        - generic [ref=f1e828]:
+          - generic [ref=f1e829]:
+            - heading "Welcome back" [level=2] [ref=f1e832]
+            - paragraph [ref=f1e833]: Sign in to your MediLink account
+          - generic [ref=f1e834]:
+            - generic [ref=f1e837]:
+              - textbox "Email Address" [ref=f1e838]:
+                - /placeholder: " "
+                - text: pharmacist@medilink.com
+              - generic: Email Address
+            - generic [ref=f1e841]:
+              - textbox "Password" [ref=f1e842]:
+                - /placeholder: " "
+                - text: Password123!
+              - generic: Password
+              - button "Show password" [ref=f1e843] [cursor=pointer]
+            - generic [ref=f1e847]:
+              - generic [ref=f1e848] [cursor=pointer]:
+                - checkbox "Keep me signed in" [ref=f1e849]
+                - generic [ref=f1e850]: Keep me signed in
+              - link "Forgot password?" [ref=f1e851] [cursor=pointer]:
+                - /url: /forgot-password
+            - button "Sign In" [ref=f1e853] [cursor=pointer]
+          - paragraph [ref=f1e856]:
+            - text: Don't have an account?
+            - link "Register here" [ref=f1e857] [cursor=pointer]:
+              - /url: /register
+        - generic [ref=f1e858]:
+          - generic [ref=f1e859]: Secure Login
+          - generic [ref=f1e861]: Prototype System
+          - generic [ref=f1e863]: Role-based Access
+  - generic [aria-hidden] [ref=f1e728]: "3"

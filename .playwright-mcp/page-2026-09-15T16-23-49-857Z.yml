@@ -1,0 +1,477 @@
+- generic [ref=f6e10]:
+  - generic [ref=f6e12]:
+    - generic [ref=f6e13]:
+      - banner [ref=f6e14]:
+        - generic [ref=f6e15]:
+          - link "MediLink" [ref=f6e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f6e18]:
+            - link "Dashboard" [ref=f6e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f6e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Patients" [ref=f6e21] [cursor=pointer]:
+              - /url: /patients
+            - link "Doctors" [ref=f6e22] [cursor=pointer]:
+              - /url: /doctors
+            - link "Staff" [ref=f6e23] [cursor=pointer]:
+              - /url: /staff
+            - link "Appointments" [ref=f6e24] [cursor=pointer]:
+              - /url: /appointments
+            - link "Wards & Beds" [ref=f6e25] [cursor=pointer]:
+              - /url: /wards
+            - link "Pharmacy" [ref=f6e26] [cursor=pointer]:
+              - /url: /pharmacy
+            - link "Billing" [ref=f6e27] [cursor=pointer]:
+              - /url: /billing
+            - link "Reports" [ref=f6e28] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=f6e29]:
+            - button "Settings" [ref=f6e30] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f6e35] [cursor=pointer]
+            - button "Notifications (3 unread)" [ref=f6e39] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f6e44]: "3"
+            - button "Account menu for System Admin" [ref=f6e46] [cursor=pointer]: SA
+      - main [ref=f6e47]:
+        - generic [ref=f6e49]:
+          - generic [ref=f6e50]:
+            - generic [ref=f6e51]:
+              - generic [ref=f6e52]:
+                - heading "Staff Management" [level=1] [ref=f6e53]
+                - generic [ref=f6e54]: All staff
+              - paragraph [ref=f6e58]: Manage staff records, shifts, and departments
+            - button "Add Staff Member" [ref=f6e59] [cursor=pointer]
+          - generic [ref=f6e61]:
+            - complementary [ref=f6e62]:
+              - generic [ref=f6e63]:
+                - generic [ref=f6e64]:
+                  - paragraph [ref=f6e67]: Total Staff
+                  - paragraph [ref=f6e74]: "70"
+                - generic [ref=f6e75]:
+                  - paragraph [ref=f6e78]: Nurses
+                  - paragraph [ref=f6e83]: "0"
+                - generic [ref=f6e84]:
+                  - paragraph [ref=f6e87]: Support Staff
+                  - paragraph [ref=f6e91]: "70"
+                - generic [ref=f6e92]:
+                  - paragraph [ref=f6e95]: On Duty
+                  - paragraph [ref=f6e100]: "70"
+            - generic [ref=f6e101]:
+              - generic [ref=f6e102]:
+                - textbox "Search staff…" [ref=f6e109]
+                - combobox [ref=f6e110]:
+                  - option "All Sub-Roles" [selected]
+                  - option "Nurse"
+                  - option "Receptionist"
+                  - option "Pharmacist"
+                  - option "Lab Technician"
+                  - option "Radiology Technician"
+                  - option "Billing Staff"
+                  - option "Ward Manager"
+                - combobox [ref=f6e111]:
+                  - option "All Shifts" [selected]
+                  - option "Morning"
+                  - option "Evening"
+                  - option "Night"
+                  - option "Rotational"
+                - generic [ref=f6e112]: 70 of 70 members
+              - generic [ref=f6e113]:
+                - generic [ref=f6e114]:
+                  - generic [ref=f6e115]:
+                    - generic [ref=f6e116]: NV
+                    - generic [ref=f6e117]:
+                      - paragraph [ref=f6e118]: Nisha Verma
+                      - paragraph [ref=f6e119]: staff.64@medilink.in
+                      - paragraph [ref=f6e120]: EMP-163
+                    - generic [ref=f6e121]: Reception Desk Assistant
+                  - generic [ref=f6e122]:
+                    - generic [ref=f6e123]: Reception
+                    - generic [ref=f6e124]: Morning
+                    - generic [ref=f6e125]: Full_Time
+                  - generic [ref=f6e126]:
+                    - generic [ref=f6e127]:
+                      - paragraph [ref=f6e128]: Salary
+                      - paragraph [ref=f6e129]: ₹61,500
+                    - generic [ref=f6e130]:
+                      - paragraph [ref=f6e131]: Qualification
+                      - paragraph [ref=f6e132]: —
+                    - generic [ref=f6e133]:
+                      - paragraph [ref=f6e134]: Phone
+                      - paragraph [ref=f6e135]: "9820720063"
+                  - generic [ref=f6e136]:
+                    - button "Edit" [ref=f6e137] [cursor=pointer]
+                    - button [ref=f6e141] [cursor=pointer]
+                - generic [ref=f6e145]:
+                  - generic [ref=f6e146]:
+                    - generic [ref=f6e147]: KR
+                    - generic [ref=f6e148]:
+                      - paragraph [ref=f6e149]: Karan Rao
+                      - paragraph [ref=f6e150]: staff.63@medilink.in
+                      - paragraph [ref=f6e151]: EMP-162
+                    - generic [ref=f6e152]: Lab Technician
+                  - generic [ref=f6e153]:
+                    - generic [ref=f6e154]: Pathology
+                    - generic [ref=f6e155]: Night
+                    - generic [ref=f6e156]: Full_Time
+                  - generic [ref=f6e157]:
+                    - generic [ref=f6e158]:
+                      - paragraph [ref=f6e159]: Salary
+                      - paragraph [ref=f6e160]: ₹61,000
+                    - generic [ref=f6e161]:
+                      - paragraph [ref=f6e162]: Qualification
+                      - paragraph [ref=f6e163]: —
+                    - generic [ref=f6e164]:
+                      - paragraph [ref=f6e165]: Phone
+                      - paragraph [ref=f6e166]: "9820720062"
+                  - generic [ref=f6e167]:
+                    - button "Edit" [ref=f6e168] [cursor=pointer]
+                    - button [ref=f6e172] [cursor=pointer]
+                - generic [ref=f6e176]:
+                  - generic [ref=f6e177]:
+                    - generic [ref=f6e178]: AS
+                    - generic [ref=f6e179]:
+                      - paragraph [ref=f6e180]: Anjali Singh
+                      - paragraph [ref=f6e181]: staff.62@medilink.in
+                      - paragraph [ref=f6e182]: EMP-161
+                    - generic [ref=f6e183]: Assistant Pharmacist
+                  - generic [ref=f6e184]:
+                    - generic [ref=f6e185]: Pharmacy
+                    - generic [ref=f6e186]: Evening
+                    - generic [ref=f6e187]: Full_Time
+                  - generic [ref=f6e188]:
+                    - generic [ref=f6e189]:
+                      - paragraph [ref=f6e190]: Salary
+                      - paragraph [ref=f6e191]: ₹60,500
+                    - generic [ref=f6e192]:
+                      - paragraph [ref=f6e193]: Qualification
+                      - paragraph [ref=f6e194]: —
+                    - generic [ref=f6e195]:
+                      - paragraph [ref=f6e196]: Phone
+                      - paragraph [ref=f6e197]: "9820720061"
+                  - generic [ref=f6e198]:
+                    - button "Edit" [ref=f6e199] [cursor=pointer]
+                    - button [ref=f6e203] [cursor=pointer]
+                - generic [ref=f6e207]:
+                  - generic [ref=f6e208]:
+                    - generic [ref=f6e209]: PR
+                    - generic [ref=f6e210]:
+                      - paragraph [ref=f6e211]: Pankaj Rane
+                      - paragraph [ref=f6e212]: staff.61@medilink.in
+                      - paragraph [ref=f6e213]: EMP-160
+                    - generic [ref=f6e214]: General Ward Nurse
+                  - generic [ref=f6e215]:
+                    - generic [ref=f6e216]: General Medicine
+                    - generic [ref=f6e217]: Morning
+                    - generic [ref=f6e218]: Full_Time
+                  - generic [ref=f6e219]:
+                    - generic [ref=f6e220]:
+                      - paragraph [ref=f6e221]: Salary
+                      - paragraph [ref=f6e222]: ₹60,000
+                    - generic [ref=f6e223]:
+                      - paragraph [ref=f6e224]: Qualification
+                      - paragraph [ref=f6e225]: —
+                    - generic [ref=f6e226]:
+                      - paragraph [ref=f6e227]: Phone
+                      - paragraph [ref=f6e228]: "9820720060"
+                  - generic [ref=f6e229]:
+                    - button "Edit" [ref=f6e230] [cursor=pointer]
+                    - button [ref=f6e234] [cursor=pointer]
+                - generic [ref=f6e238]:
+                  - generic [ref=f6e239]:
+                    - generic [ref=f6e240]: SJ
+                    - generic [ref=f6e241]:
+                      - paragraph [ref=f6e242]: Smita Joshi
+                      - paragraph [ref=f6e243]: staff.60@medilink.in
+                      - paragraph [ref=f6e244]: EMP-159
+                    - generic [ref=f6e245]: Ward In-Charge
+                  - generic [ref=f6e246]:
+                    - generic [ref=f6e247]: Nursing
+                    - generic [ref=f6e248]: Night
+                    - generic [ref=f6e249]: Full_Time
+                  - generic [ref=f6e250]:
+                    - generic [ref=f6e251]:
+                      - paragraph [ref=f6e252]: Salary
+                      - paragraph [ref=f6e253]: ₹59,500
+                    - generic [ref=f6e254]:
+                      - paragraph [ref=f6e255]: Qualification
+                      - paragraph [ref=f6e256]: —
+                    - generic [ref=f6e257]:
+                      - paragraph [ref=f6e258]: Phone
+                      - paragraph [ref=f6e259]: "9820720059"
+                  - generic [ref=f6e260]:
+                    - button "Edit" [ref=f6e261] [cursor=pointer]
+                    - button [ref=f6e265] [cursor=pointer]
+                - generic [ref=f6e269]:
+                  - generic [ref=f6e270]:
+                    - generic [ref=f6e271]: VS
+                    - generic [ref=f6e272]:
+                      - paragraph [ref=f6e273]: Vikram Sundaram
+                      - paragraph [ref=f6e274]: staff.59@medilink.in
+                      - paragraph [ref=f6e275]: EMP-158
+                    - generic [ref=f6e276]: Reception Desk Assistant
+                  - generic [ref=f6e277]:
+                    - generic [ref=f6e278]: Reception
+                    - generic [ref=f6e279]: Evening
+                    - generic [ref=f6e280]: Full_Time
+                  - generic [ref=f6e281]:
+                    - generic [ref=f6e282]:
+                      - paragraph [ref=f6e283]: Salary
+                      - paragraph [ref=f6e284]: ₹59,000
+                    - generic [ref=f6e285]:
+                      - paragraph [ref=f6e286]: Qualification
+                      - paragraph [ref=f6e287]: —
+                    - generic [ref=f6e288]:
+                      - paragraph [ref=f6e289]: Phone
+                      - paragraph [ref=f6e290]: "9820720058"
+                  - generic [ref=f6e291]:
+                    - button "Edit" [ref=f6e292] [cursor=pointer]
+                    - button [ref=f6e296] [cursor=pointer]
+                - generic [ref=f6e300]:
+                  - generic [ref=f6e301]:
+                    - generic [ref=f6e302]: MB
+                    - generic [ref=f6e303]:
+                      - paragraph [ref=f6e304]: Meena Bhatia
+                      - paragraph [ref=f6e305]: staff.58@medilink.in
+                      - paragraph [ref=f6e306]: EMP-157
+                    - generic [ref=f6e307]: Lab Technician
+                  - generic [ref=f6e308]:
+                    - generic [ref=f6e309]: Pathology
+                    - generic [ref=f6e310]: Morning
+                    - generic [ref=f6e311]: Full_Time
+                  - generic [ref=f6e312]:
+                    - generic [ref=f6e313]:
+                      - paragraph [ref=f6e314]: Salary
+                      - paragraph [ref=f6e315]: ₹58,500
+                    - generic [ref=f6e316]:
+                      - paragraph [ref=f6e317]: Qualification
+                      - paragraph [ref=f6e318]: —
+                    - generic [ref=f6e319]:
+                      - paragraph [ref=f6e320]: Phone
+                      - paragraph [ref=f6e321]: "9820720057"
+                  - generic [ref=f6e322]:
+                    - button "Edit" [ref=f6e323] [cursor=pointer]
+                    - button [ref=f6e327] [cursor=pointer]
+                - generic [ref=f6e331]:
+                  - generic [ref=f6e332]:
+                    - generic [ref=f6e333]: VS
+                    - generic [ref=f6e334]:
+                      - paragraph [ref=f6e335]: Vikas Sharma
+                      - paragraph [ref=f6e336]: staff.57@medilink.in
+                      - paragraph [ref=f6e337]: EMP-156
+                    - generic [ref=f6e338]: Assistant Pharmacist
+                  - generic [ref=f6e339]:
+                    - generic [ref=f6e340]: Pharmacy
+                    - generic [ref=f6e341]: Night
+                    - generic [ref=f6e342]: Full_Time
+                  - generic [ref=f6e343]:
+                    - generic [ref=f6e344]:
+                      - paragraph [ref=f6e345]: Salary
+                      - paragraph [ref=f6e346]: ₹58,000
+                    - generic [ref=f6e347]:
+                      - paragraph [ref=f6e348]: Qualification
+                      - paragraph [ref=f6e349]: —
+                    - generic [ref=f6e350]:
+                      - paragraph [ref=f6e351]: Phone
+                      - paragraph [ref=f6e352]: "9820720056"
+                  - generic [ref=f6e353]:
+                    - button "Edit" [ref=f6e354] [cursor=pointer]
+                    - button [ref=f6e358] [cursor=pointer]
+                - generic [ref=f6e362]:
+                  - generic [ref=f6e363]:
+                    - generic [ref=f6e364]: NP
+                    - generic [ref=f6e365]:
+                      - paragraph [ref=f6e366]: Nisha Pillai
+                      - paragraph [ref=f6e367]: staff.56@medilink.in
+                      - paragraph [ref=f6e368]: EMP-155
+                    - generic [ref=f6e369]: General Ward Nurse
+                  - generic [ref=f6e370]:
+                    - generic [ref=f6e371]: General Medicine
+                    - generic [ref=f6e372]: Evening
+                    - generic [ref=f6e373]: Full_Time
+                  - generic [ref=f6e374]:
+                    - generic [ref=f6e375]:
+                      - paragraph [ref=f6e376]: Salary
+                      - paragraph [ref=f6e377]: ₹57,500
+                    - generic [ref=f6e378]:
+                      - paragraph [ref=f6e379]: Qualification
+                      - paragraph [ref=f6e380]: —
+                    - generic [ref=f6e381]:
+                      - paragraph [ref=f6e382]: Phone
+                      - paragraph [ref=f6e383]: "9820720055"
+                  - generic [ref=f6e384]:
+                    - button "Edit" [ref=f6e385] [cursor=pointer]
+                    - button [ref=f6e389] [cursor=pointer]
+                - generic [ref=f6e393]:
+                  - generic [ref=f6e394]:
+                    - generic [ref=f6e395]: RP
+                    - generic [ref=f6e396]:
+                      - paragraph [ref=f6e397]: Rohan Patel
+                      - paragraph [ref=f6e398]: staff.55@medilink.in
+                      - paragraph [ref=f6e399]: EMP-154
+                    - generic [ref=f6e400]: Ward In-Charge
+                  - generic [ref=f6e401]:
+                    - generic [ref=f6e402]: Nursing
+                    - generic [ref=f6e403]: Morning
+                    - generic [ref=f6e404]: Full_Time
+                  - generic [ref=f6e405]:
+                    - generic [ref=f6e406]:
+                      - paragraph [ref=f6e407]: Salary
+                      - paragraph [ref=f6e408]: ₹57,000
+                    - generic [ref=f6e409]:
+                      - paragraph [ref=f6e410]: Qualification
+                      - paragraph [ref=f6e411]: —
+                    - generic [ref=f6e412]:
+                      - paragraph [ref=f6e413]: Phone
+                      - paragraph [ref=f6e414]: "9820720054"
+                  - generic [ref=f6e415]:
+                    - button "Edit" [ref=f6e416] [cursor=pointer]
+                    - button [ref=f6e420] [cursor=pointer]
+                - generic [ref=f6e424]:
+                  - generic [ref=f6e425]:
+                    - generic [ref=f6e426]: DS
+                    - generic [ref=f6e427]:
+                      - paragraph [ref=f6e428]: Divya Sundaram
+                      - paragraph [ref=f6e429]: staff.54@medilink.in
+                      - paragraph [ref=f6e430]: EMP-153
+                    - generic [ref=f6e431]: Reception Desk Assistant
+                  - generic [ref=f6e432]:
+                    - generic [ref=f6e433]: Reception
+                    - generic [ref=f6e434]: Night
+                    - generic [ref=f6e435]: Full_Time
+                  - generic [ref=f6e436]:
+                    - generic [ref=f6e437]:
+                      - paragraph [ref=f6e438]: Salary
+                      - paragraph [ref=f6e439]: ₹56,500
+                    - generic [ref=f6e440]:
+                      - paragraph [ref=f6e441]: Qualification
+                      - paragraph [ref=f6e442]: —
+                    - generic [ref=f6e443]:
+                      - paragraph [ref=f6e444]: Phone
+                      - paragraph [ref=f6e445]: "9820720053"
+                  - generic [ref=f6e446]:
+                    - button "Edit" [ref=f6e447] [cursor=pointer]
+                    - button [ref=f6e451] [cursor=pointer]
+                - generic [ref=f6e455]:
+                  - generic [ref=f6e456]:
+                    - generic [ref=f6e457]: AR
+                    - generic [ref=f6e458]:
+                      - paragraph [ref=f6e459]: Ananya Reddy
+                      - paragraph [ref=f6e460]: staff.52@medilink.in
+                      - paragraph [ref=f6e461]: EMP-151
+                    - generic [ref=f6e462]: Assistant Pharmacist
+                  - generic [ref=f6e463]:
+                    - generic [ref=f6e464]: Pharmacy
+                    - generic [ref=f6e465]: Morning
+                    - generic [ref=f6e466]: Full_Time
+                  - generic [ref=f6e467]:
+                    - generic [ref=f6e468]:
+                      - paragraph [ref=f6e469]: Salary
+                      - paragraph [ref=f6e470]: ₹55,500
+                    - generic [ref=f6e471]:
+                      - paragraph [ref=f6e472]: Qualification
+                      - paragraph [ref=f6e473]: —
+                    - generic [ref=f6e474]:
+                      - paragraph [ref=f6e475]: Phone
+                      - paragraph [ref=f6e476]: "9820720051"
+                  - generic [ref=f6e477]:
+                    - button "Edit" [ref=f6e478] [cursor=pointer]
+                    - button [ref=f6e482] [cursor=pointer]
+              - navigation "Pagination" [ref=f6e486]:
+                - paragraph [ref=f6e487]: 1–12 of 70
+                - generic [ref=f6e488]:
+                  - button "Previous page" [disabled] [ref=f6e489]
+                  - button "Page 1" [ref=f6e492] [cursor=pointer]: "1"
+                  - button "Page 2" [ref=f6e493] [cursor=pointer]: "2"
+                  - button "Page 3" [ref=f6e494] [cursor=pointer]: "3"
+                  - button "Page 4" [ref=f6e495] [cursor=pointer]: "4"
+                  - button "Page 5" [ref=f6e496] [cursor=pointer]: "5"
+                  - button "Next page" [ref=f6e497] [cursor=pointer]
+    - button "Open MediLink Assistant" [ref=f6e502] [cursor=pointer]
+  - dialog [ref=f6e503]:
+    - generic [ref=f6e505]:
+      - generic [ref=f6e506]:
+        - heading "Add New Staff Member" [level=3] [ref=f6e507]
+        - button "Close dialog" [active] [ref=f6e508] [cursor=pointer]
+      - generic [ref=f6e513]:
+        - generic [ref=f6e514]: Default password will be the staff member's phone number. They can change it after first login.
+        - generic [ref=f6e515]:
+          - generic [ref=f6e516]:
+            - generic [ref=f6e517]: Full Name *
+            - textbox "Anjali Mehta" [ref=f6e518]
+          - generic [ref=f6e519]:
+            - generic [ref=f6e520]: Email *
+            - textbox "staff@hospital.com" [ref=f6e521]
+          - generic [ref=f6e522]:
+            - generic [ref=f6e523]: Phone * (used as default password)
+            - textbox "9876543210" [ref=f6e524]
+          - generic [ref=f6e525]:
+            - generic [ref=f6e526]: Gender
+            - combobox [ref=f6e527]:
+              - option "Select Gender" [selected]
+              - option "Male"
+              - option "Female"
+              - option "Other"
+        - separator [ref=f6e528]
+        - generic [ref=f6e529]:
+          - generic [ref=f6e530]:
+            - generic [ref=f6e531]: Sub-Role *
+            - combobox [ref=f6e532]:
+              - option "Select Sub-Role" [selected]
+              - option "Nurse"
+              - option "Receptionist"
+              - option "Pharmacist"
+              - option "Lab Technician"
+              - option "Radiology Technician"
+              - option "Billing Staff"
+              - option "Ward Manager"
+          - generic [ref=f6e533]:
+            - generic [ref=f6e534]: Department *
+            - combobox [ref=f6e535]:
+              - option "Select Department" [selected]
+              - option "General Ward"
+              - option "ICU"
+              - option "Emergency"
+              - option "Pharmacy"
+              - option "Laboratory"
+              - option "Radiology"
+              - option "Administration"
+              - option "Finance"
+              - option "Maintenance"
+              - option "OPD"
+          - generic [ref=f6e536]:
+            - generic [ref=f6e537]: Employment Type
+            - combobox [ref=f6e538]:
+              - option "Full-Time" [selected]
+              - option "Part-Time"
+              - option "Contract"
+              - option "Intern"
+          - generic [ref=f6e539]:
+            - generic [ref=f6e540]: Shift
+            - combobox [ref=f6e541]:
+              - option "Morning (6 AM – 2 PM)" [selected]
+              - option "Evening (2 PM – 10 PM)"
+              - option "Night (10 PM – 6 AM)"
+              - option "Rotational"
+          - generic [ref=f6e542]:
+            - generic [ref=f6e543]: Joining Date
+            - textbox [ref=f6e544]: 2026-09-15
+          - generic [ref=f6e545]:
+            - generic [ref=f6e546]: Qualification
+            - textbox "B.Sc Nursing, MBBS" [ref=f6e547]
+          - generic [ref=f6e548]:
+            - generic [ref=f6e549]: Basic Salary (₹)
+            - spinbutton "30000" [ref=f6e550]
+          - generic [ref=f6e551]:
+            - generic [ref=f6e552]: Allowances (₹)
+            - spinbutton "5000" [ref=f6e553]
+          - generic [ref=f6e554]:
+            - generic [ref=f6e555]: Total Salary
+            - textbox [ref=f6e556]: ₹0
+        - generic [ref=f6e557]:
+          - generic [ref=f6e558]: Skills
+          - generic [ref=f6e559]:
+            - textbox "Add a skill and press Enter" [ref=f6e560]
+            - button "Add" [ref=f6e561] [cursor=pointer]
+        - generic [ref=f6e562]:
+          - button "Cancel" [ref=f6e563] [cursor=pointer]
+          - button "Add Staff" [ref=f6e564] [cursor=pointer]

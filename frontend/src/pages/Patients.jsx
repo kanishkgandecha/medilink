@@ -220,8 +220,8 @@ const Patients = () => {
       await patientService.deletePatient(id)
       toast.success('Patient archived; clinical records were retained')
       fetchPatients()
-    } catch {
-      toast.error('Failed to archive patient')
+    } catch (err) {
+      toast.error(err.message || 'Failed to archive patient')
     }
   }
 

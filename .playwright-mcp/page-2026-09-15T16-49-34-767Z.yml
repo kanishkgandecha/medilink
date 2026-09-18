@@ -1,0 +1,262 @@
+- generic [ref=e10]:
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - banner [ref=e14]:
+        - generic [ref=e15]:
+          - link "MediLink" [ref=e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=e18]:
+            - link "Dashboard" [ref=e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Appointments" [ref=e21] [cursor=pointer]:
+              - /url: /appointments
+            - link "Patients" [ref=e22] [cursor=pointer]:
+              - /url: /patients
+            - link "Prescriptions" [ref=e23] [cursor=pointer]:
+              - /url: /prescriptions
+            - link "Test Reports" [ref=e24] [cursor=pointer]:
+              - /url: /test-reports
+          - generic [ref=e25]:
+            - button "Settings" [ref=e26] [cursor=pointer]
+            - button "Switch to dark mode" [ref=e31] [cursor=pointer]
+            - button "Notifications (2 unread)" [ref=e35] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e40]: "2"
+            - button "Account menu for Dr. Vikramaditya Mehta" [ref=e42] [cursor=pointer]: DV
+      - main [ref=e43]:
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e48]:
+                - heading "Prescriptions" [level=1] [ref=e49]
+                - generic [ref=e50]: My prescriptions
+              - paragraph [ref=e56]: Write and track prescriptions for your patients
+            - button "Write Prescription" [ref=e57] [cursor=pointer]
+          - generic [ref=e59]:
+            - complementary [ref=e60]:
+              - generic [ref=e61]:
+                - generic [ref=e62]:
+                  - paragraph [ref=e65]: Total
+                  - paragraph [ref=e70]: "8"
+                - generic [ref=e71]:
+                  - paragraph [ref=e74]: Pending
+                  - paragraph [ref=e79]: "3"
+                - generic [ref=e80]:
+                  - paragraph [ref=e83]: Fulfilled
+                  - paragraph [ref=e88]: "3"
+                - generic [ref=e89]:
+                  - paragraph [ref=e92]: Cancelled
+                  - paragraph [ref=e98]: "0"
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - button "All" [ref=e101] [cursor=pointer]
+                - button "Pending" [ref=e102] [cursor=pointer]
+                - button "Fulfilled" [ref=e103] [cursor=pointer]
+                - button "Cancelled" [ref=e104] [cursor=pointer]
+              - generic [ref=e106]:
+                - button "Prescription RX-2026-10140, expand details" [ref=e108] [cursor=pointer]:
+                  - generic [ref=e109]:
+                    - generic [ref=e110]:
+                      - generic [ref=e111]: RX-2026-10140
+                      - paragraph [ref=e112]: Manish Deshmukh
+                      - generic [ref=e113]: Pending
+                    - generic [ref=e114]:
+                      - generic [ref=e115]: Dr. Vikramaditya Mehta
+                      - generic [ref=e116]: ·
+                      - generic [ref=e117]: 3 Aug 2026
+                      - generic [ref=e122]: ·
+                      - generic [ref=e123]: Routine Management
+                    - generic [ref=e124]:
+                      - generic [ref=e125]: Ecosprin 75mg
+                      - generic [ref=e129]: Montair LC
+                  - button "Cancel" [ref=e134]
+                - button "Prescription RX-2026-10120, expand details" [ref=e142] [cursor=pointer]:
+                  - generic [ref=e143]:
+                    - generic [ref=e144]:
+                      - generic [ref=e145]: RX-2026-10120
+                      - paragraph [ref=e146]: Farhan Reddy
+                      - generic [ref=e147]: Fulfilled
+                    - generic [ref=e148]:
+                      - generic [ref=e149]: Dr. Vikramaditya Mehta
+                      - generic [ref=e150]: ·
+                      - generic [ref=e151]: 3 Aug 2026
+                      - generic [ref=e156]: ·
+                      - generic [ref=e157]: Routine Management
+                    - generic [ref=e158]:
+                      - generic [ref=e159]: Telma 40mg
+                      - generic [ref=e163]: Pan-40
+                - button "Prescription RX-2026-10100, expand details" [ref=e172] [cursor=pointer]:
+                  - generic [ref=e173]:
+                    - generic [ref=e174]:
+                      - generic [ref=e175]: RX-2026-10100
+                      - paragraph [ref=e176]: Mahesh Kulkarni
+                      - generic [ref=e177]: Partially_Filled
+                    - generic [ref=e178]:
+                      - generic [ref=e179]: Dr. Vikramaditya Mehta
+                      - generic [ref=e180]: ·
+                      - generic [ref=e181]: 3 Aug 2026
+                      - generic [ref=e186]: ·
+                      - generic [ref=e187]: Routine Management
+                    - generic [ref=e188]:
+                      - generic [ref=e189]: Azithral 500mg
+                      - generic [ref=e193]: Thyronorm 50mcg
+                - button "Prescription RX-2026-10080, expand details" [ref=e202] [cursor=pointer]:
+                  - generic [ref=e203]:
+                    - generic [ref=e204]:
+                      - generic [ref=e205]: RX-2026-10080
+                      - paragraph [ref=e206]: Arjun Sengupta
+                      - generic [ref=e207]: Pending
+                    - generic [ref=e208]:
+                      - generic [ref=e209]: Dr. Vikramaditya Mehta
+                      - generic [ref=e210]: ·
+                      - generic [ref=e211]: 3 Aug 2026
+                      - generic [ref=e216]: ·
+                      - generic [ref=e217]: Routine Management
+                    - generic [ref=e218]:
+                      - generic [ref=e219]: Ecosprin 75mg
+                      - generic [ref=e223]: Montair LC
+                  - button "Cancel" [ref=e228]
+                - button "Prescription RX-2026-10060, expand details" [ref=e236] [cursor=pointer]:
+                  - generic [ref=e237]:
+                    - generic [ref=e238]:
+                      - generic [ref=e239]: RX-2026-10060
+                      - paragraph [ref=e240]: Rohan Sharma
+                      - generic [ref=e241]: Fulfilled
+                    - generic [ref=e242]:
+                      - generic [ref=e243]: Dr. Vikramaditya Mehta
+                      - generic [ref=e244]: ·
+                      - generic [ref=e245]: 3 Aug 2026
+                      - generic [ref=e250]: ·
+                      - generic [ref=e251]: Routine Management
+                    - generic [ref=e252]:
+                      - generic [ref=e253]: Telma 40mg
+                      - generic [ref=e257]: Pan-40
+                - button "Prescription RX-2026-10040, expand details" [ref=e266] [cursor=pointer]:
+                  - generic [ref=e267]:
+                    - generic [ref=e268]:
+                      - generic [ref=e269]: RX-2026-10040
+                      - paragraph [ref=e270]: Rajesh Verma
+                      - generic [ref=e271]: Partially_Filled
+                    - generic [ref=e272]:
+                      - generic [ref=e273]: Dr. Vikramaditya Mehta
+                      - generic [ref=e274]: ·
+                      - generic [ref=e275]: 3 Aug 2026
+                      - generic [ref=e280]: ·
+                      - generic [ref=e281]: Routine Management
+                    - generic [ref=e282]:
+                      - generic [ref=e283]: Azithral 500mg
+                      - generic [ref=e287]: Thyronorm 50mcg
+                - button "Prescription RX-2026-10020, expand details" [ref=e296] [cursor=pointer]:
+                  - generic [ref=e297]:
+                    - generic [ref=e298]:
+                      - generic [ref=e299]: RX-2026-10020
+                      - paragraph [ref=e300]: Aditya Sundaram
+                      - generic [ref=e301]: Pending
+                    - generic [ref=e302]:
+                      - generic [ref=e303]: Dr. Vikramaditya Mehta
+                      - generic [ref=e304]: ·
+                      - generic [ref=e305]: 3 Aug 2026
+                      - generic [ref=e310]: ·
+                      - generic [ref=e311]: Routine Management
+                    - generic [ref=e312]:
+                      - generic [ref=e313]: Ecosprin 75mg
+                      - generic [ref=e317]: Montair LC
+                  - button "Cancel" [ref=e322]
+                - button "Prescription RX-2026-10000, expand details" [ref=e330] [cursor=pointer]:
+                  - generic [ref=e331]:
+                    - generic [ref=e332]:
+                      - generic [ref=e333]: RX-2026-10000
+                      - paragraph [ref=e334]: Rahul Gupta
+                      - generic [ref=e335]: Fulfilled
+                    - generic [ref=e336]:
+                      - generic [ref=e337]: Dr. Vikramaditya Mehta
+                      - generic [ref=e338]: ·
+                      - generic [ref=e339]: 3 Aug 2026
+                      - generic [ref=e344]: ·
+                      - generic [ref=e345]: Routine Management
+                    - generic [ref=e346]:
+                      - generic [ref=e347]: Telma 40mg
+                      - generic [ref=e351]: Pan-40
+    - button "Open MediLink Assistant" [ref=e361] [cursor=pointer]
+  - dialog [ref=e362]:
+    - generic [ref=e364]:
+      - generic [ref=e365]:
+        - heading "Write Prescription" [level=3] [ref=e366]
+        - button "Close dialog" [active] [ref=e367] [cursor=pointer]
+      - generic [ref=e371]:
+        - generic [ref=e372]:
+          - generic [ref=e373]:
+            - generic [ref=e374]: Patient *
+            - combobox [ref=e375]:
+              - option "— Select patient —" [selected]
+              - option "Nisha Das · PT-IND-1149"
+              - option "Pradeep Patel · PT-IND-1148"
+              - option "Manju Saxena · PT-IND-1147"
+              - option "Anand Rane · PT-IND-1146"
+              - option "Neha Qureshi · PT-IND-1145"
+              - option "Vikram Sundaram · PT-IND-1144"
+              - option "Reena Bhatia · PT-IND-1143"
+              - option "Pradeep Kapoor · PT-IND-1142"
+              - option "Bhavna Mehta · PT-IND-1141"
+              - option "Manish Deshmukh · PT-IND-1140"
+          - generic [ref=e376]:
+            - generic [ref=e377]:
+              - generic [ref=e378]: Diagnosis
+              - textbox "e.g., Acute Bronchitis" [ref=e379]
+            - generic [ref=e380]:
+              - generic [ref=e381]: Symptoms
+              - textbox "e.g., Cough, Fever" [ref=e382]
+          - generic [ref=e383]:
+            - generic [ref=e384]: Search Medicine
+            - textbox "Type to search medicines…" [ref=e389]
+          - generic [ref=e390]:
+            - generic [ref=e391]:
+              - generic [ref=e392]: Medicines *
+              - button "Add row" [ref=e393] [cursor=pointer]
+            - generic [ref=e396]:
+              - generic [ref=e397]: Medicine 1
+              - generic [ref=e399]:
+                - combobox [ref=e401]:
+                  - option "— Select medicine —" [selected]
+                  - option "Amlodipine 5mg"
+                  - option "Ondem 4mg"
+                  - option "Ultracet"
+                  - option "Atorva 10mg"
+                  - option "Thyronorm 50mcg"
+                  - option "Shelcal 500mg"
+                  - option "Azithral 500mg"
+                  - option "Ciplox 500mg"
+                  - option "Met XL 25mg"
+                  - option "Ecosprin 75mg"
+                  - option "Montair LC"
+                  - option "Glycomet GP2"
+                  - option "Augmentin 625mg"
+                  - option "Dolo 650mg"
+                  - option "Pan-40"
+                  - option "Telma 40mg"
+                - textbox "Dosage (e.g., 1 tablet)" [ref=e403]
+                - combobox [ref=e405]:
+                  - option "Once daily"
+                  - option "Twice daily" [selected]
+                  - option "Three times daily"
+                  - option "Four times daily"
+                  - option "Every 6 hours"
+                  - option "Every 8 hours"
+                  - option "Every 12 hours"
+                  - option "As needed"
+                  - option "Before meals"
+                  - option "After meals"
+                  - option "At bedtime"
+                  - option "Weekly"
+                - textbox "Duration (e.g., 7 days)" [ref=e407]: 7 days
+              - textbox "Special instructions (optional)" [ref=e408]
+          - generic [ref=e409]:
+            - generic [ref=e410]: Lab Tests (comma-separated)
+            - textbox "e.g., CBC, Lipid Profile, Blood Sugar" [ref=e411]
+          - generic [ref=e412]:
+            - generic [ref=e413]: Notes
+            - textbox "Additional instructions for patient..." [ref=e414]
+        - generic [ref=e415]:
+          - button "Cancel" [ref=e416] [cursor=pointer]
+          - button "Issue Prescription" [ref=e417] [cursor=pointer]

@@ -26,6 +26,13 @@ const STATUS_BADGE = {
   Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 }
 
+// The backend's Prisma enum returns "Partially_Filled" with an underscore;
+// every frontend consumer (STATUS_BADGE, the pharmacist dispense-action
+// check) is keyed on the hyphenated display form. Unnormalized, a partially
+// filled prescription rendered its raw enum value and hid the "Dispense"
+// action from the pharmacist entirely.
+export const normalizeRxStatusForDisplay = (status) => status === 'Partially_Filled' ? 'Partially-Filled' : status
+
 const FREQUENCIES = [
   'Once daily', 'Twice daily', 'Three times daily',
   'Four times daily', 'Every 6 hours', 'Every 8 hours',
@@ -87,7 +94,7 @@ const Prescriptions = () => {
       const params = statusFilter ? { status: statusFilter } : {}
       const res = await prescriptionService.getAllPrescriptions(params)
       const data = res.data || res.prescriptions || []
-      setPrescriptions(data)
+      setPrescriptions(data.map(rx => ({ ...rx, status: normalizeRxStatusForDisplay(rx.status) })))
     } catch (err) {
       setFetchError(err)
       toast.error('Failed to load prescriptions')

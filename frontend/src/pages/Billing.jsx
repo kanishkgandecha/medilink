@@ -311,7 +311,9 @@ const Billing = () => {
     try {
       const res = await billingService.getAllPatients({ limit: 1000 })
       setPatients(res.data || [])
-    } catch { /* non-fatal */ }
+    } catch (err) {
+      toast.error(err.message || 'Failed to load patients for invoicing')
+    }
   }
 
   const fetchStats = async () => {

@@ -1,0 +1,91 @@
+- generic [ref=f3e3]:
+  - generic [ref=f3e4]:
+    - banner [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - link "MediLink" [ref=f3e7] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f3e9]:
+          - link "Dashboard" [ref=f3e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f3e11] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Appointments" [ref=f3e12] [cursor=pointer]:
+            - /url: /appointments
+          - link "Patients" [ref=f3e13] [cursor=pointer]:
+            - /url: /patients
+          - link "Prescriptions" [ref=f3e14] [cursor=pointer]:
+            - /url: /prescriptions
+          - link "Test Reports" [ref=f3e15] [cursor=pointer]:
+            - /url: /test-reports
+        - generic [ref=f3e16]:
+          - button "Settings" [ref=f3e17] [cursor=pointer]
+          - button "Switch to dark mode" [ref=f3e22] [cursor=pointer]
+          - button "Notifications (2 unread)" [ref=f3e26] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f3e31]: "2"
+          - button "Account menu for Dr. Vikramaditya Mehta" [ref=f3e33] [cursor=pointer]: DV
+    - main [ref=f3e34]:
+      - generic [ref=f3e36]:
+        - generic [ref=f3e37]:
+          - generic [ref=f3e38]:
+            - generic [ref=f3e39]:
+              - heading "My Appointments" [level=1] [ref=f3e40]
+              - generic [ref=f3e41]: My appointments
+            - paragraph [ref=f3e47]: Appointments booked with you
+          - button "Book Appointment" [ref=f3e48] [cursor=pointer]
+        - generic [ref=f3e50]:
+          - complementary [ref=f3e51]:
+            - generic [ref=f3e52]:
+              - 'button "Total: 14" [ref=f3e416] [cursor=pointer]':
+                - paragraph [ref=f3e56]: Total
+                - paragraph [ref=f3e60]: "14"
+              - 'button "Today: 0" [ref=f3e61] [cursor=pointer]':
+                - paragraph [ref=f3e64]: Today
+                - paragraph [ref=f3e69]: "0"
+              - 'button "Active: 1" [ref=f3e417] [cursor=pointer]':
+                - paragraph [ref=f3e73]: Active
+                - paragraph [ref=f3e77]: "1"
+              - 'button "Completed: 0" [ref=f3e78] [cursor=pointer]':
+                - paragraph [ref=f3e81]: Completed
+                - paragraph [ref=f3e86]: "0"
+          - generic [ref=f3e87]:
+            - generic [ref=f3e88]:
+              - generic [ref=f3e89]:
+                - generic [ref=f3e90]:
+                  - textbox "Search patient, doctor, ID…" [ref=f3e94]: APT-MU2W3U2D
+                  - button [ref=f3e418] [cursor=pointer]
+                - combobox [ref=f3e95]:
+                  - option "All statuses" [selected]
+                  - option "Scheduled"
+                  - option "Confirmed"
+                  - option "In-Progress"
+                  - option "Completed"
+                  - option "Cancelled"
+                  - option "No-Show"
+                - generic [ref=f3e96]: 1 result
+              - generic [ref=f3e97]:
+                - button "All dates" [ref=f3e100] [cursor=pointer]
+                - button "Today" [ref=f3e101] [cursor=pointer]
+                - button "This week" [ref=f3e102] [cursor=pointer]
+                - button "This month" [ref=f3e103] [cursor=pointer]
+            - generic [ref=f3e423]:
+              - generic [ref=f3e424]:
+                - generic [ref=f3e425]: APT-MU2W3U2D-3A11B4
+                - generic [ref=f3e426]: Scheduled
+              - generic [ref=f3e427]:
+                - generic [ref=f3e428]: VM
+                - generic [ref=f3e429]:
+                  - paragraph [ref=f3e430]: Dr. Vikramaditya Mehta
+                  - paragraph [ref=f3e431]: Cardiology
+                - generic [ref=f3e432]: RG
+              - paragraph [ref=f3e433]: "Patient: Rahul Gupta"
+              - generic [ref=f3e434]:
+                - generic [ref=f3e435]:
+                  - generic [ref=f3e436]:
+                    - generic [ref=f3e440]: Fri
+                    - generic [ref=f3e441]: • 9:00 AM
+                  - generic [ref=f3e442]: in 2d
+                - generic [ref=f3e443]: Consultation
+              - generic [ref=f3e444]:
+                - button "Complete" [ref=f3e445] [cursor=pointer]
+                - button "Cancel" [ref=f3e449] [cursor=pointer]
+  - button "Open MediLink Assistant" [ref=f3e358] [cursor=pointer]

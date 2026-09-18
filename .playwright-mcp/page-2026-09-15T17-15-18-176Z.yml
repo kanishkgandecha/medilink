@@ -1,0 +1,170 @@
+- generic [ref=f3e10]:
+  - generic [ref=f3e12]:
+    - generic [ref=f3e13]:
+      - banner [ref=f3e14]:
+        - generic [ref=f3e15]:
+          - link "MediLink" [ref=f3e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f3e18]:
+            - link "Dashboard" [ref=f3e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f3e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Billing" [ref=f3e21] [cursor=pointer]:
+              - /url: /billing
+          - generic [ref=f3e22]:
+            - button "Settings" [ref=f3e23] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f3e28] [cursor=pointer]
+            - button "Notifications (1 unread)" [ref=f3e32] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f3e37]: "1"
+            - button "Account menu for Vijay Trivedi" [ref=f3e39] [cursor=pointer]: VT
+      - main [ref=f3e40]:
+        - generic [ref=f3e42]:
+          - generic [ref=f3e43]:
+            - generic [ref=f3e44]:
+              - generic [ref=f3e45]:
+                - heading "Billing & Payments" [level=1] [ref=f3e46]
+                - generic [ref=f3e47]: All invoices
+              - paragraph [ref=f3e51]: Manage invoices, payments, and outstanding balances
+            - button "Generate Invoice" [ref=f3e52] [cursor=pointer]
+          - generic [ref=f3e54]:
+            - complementary [ref=f3e55]:
+              - generic [ref=f3e157]:
+                - generic [ref=f3e158]:
+                  - paragraph [ref=f3e160]: Total Revenue
+                  - heading "₹306,103.5" [level=3] [ref=f3e164]
+                - generic [ref=f3e165]:
+                  - paragraph [ref=f3e167]: Collected
+                  - heading "₹175,000" [level=3] [ref=f3e172]
+                - generic [ref=f3e173]:
+                  - paragraph [ref=f3e175]: Pending
+                  - heading "₹131,103.5" [level=3] [ref=f3e180]
+                - generic [ref=f3e181]:
+                  - paragraph [ref=f3e183]: Total Invoices
+                  - heading "154" [level=3] [ref=f3e188]
+            - generic [ref=f3e88]:
+              - generic [ref=f3e89]:
+                - button "All100" [ref=f3e90] [cursor=pointer]
+                - button "Consultation33" [ref=f3e91] [cursor=pointer]
+                - button "Pharmacy33" [ref=f3e92] [cursor=pointer]
+                - button "Test0" [ref=f3e93] [cursor=pointer]
+                - button "Ward33" [ref=f3e94] [cursor=pointer]
+                - button "Other1" [ref=f3e95] [cursor=pointer]
+              - generic [ref=f3e97]:
+                - generic [ref=f3e98]:
+                  - textbox "Search by bill number or patient name…" [ref=f3e102]: BILL-202609-MGUK6UDA
+                  - button [ref=f3e103] [cursor=pointer]
+                - generic [ref=f3e107]: 1 bill
+              - generic [ref=f3e109]:
+                - generic [ref=f3e110]:
+                  - generic [ref=f3e111]: BILL-202609-MGUK6UDA
+                  - generic [ref=f3e112]: Unpaid
+                - generic [ref=f3e113]:
+                  - generic [ref=f3e114]: QR
+                  - generic [ref=f3e115]:
+                    - paragraph [ref=f3e116]: QA Regression Test Patient
+                    - paragraph [ref=f3e117]: PAT731258990207
+                  - generic [ref=f3e118]: Other
+                - generic [ref=f3e122]: Today
+                - generic [ref=f3e127]:
+                  - generic [ref=f3e128]:
+                    - paragraph [ref=f3e129]: Total
+                    - paragraph [ref=f3e130]: ₹100
+                  - generic [ref=f3e131]:
+                    - paragraph [ref=f3e132]: Paid
+                    - paragraph [ref=f3e133]: ₹0
+                  - generic [ref=f3e134]:
+                    - paragraph [ref=f3e135]: Balance
+                    - paragraph [ref=f3e136]: ₹100
+                - generic [ref=f3e137]:
+                  - button "Invoice" [ref=f3e138] [cursor=pointer]
+                  - button "Download PDF" [ref=f3e142] [cursor=pointer]
+                  - button "Pay" [ref=f3e146] [cursor=pointer]
+                  - button "Ins." [ref=f3e149] [cursor=pointer]
+          - generic [ref=f3e189]:
+            - generic [ref=f3e190]:
+              - generic [ref=f3e191]: MediLink
+              - generic [ref=f3e192]: Hospital Management System
+              - generic [ref=f3e193]: 123 Healthcare Avenue, Medical City · support@medilink.com · +91 98765 43210
+            - generic [ref=f3e194]:
+              - generic [ref=f3e195]:
+                - generic [ref=f3e196]: INVOICE
+                - generic [ref=f3e197]: "#BILL-202609-MGUK6UDA"
+                - generic [ref=f3e198]: 15 September 2026
+                - generic [ref=f3e199]:
+                  - text: "Type:"
+                  - strong [ref=f3e200]: Other
+              - generic [ref=f3e201]: UNPAID
+            - generic [ref=f3e203]:
+              - generic [ref=f3e204]: Bill To
+              - generic [ref=f3e205]: QA Regression Test Patient
+              - generic [ref=f3e206]: "Patient ID: PAT731258990207"
+              - generic [ref=f3e207]: qa.regression.temp.patient@medilink.invalid
+            - table [ref=f3e208]:
+              - rowgroup [ref=f3e209]:
+                - row [ref=f3e210]:
+                  - columnheader [ref=f3e211]: "#"
+                  - columnheader [ref=f3e212]: Description
+                  - columnheader [ref=f3e213]: Category
+                  - columnheader [ref=f3e214]: Qty
+                  - columnheader [ref=f3e215]: Unit Price
+                  - columnheader [ref=f3e216]: Amount
+              - rowgroup [ref=f3e217]:
+                - row [ref=f3e218]:
+                  - cell [ref=f3e219]: "1"
+                  - cell [ref=f3e220]: QA Regression Test Item
+                  - cell [ref=f3e221]: Consultation
+                  - cell [ref=f3e222]: "1"
+                  - cell [ref=f3e223]: ₹100.00
+                  - cell [ref=f3e224]: ₹100.00
+            - generic [ref=f3e226]:
+              - generic [ref=f3e227]:
+                - generic [ref=f3e228]: Subtotal
+                - generic [ref=f3e229]: ₹100.00
+              - generic [ref=f3e230]:
+                - generic [ref=f3e231]: Total
+                - generic [ref=f3e232]: ₹100.00
+              - generic [ref=f3e233]:
+                - generic [ref=f3e234]: Amount Paid
+                - generic [ref=f3e235]: ₹0.00
+              - generic [ref=f3e236]:
+                - generic [ref=f3e237]: Balance Due
+                - generic [ref=f3e238]: ₹100.00
+            - generic [ref=f3e239]: "Billed by: Staff"
+            - generic [ref=f3e240]:
+              - generic [ref=f3e241]: Thank you for choosing MediLink Hospital.
+              - generic [ref=f3e242]: "For queries: support@medilink.com · This is a system-generated invoice."
+    - button "Open MediLink Assistant" [ref=f3e156] [cursor=pointer]
+  - dialog [ref=f3e243]:
+    - generic [ref=f3e245]:
+      - generic [ref=f3e246]:
+        - heading "Record Payment" [level=3] [ref=f3e247]
+        - button "Close dialog" [active] [ref=f3e248] [cursor=pointer]
+      - generic [ref=f3e252]:
+        - generic [ref=f3e253]:
+          - generic [ref=f3e254]:
+            - paragraph [ref=f3e255]: Bill BILL-202609-MGUK6UDA
+            - paragraph [ref=f3e256]:
+              - text: "Balance due:"
+              - generic [ref=f3e257]: ₹100.00
+          - generic [ref=f3e258]:
+            - generic [ref=f3e259]: Amount *
+            - spinbutton "Enter amount" [ref=f3e260]: "100"
+          - generic [ref=f3e261]:
+            - generic [ref=f3e262]: Payment Method *
+            - combobox [ref=f3e263]:
+              - option "Select method…" [selected]
+              - option "Cash"
+              - option "Card"
+              - option "UPI"
+              - option "Net Banking"
+              - option "Cheque"
+          - generic [ref=f3e264]:
+            - generic [ref=f3e265]: Transaction ID (optional)
+            - textbox "Transaction / reference ID" [ref=f3e266]
+          - generic [ref=f3e267]:
+            - generic [ref=f3e268]: Notes (optional)
+            - textbox "Any notes…" [ref=f3e269]
+        - generic [ref=f3e270]:
+          - button "Cancel" [ref=f3e271] [cursor=pointer]
+          - button "Record Payment" [ref=f3e272] [cursor=pointer]
