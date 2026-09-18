@@ -121,7 +121,7 @@ const getAppointments = asyncHandler(async (req, res) => {
     }
   }
 
-  if (status) where.status = status;
+  if (status) where.status = normalizeAppointmentStatus(status);
   if (priority) where.priority = priority;
 
   if (date) {

@@ -253,8 +253,8 @@ const Pharmacy = () => {
       toast.success('Medicine deleted successfully')
       fetchMedicines()
       fetchStats()
-    } catch {
-      toast.error('Failed to delete medicine')
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete medicine')
     }
   }
 

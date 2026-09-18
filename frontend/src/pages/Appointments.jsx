@@ -42,6 +42,26 @@ const STATUS_COLOR = {
   'No-Show': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 }
 
+// Mirrors the backend's appointment state machine (utils/stateMachines.js) so
+// the quick-action button always offers the one valid next status instead of
+// always trying to jump straight to Completed.
+export const NEXT_STATUS_ACTION = {
+  Scheduled: { next: 'Confirmed', label: 'Confirm' },
+  Confirmed: { next: 'In-Progress', label: 'Start' },
+  'In-Progress': { next: 'Completed', label: 'Complete' },
+}
+
+// The backend's Prisma enum stores/returns In_Progress and No_Show with
+// underscores; every other display value already matches its enum form
+// (Scheduled/Confirmed/Completed/Cancelled have no separator to normalize).
+// Without this, those two statuses render raw, never match STATUS_COLOR or
+// NEXT_STATUS_ACTION, and can never be selected via the status filter.
+export const normalizeStatusForDisplay = (status) => status === 'In_Progress'
+  ? 'In-Progress'
+  : status === 'No_Show'
+    ? 'No-Show'
+    : status
+
 const createEmptyBooking = () => ({
   step: 1,
   department: '',
@@ -257,13 +277,17 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
           {/* Patient search (non-patient roles only) */}
           {!isPatient && (
             <div className="relative" ref={suggestionRef}>
-              <label className={lbl}>Search Patient *</label>
+              <label htmlFor="patient-search-input" className={lbl}>Search Patient *</label>
               <div className={`relative flex items-center rounded-lg border ${
                 darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
               }`}>
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 shrink-0" />
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 shrink-0" aria-hidden="true" />
                 <input
+                  id="patient-search-input"
                   type="text"
+                  role="combobox"
+                  aria-expanded={showSuggestions}
+                  aria-autocomplete="list"
                   value={patientQuery}
                   onChange={e => handlePatientQuery(e.target.value)}
                   onFocus={() => patientQuery && setShowSuggestions(true)}
@@ -273,8 +297,8 @@ const BookingWizard = ({ isOpen, onClose, doctors, isPatient, onSuccess, darkMod
                   }`}
                 />
                 {(patientQuery || patientSelected) && (
-                  <button onClick={clearPatient} className="absolute right-3 text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
+                  <button onClick={clearPatient} aria-label="Clear patient selection" className="absolute right-3 text-gray-400 hover:text-gray-600">
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -605,6 +629,7 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
   const timeStr  = apt.timeSlot?.startTime || '—'
   const timeEnd  = apt.timeSlot?.endTime   || ''
   const isActive = !['Completed', 'Cancelled'].includes(apt.status)
+  const nextAction = NEXT_STATUS_ACTION[apt.status]
 
   return (
     <div className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200
@@ -670,14 +695,14 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
       {/* Actions */}
       {isActive && (canManage || canCancel) && (
         <div className="flex items-center gap-2">
-          {canManage && (
+          {canManage && nextAction && (
             <button
-              onClick={() => onComplete(apt._id)}
+              onClick={() => onComplete(apt._id, nextAction.next)}
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
                 bg-emerald-50 text-emerald-700 hover:bg-emerald-100
                 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
             >
-              <CheckCircle className="w-3.5 h-3.5" /> Complete
+              <CheckCircle className="w-3.5 h-3.5" /> {nextAction.label}
             </button>
           )}
           {canCancel && (
@@ -730,7 +755,7 @@ const Appointments = () => {
         appointmentService.getAllAppointments(),
         doctorService.getAllDoctors({ limit: 200 }),
       ])
-      setAppointments(apptRes.data || [])
+      setAppointments((apptRes.data || []).map(apt => ({ ...apt, status: normalizeStatusForDisplay(apt.status) })))
       setDoctors(doctorRes.data || [])
     } catch (err) {
       setFetchError(err)
@@ -749,8 +774,8 @@ const Appointments = () => {
       if (res?.notificationSent) msg += res.notificationMock ? ' · Email queued (mock)' : ' · Email sent to patient'
       toast.success(msg)
       fetchAll()
-    } catch {
-      toast.error('Failed to update status')
+    } catch (err) {
+      toast.error(err.message || 'Failed to update status')
     }
   }
 
@@ -762,8 +787,8 @@ const Appointments = () => {
       setCancelTarget(null)
       setCancelReason('')
       fetchAll()
-    } catch {
-      toast.error('Failed to cancel appointment')
+    } catch (err) {
+      toast.error(err.message || 'Failed to cancel appointment')
     }
   }
 
@@ -920,7 +945,7 @@ const Appointments = () => {
                   isPatient={isPatient}
                   canManage={canManage}
                   canCancel={canCancel}
-                  onComplete={id => handleStatusUpdate(id, 'Completed')}
+                  onComplete={(id, nextStatus) => handleStatusUpdate(id, nextStatus)}
                   onCancel={id => { setCancelTarget({ id }); setCancelReason('') }}
                   darkMode={darkMode}
                 />

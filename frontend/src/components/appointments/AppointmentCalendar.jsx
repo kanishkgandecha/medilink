@@ -60,14 +60,18 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
         <div
           key={day}
           onClick={() => onDateSelect && onDateSelect(day)}
+          role={onDateSelect ? 'button' : undefined}
+          tabIndex={onDateSelect ? 0 : undefined}
+          onKeyDown={onDateSelect ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDateSelect(day) } }) : undefined}
+          aria-label={onDateSelect ? `${monthNames[currentDate.getMonth()]} ${day}, ${dayAppointments.length} appointment${dayAppointments.length === 1 ? '' : 's'}` : undefined}
           className={`h-24 border border-gray-200 dark:border-gray-700 p-2 cursor-pointer transition ${
             darkMode ? 'hover:bg-gray-750' : 'hover:bg-gray-50'
           } ${isToday ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300' : ''}`}
         >
           <div className="flex justify-between items-start mb-1">
             <span className={`text-sm font-semibold ${
-              isToday 
-                ? 'text-blue-600' 
+              isToday
+                ? 'text-blue-600'
                 : darkMode ? 'text-white' : 'text-gray-800'
             }`}>
               {day}
@@ -86,6 +90,10 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
                   e.stopPropagation()
                   onAppointmentClick && onAppointmentClick(apt)
                 }}
+                role={onAppointmentClick ? 'button' : undefined}
+                tabIndex={onAppointmentClick ? 0 : undefined}
+                onKeyDown={onAppointmentClick ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onAppointmentClick(apt) } }) : undefined}
+                aria-label={onAppointmentClick ? `Appointment at ${apt.time} with ${apt.patient}` : undefined}
                 className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 truncate"
               >
                 {apt.time} - {apt.patient}
@@ -115,9 +123,10 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
           <div className="flex items-center space-x-2">
             <button
               onClick={previousMonth}
+              aria-label="Previous month"
               className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </button>
             <button
               onClick={() => setCurrentDate(new Date())}
@@ -127,9 +136,10 @@ const AppointmentCalendar = ({ appointments, onDateSelect, onAppointmentClick })
             </button>
             <button
               onClick={nextMonth}
+              aria-label="Next month"
               className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>

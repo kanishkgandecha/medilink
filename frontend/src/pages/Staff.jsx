@@ -218,8 +218,8 @@ const Staff = () => {
       await staffService.deleteStaff(id)
       toast.success('Staff member deactivated')
       fetchStaff()
-    } catch {
-      toast.error('Failed to deactivate staff member')
+    } catch (err) {
+      toast.error(err.message || 'Failed to deactivate staff member')
     }
   }
 

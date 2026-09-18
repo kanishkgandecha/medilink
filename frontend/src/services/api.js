@@ -54,6 +54,19 @@ api.interceptors.response.use(
       error.message = 'You do not have permission to perform this action.'
     }
 
+    // Validation/conflict/not-found responses carry a specific, useful
+    // message from the backend (either a single `message`, or an
+    // express-validator `errors` array) — surface that instead of Axios's
+    // generic "Request failed with status code NNN".
+    if (status === 400 || status === 404 || status === 409 || status === 422) {
+      const data = error.response.data
+      if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        error.message = data.errors.map((e) => e.msg || e.message).filter(Boolean).join('; ') || error.message
+      } else if (data?.message) {
+        error.message = data.message
+      }
+    }
+
     if (status >= 500) {
       error.message = 'The service is temporarily unavailable. Your submitted data was not saved; please retry.'
     }

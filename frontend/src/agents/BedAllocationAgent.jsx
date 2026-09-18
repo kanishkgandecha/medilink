@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { BedDouble, X, Loader2, Sparkles, AlertTriangle, CheckCircle2, Clock, RotateCcw, Building2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { allocateBed } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import useModalA11y from '../hooks/useModalA11y'
 
 const URGENCY_OPTIONS = ['Routine', 'Standard', 'High', 'Critical', 'Emergency']
 const PRIORITY_STYLE = {
@@ -15,6 +17,8 @@ const BedAllocationAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const [form, setForm] = useState({ condition: '', urgency: 'Standard', age: '', gender: '' })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   const handle = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
@@ -41,19 +45,24 @@ const BedAllocationAgent = ({ open, onClose, showTechnicalSource = true }) => {
   const pStyle = result ? (PRIORITY_STYLE[result.priority] || PRIORITY_STYLE.Standard) : null
   const PIcon = pStyle?.icon || CheckCircle2
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-sky-600 to-blue-600 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <BedDouble className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">Bed Placement Advisory</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Live Records + Rules</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <BedDouble className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+            <h2 id={titleId} className="font-bold text-white text-base">Bed Placement Advisory</h2>
+            <span className="hidden sm:inline text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Live Records + Rules</span>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} aria-label="Close bed placement advisory" className="text-white/70 hover:text-white transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -207,7 +216,8 @@ const BedAllocationAgent = ({ open, onClose, showTechnicalSource = true }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

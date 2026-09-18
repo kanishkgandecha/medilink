@@ -24,7 +24,7 @@ const ScopeBadge = ({ label, tone = 'all', className = '' }) => {
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${darkMode ? dark : light} ${className}`}
     >
-      <Icon className="w-3 h-3" />
+      <Icon className="w-3 h-3" aria-hidden="true" />
       {label}
     </span>
   )

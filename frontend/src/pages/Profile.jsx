@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-toastify'
 import * as authService from '../services/authService'
+import { formatEnumLabel } from '../utils/format'
 
 const AVATAR_PRESETS = [
   { key: 'blue',    bg: 'linear-gradient(135deg,#3b82f6,#06b6d4)' },
@@ -292,8 +293,8 @@ const Profile = () => {
               <div>
                 <p className={lbl}>Blood Group</p>
                 <span className="inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full text-sm font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                  <Droplet className="w-3.5 h-3.5" />
-                  {roleProfile.bloodGroup}
+                  <Droplet className="w-3.5 h-3.5" aria-hidden="true" />
+                  {formatEnumLabel(roleProfile.bloodGroup)}
                 </span>
               </div>
             )}

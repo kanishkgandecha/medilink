@@ -17,7 +17,7 @@ import { toast } from 'react-toastify'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
 import { computeTrend, formatTrendLabel } from '../../utils/trend'
-import { formatFreshness } from '../../utils/format'
+import { formatFreshness, formatEnumLabel } from '../../utils/format'
 import SourceBadge from '../ai/SourceBadge'
 import { SOURCE_TYPES } from '../../config/aiSourceTaxonomy'
 
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
   const spotAge      = spotlight?.dateOfBirth
     ? Math.floor((Date.now() - new Date(spotlight.dateOfBirth)) / (365.25 * 24 * 3600 * 1000))
     : null
-  const spotBlood  = spotlight?.bloodGroup || '—'
+  const spotBlood  = spotlight?.bloodGroup ? formatEnumLabel(spotlight.bloodGroup) : '—'
   const spotGender = spotlight?.gender || spotlight?.userId?.gender || '—'
 
   return (
@@ -336,6 +336,43 @@ const AdminDashboard = () => {
 
           {/* ════ LEFT PANEL ══════════════════════════════════════════════ */}
           <div className="space-y-4 xl:sticky xl:top-6">
+
+            {/* Alerts — pending actions surfaced above decorative analytics */}
+            {(alerts.lowStockMedicines > 0 || alerts.expiringMedicines > 0 || alerts.pendingBills > 0) && (
+              <div className={`${glass} p-4 border-l-2 border-l-amber-500`} role="status">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" aria-hidden="true" />
+                  <h3 className={`text-sm font-bold ${textCls}`}>Alerts</h3>
+                  <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full
+                    ${darkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                    {totalAlerts}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {alerts.lowStockMedicines > 0 && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
+                      ${darkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-700'}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" aria-hidden="true" />
+                      {alerts.lowStockMedicines} low-stock medicine{alerts.lowStockMedicines > 1 ? 's' : ''}
+                    </div>
+                  )}
+                  {alerts.expiringMedicines > 0 && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
+                      ${darkMode ? 'bg-orange-900/20 text-orange-400' : 'bg-orange-50 text-orange-700'}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" aria-hidden="true" />
+                      {alerts.expiringMedicines} expiring within 30 days
+                    </div>
+                  )}
+                  {alerts.pendingBills > 0 && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
+                      ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" aria-hidden="true" />
+                      {alerts.pendingBills} pending bill{alerts.pendingBills > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Patient spotlight */}
             {spotlight && (
@@ -748,6 +785,10 @@ const AdminDashboard = () => {
                   return (
                     <div key={pt._id}
                       onClick={() => navigate('/patients')}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/patients') } }}
+                      aria-label={`View ${name} in Patients`}
                       className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors cursor-pointer
                         ${darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-[#F5F7FA]'}`}>
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2E86DE] to-[#5DADE2] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
@@ -764,42 +805,6 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Alerts */}
-            {(alerts.lowStockMedicines > 0 || alerts.expiringMedicines > 0 || alerts.pendingBills > 0) && (
-              <div className={`${glass} p-4`}>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                  <h3 className={`text-sm font-bold ${textCls}`}>Alerts</h3>
-                  <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full
-                    ${darkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-50 text-red-600'}`}>
-                    {totalAlerts}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {alerts.lowStockMedicines > 0 && (
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
-                      ${darkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-700'}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-                      {alerts.lowStockMedicines} low-stock medicine{alerts.lowStockMedicines > 1 ? 's' : ''}
-                    </div>
-                  )}
-                  {alerts.expiringMedicines > 0 && (
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
-                      ${darkMode ? 'bg-orange-900/20 text-orange-400' : 'bg-orange-50 text-orange-700'}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
-                      {alerts.expiringMedicines} expiring within 30 days
-                    </div>
-                  )}
-                  {alerts.pendingBills > 0 && (
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
-                      ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-                      {alerts.pendingBills} pending bill{alerts.pendingBills > 1 ? 's' : ''}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useId } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Home, Users, UserPlus, Calendar, Bed, Pill,
@@ -144,6 +144,14 @@ const BottomNav = () => {
   const { darkMode } = useTheme()
   const location    = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerId = useId()
+
+  useEffect(() => {
+    if (!drawerOpen) return undefined
+    const handler = (e) => { if (e.key === 'Escape') setDrawerOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [drawerOpen])
 
   const menuKey = getUserRoleKey(user)
 
@@ -172,6 +180,10 @@ const BottomNav = () => {
 
       {/* ── More drawer (slide up from bottom) ────────────────────────────── */}
       <div
+        id={drawerId}
+        role="menu"
+        aria-label="All pages"
+        aria-hidden={!drawerOpen}
         className={`fixed left-0 right-0 z-[45] md:hidden px-3 transition-all duration-250 ease-out
           ${drawerOpen
             ? 'bottom-20 opacity-100 translate-y-0 pointer-events-auto'
@@ -201,10 +213,11 @@ const BottomNav = () => {
                   key={item.id}
                   to={item.path}
                   onClick={() => setDrawerOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-xl text-center
                     transition-all duration-150 ${drawerItemActive(isActive)}`}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" strokeWidth={isActive ? 2.5 : 1.75} />
+                  <Icon className="w-5 h-5 flex-shrink-0" strokeWidth={isActive ? 2.5 : 1.75} aria-hidden="true" />
                   <span className="text-[11px] font-medium leading-tight">{item.label}</span>
                 </Link>
               )
@@ -225,10 +238,11 @@ const BottomNav = () => {
                   key={path}
                   to={path}
                   onClick={() => setDrawerOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-2.5 p-3 rounded-xl transition-all duration-150
                     ${drawerItemActive(isActive)}`}
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.75} />
+                  <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.75} aria-hidden="true" />
                   <span className="text-sm font-medium">{label}</span>
                 </Link>
               )
@@ -239,6 +253,7 @@ const BottomNav = () => {
 
       {/* ── Bottom nav bar ────────────────────────────────────────────────── */}
       <nav
+        aria-label="Primary mobile navigation"
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-3"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -253,6 +268,7 @@ const BottomNav = () => {
                 key={item.id}
                 to={item.path}
                 onClick={() => setDrawerOpen(false)}
+                aria-current={isActive ? 'page' : undefined}
                 className="flex flex-col items-center justify-center flex-1 h-full gap-0.5"
               >
                 <div className={`flex items-center justify-center w-10 h-8 rounded-xl
@@ -260,6 +276,7 @@ const BottomNav = () => {
                   <Icon
                     className={`w-[22px] h-[22px] transition-colors duration-150 ${navItemActive(isActive)}`}
                     strokeWidth={isActive ? 2.5 : 1.75}
+                    aria-hidden="true"
                   />
                 </div>
                 <span className={`text-[10px] font-medium leading-none transition-colors duration-150
@@ -273,13 +290,16 @@ const BottomNav = () => {
           {/* More button */}
           <button
             onClick={() => setDrawerOpen(v => !v)}
+            aria-expanded={drawerOpen}
+            aria-controls={drawerId}
+            aria-haspopup="menu"
             className="flex flex-col items-center justify-center flex-1 h-full gap-0.5"
           >
             <div className={`flex items-center justify-center w-10 h-8 rounded-xl
               transition-all duration-150 ${navPillActive(drawerOpen)}`}>
               {drawerOpen
-                ? <X className={`w-[22px] h-[22px] ${navItemActive(true)}`} strokeWidth={2.5} />
-                : <MoreHorizontal className={`w-[22px] h-[22px] ${navItemActive(false)}`} strokeWidth={1.75} />
+                ? <X className={`w-[22px] h-[22px] ${navItemActive(true)}`} strokeWidth={2.5} aria-hidden="true" />
+                : <MoreHorizontal className={`w-[22px] h-[22px] ${navItemActive(false)}`} strokeWidth={1.75} aria-hidden="true" />
               }
             </div>
             <span className={`text-[10px] font-medium leading-none transition-colors duration-150

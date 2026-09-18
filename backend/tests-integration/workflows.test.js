@@ -14,6 +14,7 @@ let server;
 let baseUrl;
 const fixtureUserIds = [];
 const fixtureWardIds = [];
+const fixtureMedicineIds = [];
 
 const api = async (path, { token, method = 'GET', body } = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -117,6 +118,10 @@ test('diagnostic staff receive modality-scoped queues without general patient ac
 test.after(async () => {
   if (fixtureWardIds.length) {
     await prisma.ward.deleteMany({ where: { id: { in: fixtureWardIds } } });
+  }
+  if (fixtureMedicineIds.length) {
+    await prisma.prescriptionMedicine.deleteMany({ where: { medicineId: { in: fixtureMedicineIds } } });
+    await prisma.medicine.deleteMany({ where: { id: { in: fixtureMedicineIds } } });
   }
   if (fixtureUserIds.length) {
     await prisma.clinicalNote.deleteMany({ where: {
@@ -277,6 +282,127 @@ test('AI-derived clinical notes require doctor confirmation and preserve every v
     orderBy: { createdAt: 'asc' },
   });
   assert.deepEqual(events.map((event) => event.action), ['DRAFT_CREATED', 'CLINICIAN_REVIEWED', 'AMENDED']);
+});
+
+// Regression test for a Phase 7 defect: Prescription does not own the FK to
+// Appointment (the relation is declared on Appointment.prescriptionId — see
+// prisma/schema.prisma, "AppointmentPrescription"), so writing
+// `appointmentId` directly on prisma.prescription.create() always threw
+// "Unknown argument `appointmentId`" and creating ANY prescription — with or
+// without an appointment link — failed with a 500.
+test('creating a prescription succeeds with and without a linked appointment', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `rx-patient-${suffix}`, role: 'Patient' });
+  const doctorUser = await createUser({ suffix: `rx-doctor-${suffix}`, role: 'Doctor' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id, patientId: `IT-RX-${suffix}`, allergies: [],
+  } });
+  const doctor = await prisma.doctor.create({ data: {
+    userId: doctorUser.user.id,
+    specialization: 'General Medicine', qualification: 'MBBS', experience: 5,
+    licenseNumber: `IT-RX-LIC-${suffix}`, department: 'General Medicine', consultationFee: 500,
+  } });
+  // A disposable fixture rather than relying on pre-seeded data, so this
+  // test is self-contained regardless of what the target database has
+  // already been seeded with.
+  const medicine = await prisma.medicine.create({ data: {
+    medicineId: `IT-MED-${suffix}`, name: `Integration Test Medicine ${suffix}`,
+    genericName: 'Test Compound', manufacturer: 'Integration Labs',
+    category: 'Analgesic', dosageForm: 'Tablet', unitPrice: 10,
+    stockQuantity: 100, expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+    isActive: true,
+  } });
+  fixtureMedicineIds.push(medicine.id);
+
+  const withoutAppointment = await api('/api/prescriptions', {
+    token: doctorUser.token, method: 'POST', body: {
+      patient: patient.id,
+      medicines: [{ medicine: medicine.id, quantity: 10, dosage: '1 tablet', frequency: 'Once daily', duration: '5 days' }],
+    },
+  });
+  assert.equal(withoutAppointment.response.status, 201);
+  assert.equal(withoutAppointment.json.data.patient._id, patient.id);
+
+  const appointmentDate = new Date();
+  appointmentDate.setUTCDate(appointmentDate.getUTCDate() + 7);
+  const appointment = await prisma.appointment.create({ data: {
+    patientId: patient.id, doctorId: doctor.id,
+    appointmentDate, startTime: '10:00', endTime: '10:30',
+    type: 'Consultation', bookingKey: `integration-rx-appt-${suffix}`,
+  } });
+
+  const withAppointment = await api('/api/prescriptions', {
+    token: doctorUser.token, method: 'POST', body: {
+      patient: patient.id, appointment: appointment.id,
+      medicines: [{ medicine: medicine.id, quantity: 10, dosage: '1 tablet', frequency: 'Once daily', duration: '5 days' }],
+    },
+  });
+  assert.equal(withAppointment.response.status, 201);
+
+  const linkedAppointment = await prisma.appointment.findUnique({ where: { id: appointment.id } });
+  assert.equal(linkedAppointment.prescriptionId, withAppointment.json.data.id);
+});
+
+// Regression test for a Phase 7 defect: the pharmacist prescriptions view
+// has a "Partially-Filled" (hyphenated) quick-filter tab, but the list
+// endpoint passed req.query.status straight into the Prisma `where` filter
+// without normalizing it to the enum's real underscored form, so Prisma
+// rejected the whole query — a pharmacist clicking that tab got a 500.
+test('the prescription list endpoint accepts the hyphenated status filter the UI sends', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const pharmacist = await createUser({ suffix: `rx-filter-pharmacist-${suffix}`, role: 'Staff', subRole: 'Pharmacist' });
+
+  const result = await api('/api/prescriptions?status=Partially-Filled', { token: pharmacist.token });
+  assert.equal(result.response.status, 200);
+  assert.equal(result.json.success, true);
+});
+
+// Regression test for a Phase 7 defect: Billing Staff could not create a new
+// invoice at all — the "Generate Invoice" patient picker calls
+// billingService.getAllPatients(), which hits the same GET /api/patients
+// used by every other staff role, but BillingStaff was missing from that
+// route's authorize() list. The 403 was swallowed by a bare `catch {}` in
+// Billing.jsx, so the dropdown silently rendered "0 available" with no
+// visible error. BillingStaff is added alongside the already-present
+// Pharmacist/Receptionist/Nurse, who get the same patient list shape for
+// their own equivalent lookup needs; unrelated staff-only routes remain
+// blocked.
+test('billing staff can look up patients to generate an invoice, but not staff records', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const billing = await createUser({ suffix: `billing-patients-${suffix}`, role: 'Staff', subRole: 'BillingStaff' });
+
+  const patients = await api('/api/patients?limit=5', { token: billing.token });
+  assert.equal(patients.response.status, 200);
+  assert.equal(patients.json.success, true);
+
+  const staffList = await api('/api/staff', { token: billing.token });
+  assert.equal(staffList.response.status, 403);
+});
+
+// Regression test for a second, compounding Phase 7 defect: every bill
+// created by a Staff sub-role that isn't coincidentally also a top-level
+// Role enum value (BillingStaff, LabTechnician, RadiologyTechnician,
+// WardManager) failed with a 500. billingController.js wrote the more
+// specific sub-role string into Billing.createdByRole, a field typed
+// against the top-level Prisma Role enum, which does not contain those
+// sub-role values — so Billing Staff, whose entire purpose is creating
+// bills, could not create one at all.
+test('billing staff can create a bill (createdByRole matches the top-level Role enum, not the sub-role)', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const billing = await createUser({ suffix: `billing-create-${suffix}`, role: 'Staff', subRole: 'BillingStaff' });
+  const patientUser = await createUser({ suffix: `billing-create-patient-${suffix}`, role: 'Patient' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id, patientId: `IT-BILL-${suffix}`, allergies: [],
+  } });
+
+  const result = await api('/api/billing', {
+    token: billing.token, method: 'POST', body: {
+      patient: patientUser.user.id, billType: 'Other',
+      items: [{ description: 'Integration test charge', unitPrice: 100, quantity: 1 }],
+    },
+  });
+  assert.equal(result.response.status, 201);
+  assert.equal(result.json.bill.createdByRole, 'Staff');
 });
 
 test('AI degrades safely, exposes admin-only reliability, and rate limits per user', async () => {

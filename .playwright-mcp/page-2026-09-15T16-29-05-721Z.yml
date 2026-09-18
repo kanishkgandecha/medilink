@@ -1,0 +1,114 @@
+- generic [ref=e10]:
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - banner [ref=e14]:
+        - generic [ref=e15]:
+          - link "MediLink" [ref=e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=e18]:
+            - link "Dashboard" [ref=e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Patients" [ref=e21] [cursor=pointer]:
+              - /url: /patients
+            - link "Doctors" [ref=e22] [cursor=pointer]:
+              - /url: /doctors
+            - link "Staff" [ref=e23] [cursor=pointer]:
+              - /url: /staff
+            - link "Appointments" [ref=e24] [cursor=pointer]:
+              - /url: /appointments
+            - link "Wards & Beds" [ref=e25] [cursor=pointer]:
+              - /url: /wards
+            - link "Pharmacy" [ref=e26] [cursor=pointer]:
+              - /url: /pharmacy
+            - link "Billing" [ref=e27] [cursor=pointer]:
+              - /url: /billing
+            - link "Reports" [ref=e28] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=e29]:
+            - button "Settings" [ref=e30] [cursor=pointer]
+            - button "Switch to dark mode" [ref=e35] [cursor=pointer]
+            - button "Notifications (3 unread)" [ref=e39] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e44]: "3"
+            - button "Account menu for System Admin" [ref=e46] [cursor=pointer]: SA
+      - main [ref=e47]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - heading "Staff Management" [level=1] [ref=e53]
+                - generic [ref=e54]: All staff
+              - paragraph [ref=e58]: Manage staff records, shifts, and departments
+            - button "Add Staff Member" [ref=e59] [cursor=pointer]
+          - generic [ref=e61]:
+            - complementary [ref=e62]:
+              - generic [ref=e63]:
+                - generic [ref=e64]:
+                  - paragraph [ref=e67]: Total Staff
+                  - paragraph [ref=e74]: "71"
+                - generic [ref=e75]:
+                  - paragraph [ref=e78]: Nurses
+                  - paragraph [ref=e83]: "1"
+                - generic [ref=e84]:
+                  - paragraph [ref=e87]: Support Staff
+                  - paragraph [ref=e91]: "70"
+                - generic [ref=e92]:
+                  - paragraph [ref=e95]: On Duty
+                  - paragraph [ref=e100]: "71"
+            - generic [ref=e101]:
+              - generic [ref=e102]:
+                - textbox "Search staff…" [ref=e109]: QA Regression
+                - combobox [ref=e110]:
+                  - option "All Sub-Roles" [selected]
+                  - option "Nurse"
+                  - option "Receptionist"
+                  - option "Pharmacist"
+                  - option "Lab Technician"
+                  - option "Radiology Technician"
+                  - option "Billing Staff"
+                  - option "Ward Manager"
+                - combobox [ref=e111]:
+                  - option "All Shifts" [selected]
+                  - option "Morning"
+                  - option "Evening"
+                  - option "Night"
+                  - option "Rotational"
+                - button "Clear" [ref=e112] [cursor=pointer]
+                - generic [ref=e116]: 1 of 71 members
+              - generic [ref=e118]:
+                - generic [ref=e119]:
+                  - generic [ref=e120]: QR
+                  - generic [ref=e121]:
+                    - paragraph [ref=e122]: QA Regression Temp Staff
+                    - paragraph [ref=e123]: qa.regression.temp.staff@medilink.invalid
+                    - paragraph [ref=e124]: EMP-53D7C184E652
+                  - generic [ref=e125]: Nurse
+                - generic [ref=e126]:
+                  - generic [ref=e127]: General Ward
+                  - generic [ref=e128]: Morning
+                  - generic [ref=e129]: Full_Time
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - paragraph [ref=e132]: Salary
+                    - paragraph [ref=e133]: ₹0
+                  - generic [ref=e134]:
+                    - paragraph [ref=e135]: Qualification
+                    - paragraph [ref=e136]: —
+                  - generic [ref=e137]:
+                    - paragraph [ref=e138]: Phone
+                    - paragraph [ref=e139]: "9000000001"
+                - generic [ref=e140]:
+                  - button "Edit" [ref=e141] [cursor=pointer]
+                  - button [ref=e145] [cursor=pointer]
+    - button "Open MediLink Assistant" [ref=e151] [cursor=pointer]
+  - dialog [ref=e152]:
+    - generic [ref=e154]:
+      - generic [ref=e155]:
+        - generic [ref=e159]:
+          - heading "Deactivate Staff Member" [level=3] [ref=e160]
+          - paragraph [ref=e161]: This will deactivate the staff member's account. They will no longer be able to log in.
+        - button "Close dialog" [active] [ref=e162] [cursor=pointer]
+      - generic [ref=e166]:
+        - button "Cancel" [ref=e167] [cursor=pointer]
+        - button "Deactivate" [ref=e168] [cursor=pointer]

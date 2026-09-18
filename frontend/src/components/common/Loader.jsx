@@ -3,8 +3,8 @@ import { Activity } from 'lucide-react'
 
 const Loader = ({ fullScreen = false, text = 'Loading…' }) => {
   const content = (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <div className="relative">
+    <div className="flex flex-col items-center justify-center gap-4" role="status" aria-live="polite">
+      <div className="relative" aria-hidden="true">
         {/* Outer ring */}
         <div className="w-14 h-14 rounded-full border-[3px] border-blue-100 dark:border-gray-700" />
         {/* Spinning arc */}
@@ -14,10 +14,12 @@ const Loader = ({ fullScreen = false, text = 'Loading…' }) => {
           <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" strokeWidth={2} />
         </div>
       </div>
-      {text && (
+      {text ? (
         <p className="text-sm font-medium text-gray-500 dark:text-gray-400 animate-pulse">
           {text}
         </p>
+      ) : (
+        <span className="sr-only">Loading</span>
       )}
     </div>
   )

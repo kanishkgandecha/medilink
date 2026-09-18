@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { CalendarCheck, X, Loader2, Sparkles, User, Stethoscope, RotateCcw, ArrowRight, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { optimizeAppointment } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import useModalA11y from '../hooks/useModalA11y'
 
 const URGENCY_STYLE = {
   Emergency: { badge: 'bg-red-600 text-white', text: 'text-red-600 dark:text-red-400', label: 'Go to Emergency immediately' },
@@ -21,6 +23,8 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
   const [symptoms, setSymptoms] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   useEffect(() => {
     if (open && initialSymptoms) {
@@ -68,19 +72,24 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
 
   const uStyle = result ? (URGENCY_STYLE[result.urgencyLevel] || URGENCY_STYLE.Routine) : null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <CalendarCheck className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">Appointment Optimizer</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Records + Rules</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <CalendarCheck className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+            <h2 id={titleId} className="font-bold text-white text-base">Appointment Optimizer</h2>
+            <span className="hidden sm:inline text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Records + Rules</span>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} aria-label="Close appointment optimizer" className="text-white/70 hover:text-white transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -222,7 +231,8 @@ const AppointmentOptimizerAgent = ({ open, onClose, initialSymptoms = '', initia
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

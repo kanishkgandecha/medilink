@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Search, Filter, ChevronDown } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { formatEnumLabel } from '../../utils/format'
 
 const PatientList = ({ patients, onPatientSelect }) => {
   const { darkMode } = useTheme()
@@ -50,9 +51,13 @@ const PatientList = ({ patients, onPatientSelect }) => {
           <div
             key={patient._id}
             onClick={() => onPatientSelect(patient)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPatientSelect(patient) } }}
+            aria-label={`View details for ${patient.name}`}
             className={`p-4 rounded-lg border cursor-pointer transition ${
-              darkMode 
-                ? 'border-gray-700 hover:bg-gray-750' 
+              darkMode
+                ? 'border-gray-700 hover:bg-gray-750'
                 : 'border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -77,7 +82,7 @@ const PatientList = ({ patients, onPatientSelect }) => {
               <div>
                 <p className="text-gray-500">Blood</p>
                 <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  {patient.bloodGroup}
+                  {formatEnumLabel(patient.bloodGroup)}
                 </p>
               </div>
             </div>

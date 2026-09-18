@@ -205,7 +205,7 @@ const Doctors = () => {
       await doctorService.updateDoctorSchedule(selectedDoctor._id, availabilityArray)
       toast.success('Schedule updated successfully')
       setShowScheduleModal(false); fetchDoctors()
-    } catch { toast.error('Failed to update schedule') }
+    } catch (err) { toast.error(err.message || 'Failed to update schedule') }
   }
 
   const handleDelete = async (id) => {

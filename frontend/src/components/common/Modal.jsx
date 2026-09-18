@@ -1,6 +1,8 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import useModalA11y from '../../hooks/useModalA11y'
 
 const SIZE_MAP = {
   sm:   'max-w-md',
@@ -12,28 +14,22 @@ const SIZE_MAP = {
 
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   const { darkMode } = useTheme()
+  const titleId = useId()
+  const panelRef = useModalA11y(isOpen, onClose)
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
-
-  useEffect(() => {
-    if (isOpen) document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, handleKeyDown])
-
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
       aria-modal="true"
       role="dialog"
+      aria-labelledby={titleId}
     >
       {/* Overlay */}
       <div
@@ -43,6 +39,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
       {/* Panel */}
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={`relative w-full ${SIZE_MAP[size] || SIZE_MAP.md}
           max-h-[90vh] flex flex-col
           rounded-2xl overflow-hidden
@@ -65,7 +63,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
               ? 'border-gray-700/80 bg-gray-800'
               : 'border-gray-100 bg-white'}`}
         >
-          <h3 className={`text-base font-semibold leading-tight
+          <h3 id={titleId} className={`text-base font-semibold leading-tight
             ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {title}
           </h3>
@@ -76,7 +74,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
               ${darkMode
                 ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                 : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
-            aria-label="Close modal"
+            aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
           </button>
@@ -87,7 +85,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

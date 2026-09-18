@@ -26,6 +26,13 @@ const STATUS_BADGE = {
   Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 }
 
+// The backend's Prisma enum returns "Partially_Filled" with an underscore;
+// every frontend consumer (STATUS_BADGE, the pharmacist dispense-action
+// check) is keyed on the hyphenated display form. Unnormalized, a partially
+// filled prescription rendered its raw enum value and hid the "Dispense"
+// action from the pharmacist entirely.
+export const normalizeRxStatusForDisplay = (status) => status === 'Partially_Filled' ? 'Partially-Filled' : status
+
 const FREQUENCIES = [
   'Once daily', 'Twice daily', 'Three times daily',
   'Four times daily', 'Every 6 hours', 'Every 8 hours',
@@ -87,7 +94,7 @@ const Prescriptions = () => {
       const params = statusFilter ? { status: statusFilter } : {}
       const res = await prescriptionService.getAllPrescriptions(params)
       const data = res.data || res.prescriptions || []
-      setPrescriptions(data)
+      setPrescriptions(data.map(rx => ({ ...rx, status: normalizeRxStatusForDisplay(rx.status) })))
     } catch (err) {
       setFetchError(err)
       toast.error('Failed to load prescriptions')
@@ -317,6 +324,11 @@ const Prescriptions = () => {
                     <div
                       className={`p-4 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-gray-700/40' : 'hover:bg-gray-50'} rounded-xl transition-colors`}
                       onClick={() => setSelected(isExpanded ? null : rx)}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={isExpanded}
+                      aria-label={`Prescription ${rx.prescriptionId}, ${isExpanded ? 'collapse' : 'expand'} details`}
+                      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setSelected(isExpanded ? null : rx) } }}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
@@ -367,7 +379,7 @@ const Prescriptions = () => {
                             Cancel
                           </button>
                         )}
-                        <Eye className={`w-4 h-4 transition-transform ${isExpanded ? 'text-blue-500 rotate-0' : 'text-gray-400'}`} />
+                        <Eye className={`w-4 h-4 transition-transform ${isExpanded ? 'text-blue-500 rotate-0' : 'text-gray-400'}`} aria-hidden="true" />
                       </div>
                     </div>
 

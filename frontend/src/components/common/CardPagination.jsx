@@ -30,11 +30,13 @@ const CardPagination = ({ total, page, onPage }) => {
     return Array.from({ length: Math.min(5, totalPages) }, (_, i) => start + i)
   })()
 
-  const btn = (key, disabled, onClick, children, active = false) => (
+  const btn = (key, disabled, onClick, children, active = false, label) => (
     <button
       key={key}
       disabled={disabled}
       onClick={onClick}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
       className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all duration-150
         ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
         ${active
@@ -51,17 +53,19 @@ const CardPagination = ({ total, page, onPage }) => {
   const last  = Math.min(page * CARDS_PER_PAGE, total)
 
   return (
-    <div className={`flex items-center justify-between px-2 py-3 rounded-xl border
+    <nav
+      aria-label="Pagination"
+      className={`flex flex-wrap items-center justify-between gap-2 px-2 py-3 rounded-xl border
       ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`}>
       <p className={`text-xs font-medium tabular-nums ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
         {first}–{last} of {total}
       </p>
-      <div className="flex items-center gap-1">
-        {btn('prev', page === 1, () => onPage(page - 1), <ChevronLeft className="w-4 h-4" />)}
-        {pageNums.map(p => btn(p, false, () => onPage(p), p, p === page))}
-        {btn('next', page === totalPages, () => onPage(page + 1), <ChevronRight className="w-4 h-4" />)}
+      <div className="flex items-center gap-1 flex-wrap">
+        {btn('prev', page === 1, () => onPage(page - 1), <ChevronLeft className="w-4 h-4" />, false, 'Previous page')}
+        {pageNums.map(p => btn(p, false, () => onPage(p), p, p === page, `Page ${p}`))}
+        {btn('next', page === totalPages, () => onPage(page + 1), <ChevronRight className="w-4 h-4" />, false, 'Next page')}
       </div>
-    </div>
+    </nav>
   )
 }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { User, Phone, Mail, Calendar, MapPin, FileText, Activity, Pill } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { formatEnumLabel } from '../../utils/format'
 
 const PatientDetails = ({ patient }) => {
   const { darkMode } = useTheme()
@@ -41,7 +42,7 @@ const PatientDetails = ({ patient }) => {
                 <div>
                   <p className="text-xs text-gray-500">Blood Group</p>
                   <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    {patient.bloodGroup}
+                    {formatEnumLabel(patient.bloodGroup)}
                   </p>
                 </div>
               </div>

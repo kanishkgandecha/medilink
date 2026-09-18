@@ -21,6 +21,10 @@ const StatCard = ({ title, value, change, icon: Icon, trend, iconBg = 'bg-blue-5
   return (
     <div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e) } }) : undefined}
+      aria-label={onClick ? `${title}: ${value}` : undefined}
       className={`
         rounded-xl p-5 border transition-all duration-200 overflow-hidden relative
         ${onClick ? 'cursor-pointer select-none' : ''}
@@ -32,6 +36,7 @@ const StatCard = ({ title, value, change, icon: Icon, trend, iconBg = 'bg-blue-5
       <div
         className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl"
         style={{ background: accentColor }}
+        aria-hidden="true"
       />
 
       {/* Top row: label + icon */}
@@ -41,7 +46,7 @@ const StatCard = ({ title, value, change, icon: Icon, trend, iconBg = 'bg-blue-5
           {title}
         </p>
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-          ${darkMode ? 'bg-gray-700' : iconBg}`}>
+          ${darkMode ? 'bg-gray-700' : iconBg}`} aria-hidden="true">
           <Icon className="w-5 h-5" strokeWidth={2} />
         </div>
       </div>
@@ -54,12 +59,12 @@ const StatCard = ({ title, value, change, icon: Icon, trend, iconBg = 'bg-blue-5
 
       {/* Trend */}
       {change && (
-        <div className="flex items-center mt-2 gap-1.5">
+        <div className="flex items-center mt-2 gap-1.5 flex-wrap">
           <span className={`flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full
             ${isPositive
               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
               : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'}`}>
-            {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {isPositive ? <TrendingUp className="w-3 h-3" aria-hidden="true" /> : <TrendingDown className="w-3 h-3" aria-hidden="true" />}
             {change}
           </span>
           <span className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>vs last month</span>

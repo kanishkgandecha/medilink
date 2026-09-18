@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useId } from 'react'
+import { createPortal } from 'react-dom'
 import { ClipboardList, X, Loader2, Sparkles, AlertTriangle, User, Calendar, Pill, FileText, RotateCcw } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { getPatientSummary } from '../services/aiService'
 import api from '../services/api'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
+import useModalA11y from '../hooks/useModalA11y'
 
 const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTechnicalSource = true }) => {
   const [patientId, setPatientId] = useState(propPatientId || '')
@@ -11,6 +13,8 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTech
   const [loading, setLoading]   = useState(false)
   const [patients, setPatients] = useState([])
   const [loadingList, setLoadingList] = useState(false)
+  const titleId = useId()
+  const panelRef = useModalA11y(open, onClose)
 
   // Fetch patient list for selector (admin/doctor view)
   const fetchPatients = async () => {
@@ -47,19 +51,24 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTech
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div ref={panelRef} tabIndex={-1} className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="px-5 py-4 flex items-center justify-between bg-gradient-to-r from-purple-600 to-fuchsia-600 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <ClipboardList className="w-5 h-5 text-white" />
-            <h2 className="font-bold text-white text-base">Patient Summary Agent</h2>
-            <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Record Grounded</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <ClipboardList className="w-5 h-5 text-white flex-shrink-0" aria-hidden="true" />
+            <h2 id={titleId} className="font-bold text-white text-base">Patient Summary Agent</h2>
+            <span className="hidden sm:inline text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium uppercase">Record Grounded</span>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition p-1"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} aria-label="Close patient summary agent" className="text-white/70 hover:text-white transition p-1 flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -224,7 +233,8 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTech
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

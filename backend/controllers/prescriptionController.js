@@ -102,27 +102,42 @@ const createPrescription = async (req, res) => {
     }
   }
 
-  const prescription = await prisma.prescription.create({
-    data: {
-      prescriptionId,
-      patientId: targetPatient.id,
-      doctorId: doctorExists.id,
-      appointmentId: targetApptId,
-      diagnosis: diagnosis || null,
-      symptoms: symptoms || null,
-      labTests: Array.isArray(labTests) ? labTests : [],
-      refillsAllowed: Number(refillsAllowed || 0),
-      validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      notes: notes || null,
-      medicines: {
-        create: preparedMedicines,
+  // Prescription does not own the FK to Appointment — the relation is
+  // declared on Appointment.prescriptionId (see prisma/schema.prisma,
+  // "AppointmentPrescription"). So the link, if any, is written as a
+  // separate update to the appointment row inside the same transaction,
+  // not as an `appointmentId` field on the prescription itself.
+  const prescription = await runSerializableTransaction(async (tx) => {
+    const created = await tx.prescription.create({
+      data: {
+        prescriptionId,
+        patientId: targetPatient.id,
+        doctorId: doctorExists.id,
+        diagnosis: diagnosis || null,
+        symptoms: symptoms || null,
+        labTests: Array.isArray(labTests) ? labTests : [],
+        refillsAllowed: Number(refillsAllowed || 0),
+        validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        notes: notes || null,
+        medicines: {
+          create: preparedMedicines,
+        },
       },
-    },
-    include: {
-      patient: { include: { user: true } },
-      doctor: { include: { user: true } },
-      medicines: { include: { medicine: true } },
-    },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+        medicines: { include: { medicine: true } },
+      },
+    });
+
+    if (targetApptId) {
+      await tx.appointment.update({
+        where: { id: targetApptId },
+        data: { prescriptionId: created.id },
+      });
+    }
+
+    return created;
   });
 
   res.status(201).json({
@@ -147,7 +162,7 @@ const getPrescriptions = async (req, res) => {
     where.doctorId = doctorProfile.id;
   }
 
-  if (status) where.status = status;
+  if (status) where.status = normalizePrescriptionStatus(status);
 
   if (startDate && endDate) {
     where.createdAt = { gte: new Date(startDate), lte: new Date(endDate) };

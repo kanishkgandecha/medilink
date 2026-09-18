@@ -115,6 +115,20 @@ const AIAgents = () => {
 
   const closeAgent = () => setSearchParams({}, { replace: true })
 
+  const handleTabKeyDown = (e, index) => {
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return
+    e.preventDefault()
+    const count = availableAgents.length
+    let nextIndex = index
+    if (e.key === 'ArrowRight') nextIndex = (index + 1) % count
+    else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + count) % count
+    else if (e.key === 'Home') nextIndex = 0
+    else if (e.key === 'End') nextIndex = count - 1
+    const nextTab = availableAgents[nextIndex]
+    handleTabChange(nextTab.id)
+    document.getElementById(`agent-tab-${nextTab.id}`)?.focus()
+  }
+
   return (
     <PageLayout>
       <div className="w-full space-y-5">
@@ -134,14 +148,24 @@ const AIAgents = () => {
         </div>
 
         {/* Agent Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {availableAgents.map((tab) => {
+        <div
+          role="tablist"
+          aria-label="AI decision-support tools"
+          className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none"
+          style={{ maskImage: 'linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent)' }}
+        >
+          {availableAgents.map((tab, index) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
+                id={`agent-tab-${tab.id}`}
+                role="tab"
+                aria-selected={isActive}
+                tabIndex={isActive || (!activeTab && index === 0) ? 0 : -1}
                 onClick={() => handleTabChange(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
                 className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium text-sm whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
@@ -150,7 +174,7 @@ const AIAgents = () => {
                     : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
-                <Icon size={18} className={isActive ? 'text-white' : 'text-blue-500'} />
+                <Icon size={18} className={isActive ? 'text-white' : 'text-blue-500'} aria-hidden="true" />
                 <span>{tab.name}</span>
                 {tab.badge && (
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-semibold ${
