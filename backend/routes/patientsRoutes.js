@@ -6,6 +6,8 @@ const { protect, authorize } = require('../middleware/auth');
 const { requirePatientAccess } = require('../middleware/patientAccess');
 const { uploadReportAttachment, validateReportAttachmentSignature } = require('../middleware/upload');
 const prisma = require('../config/prisma');
+const logger = require('../utils/logger');
+const { logSafeError } = require('../utils/redact');
 const {
   createPatient,
   getPatients,
@@ -59,15 +61,16 @@ router.post('/heal-orphans', authorize('Admin'), async (req, res) => {
     }
     res.json({ success: true, message: `Fixed ${created.length} orphaned patient(s)`, count: created.length });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    logSafeError(logger, 'heal_orphans_failed', err, { requestId: req.id });
+    res.status(500).json({ success: false, message: 'Unable to repair orphaned patient profiles' });
   }
 });
 
 // Patient search autocomplete (lightweight)
 router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), async (req, res) => {
   try {
-    const { q = '' } = req.query;
-    if (!q.trim()) return res.json({ success: true, data: [] });
+    const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 100) : '';
+    if (!q) return res.json({ success: true, data: [] });
 
     const matchedUsers = await prisma.user.findMany({
       where: {
@@ -92,7 +95,11 @@ router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), asy
           { patientId: { contains: q, mode: 'insensitive' } },
         ],
       },
-      include: {
+      // Identity fields only: search supports booking/registration lookups and
+      // must not return clinical, insurance, or emergency-contact data.
+      select: {
+        id: true,
+        patientId: true,
         user: { select: { id: true, name: true, email: true, phone: true, gender: true, dateOfBirth: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -107,6 +114,7 @@ router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), asy
 
     res.json({ success: true, data: formatted });
   } catch (err) {
+    logSafeError(logger, 'patient_search_failed', err, { requestId: req.id });
     res.status(500).json({ success: false, message: 'Search failed' });
   }
 });
@@ -160,8 +168,11 @@ const medicalHistoryValidation = [
   body('notes').optional({ nullable: true }).isLength({ max: 2000 }),
   validate,
 ];
-router.post('/:id/medical-history', requirePatientAccess('Doctor', 'Nurse'), medicalHistoryValidation, addMedicalHistory);
-router.put('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse'), [
+// Clinical writes are staff-only: `allowOwner: false` stops the record owner
+// (a patient) from authoring, editing, or voiding their own clinical record.
+const CLINICAL_WRITE = { allowOwner: false };
+router.post('/:id/medical-history', requirePatientAccess('Doctor', 'Nurse', CLINICAL_WRITE), medicalHistoryValidation, addMedicalHistory);
+router.put('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse', CLINICAL_WRITE), [
   body('condition').optional().trim().isLength({ min: 2, max: 200 }),
   body('diagnosedDate').optional().isISO8601().toDate(),
   body('status').optional().isIn(['Active', 'Resolved', 'Chronic']),
@@ -169,13 +180,13 @@ router.put('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nu
   body('reason').optional().trim().isLength({ max: 500 }),
   validate,
 ], updateMedicalHistory);
-router.delete('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse'), [
+router.delete('/:id/medical-history/:historyId', requirePatientAccess('Doctor', 'Nurse', CLINICAL_WRITE), [
   body('reason').trim().isLength({ min: 3, max: 500 }).withMessage('A void reason is required'),
   validate,
 ], deleteMedicalHistory);
 
 // Lab reports
-router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'), [
+router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician', CLINICAL_WRITE), [
   body('testName').trim().isLength({ min: 2, max: 200 }),
   body('testDate').optional({ nullable: true }).isISO8601().toDate(),
   body('reportDate').optional({ nullable: true }).isISO8601().toDate(),
@@ -193,7 +204,7 @@ router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Tech
 // further scoped to their own modality inside the controller.
 router.post(
   '/:id/lab-report/:reportId/attachment',
-  requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'),
+  requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician', CLINICAL_WRITE),
   (req, res, next) => {
     uploadReportAttachment(req, res, (err) => {
       if (err) return res.status(400).json({ success: false, message: err.message });
@@ -210,21 +221,23 @@ router.get(
 );
 
 // Generated/record-derived content remains a separate unverified draft until a doctor confirms it.
-router.get('/:id/clinical-notes', requirePatientAccess('Admin', 'Doctor', 'Nurse'), listClinicalNotes);
-router.post('/:id/clinical-notes/drafts', requirePatientAccess('Doctor', 'Nurse'), [
+// Clinical notes include unreviewed AI/record-derived drafts, so they are not
+// patient-facing until a separate reviewed-note view is designed.
+router.get('/:id/clinical-notes', requirePatientAccess('Admin', 'Doctor', 'Nurse', CLINICAL_WRITE), listClinicalNotes);
+router.post('/:id/clinical-notes/drafts', requirePatientAccess('Doctor', 'Nurse', CLINICAL_WRITE), [
   body('title').isString().trim().isLength({ min: 3, max: 200 }),
   body('content').isString().trim().isLength({ min: 10, max: 12000 }),
   body('source').isIn(['ai', 'record-derived']),
   body('sourceAgent').optional().isString().trim().isLength({ max: 100 }),
   validate,
 ], createClinicalDraft);
-router.post('/:id/clinical-notes/:noteId/review', authorize('Doctor'), requirePatientAccess('Doctor'), [
+router.post('/:id/clinical-notes/:noteId/review', authorize('Doctor'), requirePatientAccess('Doctor', CLINICAL_WRITE), [
   body('confirmed').custom((value) => value === true).withMessage('Explicit clinician confirmation is required'),
   body('content').isString().trim().isLength({ min: 10, max: 12000 }),
   body('amendmentNote').optional().isString().trim().isLength({ max: 500 }),
   validate,
 ], reviewClinicalNote);
-router.post('/:id/clinical-notes/:noteId/amend', authorize('Doctor'), requirePatientAccess('Doctor'), [
+router.post('/:id/clinical-notes/:noteId/amend', authorize('Doctor'), requirePatientAccess('Doctor', CLINICAL_WRITE), [
   body('confirmed').custom((value) => value === true).withMessage('Explicit clinician confirmation is required'),
   body('content').isString().trim().isLength({ min: 10, max: 12000 }),
   body('amendmentNote').isString().trim().isLength({ min: 3, max: 500 }),

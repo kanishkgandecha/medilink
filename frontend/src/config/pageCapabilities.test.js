@@ -48,15 +48,21 @@ describe('getPatientsCapability', () => {
     expect(cap.canDelete).toBe(false)
   })
 
-  it('gives Doctor/Nurse a view-only Directory, not a claim of "assigned" patients', () => {
-    // The backend returns every patient to Doctor/Nurse with no assignment
-    // filter, so the copy must say so honestly instead of promising a scope
-    // the API doesn't implement.
-    for (const user of [doctor, nurse, wardManager]) {
+  it('describes the Doctor list as care-scoped, matching the backend care-relationship filter', () => {
+    const cap = getPatientsCapability(doctor)
+    expect(cap.title).toBe('My Patients')
+    expect(cap.scope.tone).toBe('assigned')
+    expect(cap.canCreate).toBe(false)
+    expect(cap.canEdit).toBe(false)
+    expect(cap.canDelete).toBe(false)
+  })
+
+  it('gives Nurse/Ward Manager an identity-only Directory with no mutation rights', () => {
+    for (const user of [nurse, wardManager]) {
       const cap = getPatientsCapability(user)
       expect(cap.title).not.toMatch(/management/i)
       expect(cap.title).toBe('Patient Directory')
-      expect(cap.scope.label.toLowerCase()).not.toContain('assigned')
+      expect(cap.scope.label.toLowerCase()).toContain('identity only')
       expect(cap.canCreate).toBe(false)
       expect(cap.canEdit).toBe(false)
       expect(cap.canDelete).toBe(false)

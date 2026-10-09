@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const logger = require('../utils/logger');
+const { logSafeError } = require('../utils/redact');
 
 let transporter = null;
 
@@ -106,7 +108,8 @@ const sendEmail = async (to, templateName, data) => {
 
   try {
     if (!isEmailConfigured()) {
-      console.log(`[Email MOCK] To: ${to} | Subject: ${subject}`);
+      // Recipient addresses are PII and are not logged.
+      logger.info('email_mock_delivery_skipped', { reason: 'email_not_configured' });
       return { success: true, mock: true };
     }
 
@@ -118,7 +121,7 @@ const sendEmail = async (to, templateName, data) => {
     });
     return { success: true };
   } catch (err) {
-    console.error('[Email Error]', err.message);
+    logSafeError(logger, 'email_delivery_failed', err);
     return { success: false, reason: err.message };
   }
 };

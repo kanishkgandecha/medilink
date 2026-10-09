@@ -1,4 +1,12 @@
 const prisma = require('../config/prisma');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
+const { isNurseUser, nurseEncounterWhere } = require('../utils/careScope');
+
+// Dispensing needs identity and allergies; no other patient profile fields.
+const RX_PATIENT_SELECT = {
+  id: true, patientId: true, userId: true, allergies: true,
+  user: { select: { id: true, name: true, phone: true } },
+};
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination } = require('../utils/pagination');
 const { runSerializableTransaction, abortTransaction } = require('../utils/transactions');
@@ -124,8 +132,8 @@ const createPrescription = async (req, res) => {
         },
       },
       include: {
-        patient: { include: { user: true } },
-        doctor: { include: { user: true } },
+        patient: { include: { user: { select: SAFE_USER_SELECT } } },
+        doctor: { include: { user: { select: SAFE_USER_SELECT } } },
         medicines: { include: { medicine: true } },
       },
     });
@@ -160,6 +168,9 @@ const getPrescriptions = async (req, res) => {
     const doctorProfile = await prisma.doctor.findFirst({ where: { userId: req.user.id } });
     if (!doctorProfile) return res.json({ success: true, count: 0, data: [] });
     where.doctorId = doctorProfile.id;
+  } else if (isNurseUser(req.user)) {
+    // Nurses are limited to patients with an active encounter (see utils/careScope.js).
+    where.patient = nurseEncounterWhere();
   }
 
   if (status) where.status = normalizePrescriptionStatus(status);
@@ -173,7 +184,7 @@ const getPrescriptions = async (req, res) => {
   const prescriptions = await prisma.prescription.findMany({
     where,
     include: {
-      patient: { include: { user: { select: { id: true, name: true, phone: true } } } },
+      patient: { select: RX_PATIENT_SELECT },
       doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
       medicines: { include: { medicine: { select: { id: true, name: true, genericName: true, strength: true, unitPrice: true } } } },
       appointment: { select: { id: true, appointmentId: true, appointmentDate: true } },
@@ -200,8 +211,8 @@ const getPrescription = async (req, res) => {
   const prescription = await prisma.prescription.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: true } },
-      doctor: { include: { user: true } },
+      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      doctor: { include: { user: { select: SAFE_USER_SELECT } } },
       medicines: { include: { medicine: true } },
       appointment: true,
     },

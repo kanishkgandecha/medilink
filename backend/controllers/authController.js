@@ -3,6 +3,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const sendEmail = require('../utils/email');
 const crypto = require('crypto');
 const logger = require('../utils/logger');
+const { logSafeError } = require('../utils/redact');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const { matchPassword, hashPassword, generateToken, getResetPasswordToken } = require('../utils/userHelpers');
 
 const register = async (req, res, next) => {
@@ -80,12 +82,11 @@ const register = async (req, res, next) => {
       token,
     });
   } catch (err) {
-    logger.error('Registration error:', err.message);
+    logSafeError(logger, 'registration_failed', err, { requestId: req.id });
 
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }
 };
@@ -138,7 +139,7 @@ const login = async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error('Login error:', err.message);
+    logSafeError(logger, 'login_failed', err, { requestId: req.id });
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -186,11 +187,11 @@ const forgotPassword = async (req, res) => {
         },
       });
 
-      logger.error('Password reset email delivery failed:', emailErr.message);
+      logSafeError(logger, 'password_reset_email_failed', emailErr, { requestId: req.id });
       return res.status(200).json(genericResponse);
     }
   } catch (err) {
-    logger.error('Forgot password error:', err.message);
+    logSafeError(logger, 'forgot_password_failed', err, { requestId: req.id });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -238,7 +239,7 @@ const resetPassword = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error('❌ Reset password error:', err);
+    logSafeError(logger, 'reset_password_failed', err, { requestId: req.id });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -281,7 +282,7 @@ const verifyToken = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('❌ Verify token error:', err);
+    logSafeError(logger, 'verify_token_failed', err, { requestId: req.id });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -293,6 +294,7 @@ const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: { OR: [{ id: req.user.id }, { legacyMongoId: req.user.id }] },
+      select: SAFE_USER_SELECT,
     });
 
     if (!user) {
@@ -302,11 +304,10 @@ const getMe = async (req, res) => {
       });
     }
 
-    const { password, ...userWithoutPassword } = user;
     res.status(200).json({
       success: true,
       data: {
-        ...userWithoutPassword,
+        ...user,
         _id: user.id,
         address: {
           street: user.street,
@@ -318,7 +319,7 @@ const getMe = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('❌ Get me error:', err);
+    logSafeError(logger, 'get_me_failed', err, { requestId: req.id });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -360,7 +361,7 @@ const updatePassword = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error('❌ Update password error:', err);
+    logSafeError(logger, 'update_password_failed', err, { requestId: req.id });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -420,7 +421,7 @@ const updateProfile = async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error('Update profile error:', err.message);
+    logSafeError(logger, 'update_profile_failed', err, { requestId: req.id });
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -476,7 +477,7 @@ const getMyProfile = async (req, res) => {
       roleProfile: roleProfile ? { ...roleProfile, _id: roleProfile.id } : null,
     });
   } catch (err) {
-    logger.error('Get my profile error:', err.message);
+    logSafeError(logger, 'get_my_profile_failed', err, { requestId: req.id });
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -506,7 +507,7 @@ const uploadAvatarImage = async (req, res) => {
       avatarUrl,
     });
   } catch (err) {
-    logger.error('Avatar upload error:', err.message);
+    logSafeError(logger, 'avatar_upload_failed', err, { requestId: req.id });
     res.status(500).json({ success: false, message: 'Upload failed' });
   }
 };

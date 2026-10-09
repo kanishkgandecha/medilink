@@ -8,6 +8,9 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs/promises');
 const { REPORT_ATTACHMENT_DIR } = require('../middleware/upload');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
+const { isDoctorUser, getDoctorProfileId, doctorCareWhere } = require('../utils/careScope');
+const { patientListSelectForUser, canViewClinicalDetail } = require('../utils/patientProjection');
 const toAuditJson = (value) => JSON.parse(JSON.stringify(value));
 
 const generatePatientId = () => `PAT${Date.now().toString().slice(-6)}${crypto.randomInt(100000, 1000000)}`;
@@ -254,6 +257,13 @@ exports.getPatients = asyncHandler(async (req, res) => {
   const where = { archivedAt: null, user: { isActive: true } };
   if (bloodGroup) where.bloodGroup = bloodGroup;
 
+  // Doctors see only patients they are in a care relationship with.
+  if (isDoctorUser(req.user)) {
+    const doctorId = await getDoctorProfileId(req.user.id);
+    if (!doctorId) return res.status(200).json({ success: true, count: 0, total: 0, page: 1, pages: 0, data: [] });
+    where.AND = [doctorCareWhere(doctorId)];
+  }
+
   if (search) {
     where.OR = [
       { patientId: { contains: search, mode: 'insensitive' } },
@@ -265,30 +275,11 @@ exports.getPatients = asyncHandler(async (req, res) => {
 
   const { page, limit: take, skip } = getPagination(req.query);
 
+  // Minimum-necessary projection per role; clinical sub-records are served
+  // only by the care-scoped record endpoints, never by the list.
   const patients = await prisma.patient.findMany({
     where,
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          street: true,
-          city: true,
-          state: true,
-          zipCode: true,
-          country: true,
-          dateOfBirth: true,
-          gender: true,
-        },
-      },
-      medicalHistory: { where: { isVoided: false } },
-      currentMedications: true,
-      labReports: true,
-      imagingData: true,
-      admissionHistory: true,
-    },
+    select: patientListSelectForUser(req.user),
     orderBy: { createdAt: 'desc' },
     take,
     skip,
@@ -309,8 +300,15 @@ exports.getPatients = asyncHandler(async (req, res) => {
 });
 
 exports.getPatient = asyncHandler(async (req, res) => {
+  const where = { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] };
+  if (!canViewClinicalDetail(req.user)) {
+    // Receptionist / Pharmacist / Ward Manager get their role's summary only.
+    const summary = await prisma.patient.findFirst({ where, select: patientListSelectForUser(req.user) });
+    if (!summary) return res.status(404).json({ success: false, message: 'Patient not found' });
+    return res.status(200).json({ success: true, data: formatPatientResponse(summary) });
+  }
   const patient = await prisma.patient.findFirst({
-    where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    where,
     include: {
       user: {
         select: {
@@ -436,6 +434,16 @@ exports.updatePatient = asyncHandler(async (req, res) => {
   delete req.body.userId;
   delete req.body.patientId;
 
+  if (req.user.role === 'Patient') {
+    const clinicalFields = ['bloodGroup', 'allergies'].filter((field) => req.body[field] !== undefined);
+    if (clinicalFields.length) {
+      return res.status(403).json({
+        success: false,
+        message: 'Clinical details such as blood group and allergies can only be updated by clinical staff',
+      });
+    }
+  }
+
   const data = {};
   if (req.body.bloodGroup) data.bloodGroup = req.body.bloodGroup;
   if (req.body.emergencyContact) data.emergencyContact = req.body.emergencyContact;
@@ -547,7 +555,7 @@ exports.addMedicalHistory = asyncHandler(async (req, res) => {
 
   const updatedPatient = await prisma.patient.findUnique({
     where: { id: patient.id },
-    include: { medicalHistory: { where: { isVoided: false } }, user: true },
+    include: { medicalHistory: { where: { isVoided: false } }, user: { select: SAFE_USER_SELECT } },
   });
 
   res.status(200).json({
@@ -597,7 +605,7 @@ exports.updateMedicalHistory = asyncHandler(async (req, res) => {
 
   const updatedPatient = await prisma.patient.findUnique({
     where: { id: patient.id },
-    include: { medicalHistory: { where: { isVoided: false } }, user: true },
+    include: { medicalHistory: { where: { isVoided: false } }, user: { select: SAFE_USER_SELECT } },
   });
 
   res.status(200).json({
@@ -642,7 +650,7 @@ exports.deleteMedicalHistory = asyncHandler(async (req, res) => {
 
   const updatedPatient = await prisma.patient.findUnique({
     where: { id: patient.id },
-    include: { medicalHistory: { where: { isVoided: false } }, user: true },
+    include: { medicalHistory: { where: { isVoided: false } }, user: { select: SAFE_USER_SELECT } },
   });
 
   res.status(200).json({
@@ -672,6 +680,11 @@ exports.addLabReport = asyncHandler(async (req, res) => {
     });
   }
 
+  // Diagnostic staff may only create reports within their own modality.
+  if (isDiagnosticRole(req.user) && isRadiologyUser(req.user) !== isRadiologyReport({ testType: req.body.testType })) {
+    return res.status(403).json({ success: false, message: 'Not authorized to create a report for this modality' });
+  }
+
   await runSerializableTransaction(async (tx) => {
     const report = await tx.labReport.create({ data: {
       patientId: patient.id,
@@ -695,7 +708,7 @@ exports.addLabReport = asyncHandler(async (req, res) => {
 
   const updatedPatient = await prisma.patient.findUnique({
     where: { id: patient.id },
-    include: { labReports: true, user: true },
+    include: { labReports: true, user: { select: SAFE_USER_SELECT } },
   });
 
   res.status(200).json({

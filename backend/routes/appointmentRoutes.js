@@ -21,8 +21,10 @@ router.use(protect);
 router.get('/availability/:doctorId', getDoctorAvailability);
 
 // Main appointment routes
+// Appointment lists are limited to roles with a scheduling or clinical need.
+// Patient and Doctor are further scoped to their own appointments in the controller.
 router.route('/')
-  .get(getAppointments)
+  .get(authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Receptionist'), getAppointments)
   .post(authorize('Admin', 'Receptionist', 'Doctor', 'Patient'), [
     body('patient').custom((value, { req }) => {
       if (req.user.role === 'Patient' && !value) return true;

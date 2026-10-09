@@ -4,6 +4,12 @@ require('dotenv').config();
 process.env.NODE_ENV = 'test';
 process.env.AI_REQUESTS_PER_MINUTE = '3';
 
+// Must run before config/prisma is loaded: refuses unless TEST_DATABASE_URL is
+// an explicitly confirmed, *_test-named database distinct from DATABASE_URL,
+// then points this process at it.
+const { useSafeTestDatabase } = require('./support/databaseGuard');
+const testDatabase = useSafeTestDatabase();
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
@@ -57,8 +63,38 @@ const createUser = async ({ suffix, role, subRole }) => {
   return { user, token: generateToken(user) };
 };
 
+// Creates a doctor profile plus a scheduled appointment so the doctor is in a
+// care relationship with the patient (and the patient has an active encounter
+// for nurse scope). Doctor/nurse access is care-scoped since Phase 1A.
+let careLinkCounter = 0;
+const linkDoctorToPatient = async (doctorUser, patientId) => {
+  careLinkCounter += 1;
+  const tag = `${Date.now()}-${careLinkCounter}-${Math.random().toString(16).slice(2)}`;
+  const doctor = await prisma.doctor.upsert({
+    where: { userId: doctorUser.id },
+    update: {},
+    create: {
+      userId: doctorUser.id, specialization: 'General Medicine', qualification: 'MBBS', experience: 5,
+      licenseNumber: `IT-CARE-LIC-${tag}`, department: 'General Medicine', consultationFee: 500,
+    },
+  });
+  const appointmentDate = new Date();
+  appointmentDate.setUTCDate(appointmentDate.getUTCDate() + 14);
+  const minute = String(careLinkCounter % 60).padStart(2, '0');
+  await prisma.appointment.create({ data: {
+    patientId, doctorId: doctor.id, appointmentDate, startTime: `08:${minute}`, endTime: `08:${minute}`,
+    type: 'Consultation', status: 'Scheduled', bookingKey: `integration-care-${tag}`,
+  } });
+  return doctor;
+};
+
 test.before(async () => {
   await prisma.$connect();
+  // Second, runtime check: the live connection must be the confirmed test database.
+  const [{ current_database: connected }] = await prisma.$queryRaw`SELECT current_database()`;
+  if (connected !== testDatabase.database) {
+    throw new Error(`Connected to "${connected}" but expected the confirmed test database "${testDatabase.database}"`);
+  }
   // Recover only stale fixtures left by an interrupted prior integration run.
   await prisma.clinicalNote.deleteMany({ where: { createdBy: { email: { startsWith: 'integration-' } } } });
   await prisma.ward.deleteMany({ where: { wardNumber: { startsWith: 'IT-WARD-' } } });
@@ -150,6 +186,7 @@ test('report attachments enforce modality scoping and record-level authorization
   }, include: { labReports: true } });
   const cbcReport = patient.labReports.find((r) => r.testType === 'Blood Test');
   const xrayReport = patient.labReports.find((r) => r.testType === 'X-Ray');
+  await linkDoctorToPatient(doctor.user, patient.id);
 
   // Wrong modality: a lab technician cannot attach a file to an X-Ray report.
   const wrongModality = await apiUpload(`/api/patients/${patient.id}/lab-report/${xrayReport.id}/attachment`, {
@@ -201,6 +238,7 @@ test('replacing a report attachment requires explicit confirmation and cleans up
     labReports: { create: [{ testName: 'Lipid Profile', testType: 'Lipid Profile', status: 'Pending' }] },
   }, include: { labReports: true } });
   const report = patient.labReports[0];
+  await linkDoctorToPatient(doctor.user, patient.id);
 
   const first = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
     token: doctor.token, filename: 'first.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES,
@@ -241,6 +279,7 @@ test('report attachment uploads reject files whose content does not match a vali
     labReports: { create: [{ testName: 'X-Ray Chest', testType: 'X-Ray', status: 'Pending' }] },
   }, include: { labReports: true } });
   const report = patient.labReports[0];
+  await linkDoctorToPatient(doctor.user, patient.id);
 
   const spoofed = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
     token: doctor.token, filename: 'fake.pdf', mimetype: 'application/pdf', buffer: Buffer.from('#!/bin/sh\necho not a pdf'),
@@ -261,6 +300,7 @@ test('report attachment uploads reject files over the 10MB size limit', async ()
     labReports: { create: [{ testName: 'MRI Scan', testType: 'MRI Scan', status: 'Pending' }] },
   }, include: { labReports: true } });
   const report = patient.labReports[0];
+  await linkDoctorToPatient(doctor.user, patient.id);
 
   const oversized = Buffer.concat([Buffer.from('%PDF-1.4\n', 'ascii'), Buffer.alloc(11 * 1024 * 1024, 0)]); // 11MB > 10MB limit
   const tooLarge = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
@@ -337,8 +377,14 @@ test('doctor access and ordinary staff denial are enforced at the patient bounda
     userId: patient.user.id, patientId: `IT-ROLE-${suffix}`, allergies: [],
   } });
 
+  const unrelatedDoctor = await createUser({ suffix: `role-unrelated-doctor-${suffix}`, role: 'Doctor' });
+  await linkDoctorToPatient(doctor.user, profile.id);
+
   const clinicianResult = await api(`/api/ai/patient-summary/${profile.id}`, { token: doctor.token });
   assert.equal(clinicianResult.response.status, 200);
+  // A doctor with no appointment or prescription for this patient is denied.
+  const unrelatedResult = await api(`/api/ai/patient-summary/${profile.id}`, { token: unrelatedDoctor.token });
+  assert.equal(unrelatedResult.response.status, 403);
   const staffResult = await api(`/api/ai/patient-summary/${profile.id}`, { token: staff.token });
   assert.equal(staffResult.response.status, 403);
 });
@@ -545,6 +591,8 @@ test('AI-derived clinical notes require doctor confirmation and preserve every v
   const profile = await prisma.patient.create({ data: {
     userId: patient.user.id, patientId: `IT-NOTE-${suffix}`, allergies: [],
   } });
+  // Gives the doctor a care relationship and the patient an active encounter (nurse scope).
+  await linkDoctorToPatient(doctor.user, profile.id);
   const draftContent = 'AI-derived draft content requiring independent clinician verification.';
   const draft = await api(`/api/patients/${profile.id}/clinical-notes/drafts`, {
     token: nurse.token, method: 'POST', body: {

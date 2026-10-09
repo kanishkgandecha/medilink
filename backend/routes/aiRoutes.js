@@ -16,6 +16,8 @@ const { runAdminInsights }       = require('../services/ai/agents/adminInsights'
 const { runPharmacyAlerts }      = require('../services/ai/agents/pharmacyAlerts');
 const { runAuditedAi, getAiAuditSummary } = require('../services/ai/audit');
 const { aiRateLimiter, aiConcurrencyLimit } = require('../middleware/aiUsageLimits');
+const logger = require('../utils/logger');
+const { logSafeError } = require('../utils/redact');
 
 const audited = (req, agent, operation) => runAuditedAi({ agent, requesterId: req.user.id, operation });
 
@@ -29,7 +31,7 @@ router.get('/reliability', authorize('Admin'), async (req, res) => {
     const data = await getAiAuditSummary(req.query.hours);
     res.json({ success: true, data });
   } catch (error) {
-    console.error('[AI /reliability]', error.code || error.message);
+    logSafeError(logger, 'ai_reliability_failed', error, { requestId: req.id });
     res.status(503).json({ success: false, message: 'AI reliability data is unavailable until audit storage is ready' });
   }
 });
@@ -50,7 +52,7 @@ router.post('/chat', authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Reception
     }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /chat]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/chat' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -68,7 +70,7 @@ router.post('/symptom-analysis', authorize('Admin', 'Doctor', 'Patient', 'Nurse'
     const data = await audited(req, 'symptom_analysis', () => runSymptomAnalysis({ symptoms, age, gender }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /symptom-analysis]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/symptom-analysis' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -85,7 +87,7 @@ router.post('/report-analysis', authorize('Admin', 'Doctor', 'Patient', 'Lab Tec
     const data = await audited(req, 'report_analysis', () => runReportAnalysis({ reportText, reportType }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /report-analysis]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/report-analysis' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -106,7 +108,7 @@ router.post('/health-risk', authorize('Admin', 'Doctor', 'Patient'), [
     const data = await audited(req, 'health_risk', () => runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /health-risk]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/health-risk' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -125,7 +127,7 @@ router.post('/bed-allocation', authorize('Admin', 'Doctor', 'Nurse', 'Ward Manag
     const data = await audited(req, 'bed_allocation', () => runBedAllocation({ condition, urgency, age, gender }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /bed-allocation]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/bed-allocation' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -142,7 +144,7 @@ router.post('/appointment-optimizer', authorize('Admin', 'Doctor', 'Patient', 'R
     const data = await audited(req, 'appointment_optimizer', () => runAppointmentOptimizer({ symptoms, department }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /appointment-optimizer]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/appointment-optimizer' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -153,8 +155,8 @@ router.get('/patient-summary/:patientId', requirePatientAccess('Admin', 'Doctor'
     const data = await audited(req, 'patient_summary', () => runPatientSummary({ patientId: req.patientResource.id }));
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /patient-summary]', err.message);
-    res.status(500).json({ success: false, message: err.message || 'AI service error' });
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/patient-summary' });
+    res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
 
@@ -184,7 +186,7 @@ router.post('/symptom-to-appointment', authorize('Admin', 'Doctor', 'Patient', '
       data: chained,
     });
   } catch (err) {
-    console.error('[AI /symptom-to-appointment]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/symptom-to-appointment' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -201,7 +203,7 @@ router.get('/admin-insights', async (req, res) => {
     const data = await audited(req, 'admin_insights', () => runAdminInsights());
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /admin-insights]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/admin-insights' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });
@@ -218,7 +220,7 @@ router.get('/pharmacy-alerts', async (req, res) => {
     const data = await audited(req, 'pharmacy_alerts', () => runPharmacyAlerts());
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[AI /pharmacy-alerts]', err.message);
+    logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/pharmacy-alerts' });
     res.status(500).json({ success: false, message: 'AI service error' });
   }
 });

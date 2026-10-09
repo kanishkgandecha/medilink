@@ -1,5 +1,6 @@
 'use strict';
 const prisma = require('../config/prisma');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const { runSerializableTransaction } = require('../utils/transactions');
 const crypto = require('crypto');
 
@@ -41,18 +42,18 @@ async function bookAppointmentTransaction(input) {
     return await runSerializableTransaction(async (tx) => {
       if (input.bookingKey) {
         const replay = await tx.appointment.findUnique({ where: { bookingKey: input.bookingKey },
-          include: { patient: { include: { user: true } }, doctor: { include: { user: true } } } });
+          include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
         if (replay) return { appointment: replay, replayed: true };
       }
 
       const patient = await tx.patient.findFirst({
-        where: { OR: [{ id: input.patientIdentifier }, { legacyMongoId: input.patientIdentifier }] }, include: { user: true },
+        where: { OR: [{ id: input.patientIdentifier }, { legacyMongoId: input.patientIdentifier }] }, include: { user: { select: SAFE_USER_SELECT } },
       });
       if (!patient) return { error: 'patient_not_found' };
       if (patient.archivedAt || !patient.user?.isActive) return { error: 'patient_inactive' };
 
       const doctor = await tx.doctor.findFirst({
-        where: { OR: [{ id: input.doctorIdentifier }, { legacyMongoId: input.doctorIdentifier }] }, include: { user: true },
+        where: { OR: [{ id: input.doctorIdentifier }, { legacyMongoId: input.doctorIdentifier }] }, include: { user: { select: SAFE_USER_SELECT } },
       });
       if (!doctor) return { error: 'doctor_not_found' };
       if (!doctor.isAvailable || !doctor.user?.isActive) return { error: 'doctor_inactive' };
@@ -72,7 +73,7 @@ async function bookAppointmentTransaction(input) {
         startTime: input.startTime, endTime: input.endTime,
         type: input.type === 'Follow-up' ? 'Follow_up' : input.type,
         symptoms: input.symptoms || null, priority: input.priority || 'Normal', createdById: input.createdById,
-      }, include: { patient: { include: { user: true } }, doctor: { include: { user: true } } } });
+      }, include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
       return { appointment, replayed: false };
     });
   } catch (error) {
@@ -89,7 +90,7 @@ async function rescheduleAppointmentTransaction({ appointmentIdentifier, appoint
       });
       if (!appointment) return { error: 'appointment_not_found' };
       if (!['Scheduled', 'Confirmed'].includes(appointment.status)) return { error: 'invalid_status' };
-      const doctor = await tx.doctor.findUnique({ where: { id: appointment.doctorId }, include: { user: true } });
+      const doctor = await tx.doctor.findUnique({ where: { id: appointment.doctorId }, include: { user: { select: SAFE_USER_SELECT } } });
       if (!doctor?.isAvailable || !doctor.user?.isActive) return { error: 'doctor_inactive' };
       const window = validateBookingWindow({ appointmentDate, startTime, endTime, availability: doctor.availability });
       if (window.error) return window;
@@ -98,7 +99,7 @@ async function rescheduleAppointmentTransaction({ appointmentIdentifier, appoint
       if (conflict) return { error: 'slot_conflict' };
       const updated = await tx.appointment.update({ where: { id: appointment.id }, data: {
         appointmentDate: window.date, startTime, endTime, status: 'Scheduled',
-      }, include: { patient: { include: { user: true } }, doctor: { include: { user: true } } } });
+      }, include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
       return { appointment: updated };
     });
   } catch (error) {

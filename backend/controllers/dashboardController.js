@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const asyncHandler = require('../utils/asyncHandler');
 const { formatAppointment } = require('../utils/virtuals');
 
@@ -286,7 +287,7 @@ const getPatientDashboard = async (req, res) => {
   const patient = await prisma.patient.findFirst({
     where: { userId: req.user.id },
     include: {
-      user: true,
+      user: { select: SAFE_USER_SELECT },
       medicalHistory: { where: { isVoided: false } },
       currentMedications: true,
     },

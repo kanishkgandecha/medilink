@@ -56,7 +56,7 @@ exports.createWard = asyncHandler(async (req, res) => {
     },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -75,7 +75,7 @@ exports.getWards = asyncHandler(async (req, res) => {
     where,
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
     orderBy: { wardNumber: 'asc' },
   });
@@ -89,7 +89,7 @@ exports.getWard = asyncHandler(async (req, res) => {
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true, email: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -118,7 +118,7 @@ exports.updateWard = asyncHandler(async (req, res) => {
     data,
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -188,7 +188,7 @@ exports.allocateBed = asyncHandler(async (req, res) => {
     where: { id: ward.id },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -275,7 +275,7 @@ exports.releaseBed = asyncHandler(async (req, res) => {
     where: { id: ward.id },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -343,7 +343,7 @@ exports.assignBed = asyncHandler(async (req, res) => {
     where: { id: ward.id },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 
@@ -434,7 +434,7 @@ exports.dischargeBed = asyncHandler(async (req, res) => {
     where: { id: ward.id },
     include: {
       nurseInCharge: { select: { id: true, name: true, phone: true } },
-      beds: { include: { patient: { include: { user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
+      beds: { include: { patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } } } } } },
     },
   });
 

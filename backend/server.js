@@ -5,6 +5,9 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
+const requestLogger = require('./middleware/requestLogger');
+const sanitizeResponse = require('./middleware/sanitizeResponse');
+const { safeErrorMeta } = require('./utils/redact');
 const prisma = require('./config/prisma');
 const { validateEnvironment } = require('./config/env');
 
@@ -54,6 +57,13 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
 };
 
+// ── Request ID, safe request logging, response sanitization ─
+// Logs method, route pattern, status, and duration only — never raw URLs,
+// query strings, headers, or bodies. Every JSON response has credential
+// fields stripped as defense in depth.
+app.use(requestLogger);
+app.use(sanitizeResponse);
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
@@ -98,16 +108,11 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/', authLimiter);
 
-// ── Request logger ───────────────────────────────────────────
-app.use((req, _res, next) => {
-  logger.info(`${req.method} ${req.originalUrl}`);
-  next();
-});
 
 // ── PostgreSQL / Prisma Connection Check ─────────────────────
 if (require.main === module) {
   prisma.$connect().then(() => logger.info('PostgreSQL connected successfully via Prisma'))
-    .catch((err) => logger.error('PostgreSQL connection error:', err.message));
+    .catch((err) => logger.error('postgres_connection_failed', safeErrorMeta(err)));
 }
 
 // ── Static uploads ──────────────────────────────────────────
@@ -134,7 +139,7 @@ app.get('/health', async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     return res.status(200).json({ status: 'ok', database: 'PostgreSQL', timestamp: new Date().toISOString() });
   } catch (error) {
-    logger.error(`Health check failed: ${error.message}`);
+    logger.error('health_check_failed', safeErrorMeta(error));
     return res.status(503).json({ status: 'unavailable', database: 'PostgreSQL', timestamp: new Date().toISOString() });
   }
 });
@@ -179,12 +184,17 @@ if (require.main === module) {
   process.on('SIGTERM', () => shutdown(0, 'SIGTERM'));
   process.on('SIGINT', () => shutdown(0, 'SIGINT'));
   process.on('unhandledRejection', (reason) => {
-    const msg = reason instanceof Error ? reason.stack : String(reason);
-    logger.error(`Unhandled Rejection: ${msg}`);
+    logger.error('unhandled_rejection', {
+      ...safeErrorMeta(reason instanceof Error ? reason : new Error('non-error rejection')),
+      ...(process.env.NODE_ENV === 'production' ? {} : { stack: reason instanceof Error ? reason.stack : undefined }),
+    });
     shutdown(1, 'unhandled rejection');
   });
   process.on('uncaughtException', (err) => {
-    logger.error(`Uncaught Exception: ${err.message}\n${err.stack}`);
+    logger.error('uncaught_exception', {
+      ...safeErrorMeta(err),
+      ...(process.env.NODE_ENV === 'production' ? {} : { stack: err.stack }),
+    });
     if (err.code === 'EADDRINUSE') {
       logger.error(`Port ${PORT} is already in use. Stop the existing server process first.`);
       process.exit(1);

@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const { hashPassword } = require('../utils/userHelpers');
 const { runSerializableTransaction } = require('../utils/transactions');
 const crypto = require('crypto');
@@ -103,7 +104,7 @@ exports.createStaff = asyncHandler(async (req, res) => {
       shift: shift || 'Morning',
       salary: { basic, allowances, total: basic + allowances },
     },
-    include: { user: true } });
+    include: { user: { select: SAFE_USER_SELECT } } });
   });
 
   res.status(201).json({
@@ -249,7 +250,7 @@ exports.updatePerformance = asyncHandler(async (req, res) => {
         notes,
       },
     },
-    include: { user: true },
+    include: { user: { select: SAFE_USER_SELECT } },
   });
 
   res.status(200).json({ success: true, data: formatPopulatedStaff(updated) });

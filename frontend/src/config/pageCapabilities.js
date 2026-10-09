@@ -20,8 +20,11 @@
 
 import { getUserRoleKey } from './rolePolicy'
 
-// ── Patients (backend: patientsRoutes.js — GET /patients scopes to self for
-//    Patient role only; every other allowed role receives the full list) ──
+// ── Patients (backend: patientsRoutes.js + utils/patientProjection.js —
+//    GET /patients scopes to self for Patient, to patients in a care
+//    relationship (shared appointment/prescription) for Doctor, and returns a
+//    role-specific identity/registration projection to other staff roles.
+//    Clinical detail is served only by care-scoped record endpoints.) ──
 export const getPatientsCapability = (user) => {
   const role = getUserRoleKey(user)
 
@@ -49,11 +52,23 @@ export const getPatientsCapability = (user) => {
     }
   }
 
-  // Doctor, Nurse, Ward Manager: full read access, no create/edit/delete in this UI
+  if (role === 'doctor') {
+    return {
+      title: 'My Patients',
+      description: 'Patients you have an appointment or prescription with',
+      scope: { label: 'Patients in my care', tone: 'assigned' },
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+    }
+  }
+
+  // Nurse, Ward Manager: identity directory for admissions/bed operations.
+  // Clinical detail is limited server-side (nurses: active encounters only).
   return {
     title: 'Patient Directory',
-    description: 'Browse patient records to support care and scheduling',
-    scope: { label: 'All patients · View only', tone: 'view' },
+    description: 'Look up patients to support admissions and bed operations',
+    scope: { label: 'Patient directory · Identity only', tone: 'view' },
     canCreate: false,
     canEdit: false,
     canDelete: false,

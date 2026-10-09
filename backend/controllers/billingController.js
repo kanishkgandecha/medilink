@@ -1,5 +1,12 @@
 const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
+
+// Bills need patient identity, address, and insurance — never clinical fields.
+const BILL_PATIENT_SELECT = {
+  id: true, patientId: true, userId: true, insuranceInfo: true,
+  user: { select: SAFE_USER_SELECT },
+};
 const { getPagination } = require('../utils/pagination');
 const { runSerializableTransaction } = require('../utils/transactions');
 const { normalizeBillingStatus } = require('../utils/stateMachines');
@@ -104,6 +111,7 @@ exports.createBill = asyncHandler(async (req, res) => {
 
   const targetUser = await prisma.user.findFirst({
     where: { OR: [{ id: patient }, { legacyMongoId: patient }] },
+    select: { id: true, role: true },
   });
 
   if (!targetUser || targetUser.role !== 'Patient') {
@@ -166,7 +174,7 @@ exports.createBill = asyncHandler(async (req, res) => {
       },
     },
     include: {
-      patient: { include: { user: true } },
+      patient: { select: BILL_PATIENT_SELECT },
       generatedBy: { select: { id: true, name: true, role: true } },
       items: true,
       payments: true,
@@ -213,7 +221,7 @@ exports.getBills = asyncHandler(async (req, res) => {
   const bills = await prisma.billing.findMany({
     where,
     include: {
-      patient: { include: { user: true } },
+      patient: { select: BILL_PATIENT_SELECT },
       generatedBy: { select: { id: true, name: true, role: true } },
       items: true,
       payments: true,
@@ -241,7 +249,7 @@ exports.getBill = asyncHandler(async (req, res) => {
   const bill = await prisma.billing.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: true } },
+      patient: { select: BILL_PATIENT_SELECT },
       generatedBy: { select: { id: true, name: true, role: true } },
       items: true,
       payments: true,
@@ -283,7 +291,7 @@ exports.patientPayBill = asyncHandler(async (req, res) => {
         payments: { create: [{ amount: bill.balance, paymentMethod, paymentDate: new Date() }] },
       },
       include: {
-        patient: { include: { user: true } },
+        patient: { select: BILL_PATIENT_SELECT },
         generatedBy: { select: { id: true, name: true, role: true } },
         items: true,
         payments: true,
@@ -343,7 +351,7 @@ exports.recordPayment = asyncHandler(async (req, res) => {
         },
       },
       include: {
-        patient: { include: { user: true } },
+        patient: { select: BILL_PATIENT_SELECT },
         generatedBy: { select: { id: true, name: true, role: true } },
         items: true,
         payments: true,
@@ -392,7 +400,7 @@ exports.processInsuranceClaim = asyncHandler(async (req, res) => {
     where: { id: bill.id },
     data: { insuranceClaim },
     include: {
-      patient: { include: { user: true } },
+      patient: { select: BILL_PATIENT_SELECT },
       generatedBy: { select: { id: true, name: true, role: true } },
       items: true,
       payments: true,
@@ -460,7 +468,7 @@ exports.updateInsuranceClaim = asyncHandler(async (req, res) => {
     where: { id: bill.id },
     data: updateData,
     include: {
-      patient: { include: { user: true } },
+      patient: { select: BILL_PATIENT_SELECT },
       generatedBy: { select: { id: true, name: true, role: true } },
       items: true,
       payments: true,

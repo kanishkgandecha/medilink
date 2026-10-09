@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
+const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const { sendEmail } = require('../services/emailService');
 const { formatAppointment } = require('../utils/virtuals');
 const { normalizeAppointmentStatus, canTransitionAppointment } = require('../utils/stateMachines');
@@ -134,8 +135,10 @@ const getAppointments = asyncHandler(async (req, res) => {
   const appointments = await prisma.appointment.findMany({
     where,
     include: {
-      patient: { include: { user: { select: { id: true, name: true, email: true, phone: true } } } },
-      doctor: { include: { user: { select: { id: true, name: true, email: true, phone: true } } } },
+      // Minimal identity only: no patient profile scalars (allergies,
+      // insurance, emergency contact) in a list response.
+      patient: { select: { id: true, patientId: true, user: { select: { id: true, name: true, email: true, phone: true } } } },
+      doctor: { select: { id: true, specialization: true, department: true, user: { select: { id: true, name: true, email: true, phone: true } } } },
     },
     orderBy: [{ appointmentDate: 'desc' }, { startTime: 'desc' }],
   });
@@ -163,8 +166,8 @@ const getAppointment = asyncHandler(async (req, res) => {
   const appointment = await prisma.appointment.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: true } },
-      doctor: { include: { user: true } },
+      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      doctor: { include: { user: { select: SAFE_USER_SELECT } } },
       prescription: true,
     },
   });
@@ -186,8 +189,8 @@ const updateAppointment = asyncHandler(async (req, res) => {
   let appointment = await prisma.appointment.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: true } },
-      doctor: { include: { user: true } },
+      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      doctor: { include: { user: { select: SAFE_USER_SELECT } } },
     },
   });
 
@@ -252,8 +255,8 @@ const updateAppointment = asyncHandler(async (req, res) => {
       where: { id: appointment.id },
       data: updateData,
       include: {
-        patient: { include: { user: true } },
-        doctor: { include: { user: true } },
+        patient: { include: { user: { select: SAFE_USER_SELECT } } },
+        doctor: { include: { user: { select: SAFE_USER_SELECT } } },
         prescription: true,
       },
     });
@@ -351,8 +354,8 @@ const cancelAppointment = asyncHandler(async (req, res) => {
       cancelReason: req.body.reason || 'No reason provided',
     },
     include: {
-      patient: { include: { user: true } },
-      doctor: { include: { user: true } },
+      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      doctor: { include: { user: { select: SAFE_USER_SELECT } } },
     },
   });
 
