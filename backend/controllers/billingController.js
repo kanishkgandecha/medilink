@@ -2,6 +2,7 @@ const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination } = require('../utils/pagination');
 const { runSerializableTransaction } = require('../utils/transactions');
+const { normalizeBillingStatus } = require('../utils/stateMachines');
 
 const isPharmacistRole = (user) => user.role === 'Pharmacist' || user.subRole === 'Pharmacist';
 // Billing.createdByRole is typed against the top-level Prisma `Role` enum
@@ -197,7 +198,7 @@ exports.getBills = asyncHandler(async (req, res) => {
     }
   }
 
-  if (paymentStatus) where.paymentStatus = paymentStatus;
+  if (paymentStatus) where.paymentStatus = normalizeBillingStatus(paymentStatus);
 
   if (startDate && endDate) {
     where.billDate = { gte: new Date(startDate), lte: new Date(endDate) };

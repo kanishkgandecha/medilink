@@ -617,7 +617,12 @@ const SummaryRow = ({ label, value, darkMode }) => (
 )
 
 // ─── Appointment Card ─────────────────────────────────────────
-const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onCancel, darkMode }) => {
+// Matches the backend's own eligibility check in rescheduleAppointmentTransaction
+// ("Only scheduled or confirmed appointments can be rescheduled") — kept in
+// sync so the button never offers an action the server will just reject.
+const RESCHEDULABLE_STATUSES = ['Scheduled', 'Confirmed']
+
+const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onCancel, onReschedule, darkMode }) => {
   const patient  = apt.patient?.userId?.name || apt.patient?.patientId || 'Patient'
   const patInit  = patient.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   const doctor   = (apt.doctor?.userId?.name || '').replace(/^Dr\.?\s*/i, '').trim() || 'Doctor'
@@ -630,6 +635,7 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
   const timeEnd  = apt.timeSlot?.endTime   || ''
   const isActive = !['Completed', 'Cancelled'].includes(apt.status)
   const nextAction = NEXT_STATUS_ACTION[apt.status]
+  const canReschedule = canManage && RESCHEDULABLE_STATUSES.includes(apt.status)
 
   return (
     <div className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200
@@ -694,7 +700,7 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
 
       {/* Actions */}
       {isActive && (canManage || canCancel) && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {canManage && nextAction && (
             <button
               onClick={() => onComplete(apt._id, nextAction.next)}
@@ -703,6 +709,17 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
                 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
             >
               <CheckCircle className="w-3.5 h-3.5" /> {nextAction.label}
+            </button>
+          )}
+          {canReschedule && (
+            <button
+              onClick={() => onReschedule(apt)}
+              aria-label={`Reschedule appointment ${apt.appointmentId}`}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all
+                bg-blue-50 text-blue-700 hover:bg-blue-100
+                dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
+            >
+              <Clock className="w-3.5 h-3.5" /> Reschedule
             </button>
           )}
           {canCancel && (
@@ -718,6 +735,169 @@ const AppointmentCard = ({ apt, isPatient, canManage, canCancel, onComplete, onC
         </div>
       )}
     </div>
+  )
+}
+
+// Available slots from getDoctorAvailability may come back either as plain
+// time strings ("09:00") or {startTime, endTime} objects — the earlier
+// version of RescheduleModal assumed the object shape unconditionally, so
+// slot.startTime was undefined for every slot, every button rendered blank,
+// and aria-pressed was true on all of them (undefined === undefined).
+export const slotTime = (slot) => (typeof slot === 'string' ? slot : slot?.startTime)
+export const slotEndTime = (slot) => {
+  if (typeof slot === 'object' && slot?.endTime) return slot.endTime
+  const start = slotTime(slot)
+  if (!start) return ''
+  const [h, m] = start.split(':').map(Number)
+  const total = h * 60 + m + 30
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
+// ─── Reschedule modal ──────────────────────────────────────────
+// Reuses the backend's own revalidation (doctor availability, schedule,
+// appointment state, and slot conflicts are all rechecked server-side in
+// rescheduleAppointmentTransaction) — this modal only needs to collect a new
+// date/time and surface whatever the server decides, success or conflict.
+const RescheduleModal = ({ isOpen, onClose, appointment, onSuccess, darkMode }) => {
+  const todayIso = new Date().toISOString().split('T')[0]
+  const [date, setDate] = useState('')
+  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [availableSlots, setAvailableSlots] = useState([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (isOpen && appointment) {
+      setDate(appointment.appointmentDate ? new Date(appointment.appointmentDate).toISOString().split('T')[0] : '')
+      setSelectedSlot(null)
+      setAvailableSlots([])
+      setError(null)
+    }
+  }, [isOpen, appointment])
+
+  useEffect(() => {
+    if (!isOpen || !appointment?.doctor?._id || !date) return
+    setLoadingSlots(true)
+    setAvailableSlots([])
+    setSelectedSlot(null)
+    appointmentService.getDoctorAvailability(appointment.doctor._id, date)
+      .then(res => setAvailableSlots(res?.data?.availableSlots || res?.slots || res?.availableSlots || []))
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setLoadingSlots(false))
+  }, [isOpen, appointment, date])
+
+  if (!appointment) return null
+
+  const doctorName = drName(appointment.doctor?.userId?.name)
+  const patientName = appointment.patient?.userId?.name || appointment.patient?.patientId || 'Patient'
+  const currentDateStr = appointment.appointmentDate
+    ? new Date(appointment.appointmentDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—'
+
+  const handleConfirm = async () => {
+    if (!selectedSlot) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      await appointmentService.rescheduleAppointment(appointment._id, {
+        appointmentDate: date,
+        timeSlot: { startTime: slotTime(selectedSlot), endTime: slotEndTime(selectedSlot) },
+      })
+      toast.success('Appointment rescheduled successfully')
+      onSuccess()
+      onClose()
+    } catch (err) {
+      // The original appointment is untouched on failure — the server only
+      // commits the change once every check (availability, schedule,
+      // conflicts) passes, so there's nothing to roll back here.
+      setError(err.message || 'Appointment could not be rescheduled')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Reschedule Appointment" size="md">
+      <div className="space-y-4">
+        <div className={`rounded-xl border p-3.5 text-sm ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+          <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{doctorName}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Patient: {patientName}</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Current: {currentDateStr}{appointment.timeSlot?.startTime ? ` · ${appointment.timeSlot.startTime}` : ''}
+          </p>
+        </div>
+
+        <div>
+          <label className={`block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            New Date *
+          </label>
+          <input
+            type="date"
+            value={date}
+            min={todayIso}
+            onChange={e => setDate(e.target.value)}
+            className={`w-full px-4 py-2.5 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-[#2E86DE]/30 focus:border-[#2E86DE] transition-all
+              ${darkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+          />
+        </div>
+
+        <div>
+          <label className={`block text-xs font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            New Time *
+          </label>
+          {loadingSlots ? (
+            <p role="status" aria-live="polite" className="text-sm text-gray-400">Loading available times…</p>
+          ) : !date ? (
+            <p className="text-sm text-gray-400">Choose a date to see available times</p>
+          ) : availableSlots.length === 0 ? (
+            <p role="status" className="text-sm text-gray-400">No available times on this date</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {availableSlots.map((slot, i) => {
+                const time = slotTime(slot)
+                const isSelected = selectedSlot != null && slotTime(selectedSlot) === time
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedSlot(slot)}
+                    aria-pressed={isSelected}
+                    className={`py-2 rounded-lg text-sm font-medium border transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <p role="alert" className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{error}</p>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-3 mt-5">
+        <button
+          onClick={onClose}
+          disabled={submitting}
+          className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={!selectedSlot || submitting}
+          className="px-5 py-2.5 bg-[#2E86DE] text-white text-sm font-semibold rounded-xl hover:bg-[#1a6db5] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(46,134,222,0.35)] transition-all"
+        >
+          {submitting ? 'Rescheduling…' : 'Confirm New Time'}
+        </button>
+      </div>
+    </Modal>
   )
 }
 
@@ -742,6 +922,7 @@ const Appointments = () => {
   const [dateFilter, setDateFilter] = useState('all')
   const [cancelTarget, setCancelTarget] = useState(null) // { id }
   const [cancelReason, setCancelReason] = useState('')
+  const [rescheduleTarget, setRescheduleTarget] = useState(null) // full appointment object
   const [page, setPage]                 = useState(1)
 
   const card = `border rounded-xl transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700/60' : 'bg-white border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'}`
@@ -947,6 +1128,7 @@ const Appointments = () => {
                   canCancel={canCancel}
                   onComplete={(id, nextStatus) => handleStatusUpdate(id, nextStatus)}
                   onCancel={id => { setCancelTarget({ id }); setCancelReason('') }}
+                  onReschedule={setRescheduleTarget}
                   darkMode={darkMode}
                 />
               ))}
@@ -986,6 +1168,14 @@ const Appointments = () => {
             ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`}
         />
       </ConfirmDialog>
+
+      <RescheduleModal
+        isOpen={!!rescheduleTarget}
+        appointment={rescheduleTarget}
+        onClose={() => setRescheduleTarget(null)}
+        onSuccess={fetchAll}
+        darkMode={darkMode}
+      />
     </div>
   )
 }

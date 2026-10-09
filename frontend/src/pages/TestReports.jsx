@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { FlaskConical, Upload, Eye, Download, FileText, Plus, X, Calendar, User, Sparkles, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { FlaskConical, Upload, Eye, Download, FileText, Plus, X, Calendar, User, Sparkles, CheckCircle, AlertCircle, Clock, Paperclip, Loader2 } from 'lucide-react'
 import StatCard from '../components/common/StatCard'
 import PageLayout from '../components/common/PageLayout'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/common/Modal'
+import ConfirmDialog from '../components/common/ConfirmDialog'
 import ReportAnalysisAgent from '../agents/ReportAnalysisAgent'
 import * as patientService from '../services/patientService'
 import { toast } from 'react-toastify'
@@ -12,6 +13,16 @@ import { getUserRoleKey } from '../config/rolePolicy'
 import { getTestReportsCapability } from '../config/pageCapabilities'
 import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
+
+const ATTACHMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
+const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
+
+const formatFileSize = (bytes) => {
+  if (!bytes && bytes !== 0) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
 
 const REPORT_TYPES = [
   'Blood Test', 'Urine Test', 'X-Ray', 'CT Scan', 'MRI Scan',
@@ -39,6 +50,11 @@ const TestReports = () => {
   const [showAiAnalysis, setShowAiAnalysis] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
   const [searchPatient, setSearchPatient] = useState('')
+
+  const [uploadState, setUploadState] = useState({}) // reportId -> { progress, error, downloading }
+  const [pendingReplace, setPendingReplace] = useState(null) // { report, file } awaiting explicit confirm
+  const fileInputRef = useRef(null)
+  const fileInputReportId = useRef(null)
 
   const [reportForm, setReportForm] = useState({
     testName: '',
@@ -128,6 +144,61 @@ const TestReports = () => {
     }
   }
 
+  const openAttachmentPicker = (reportId) => {
+    fileInputReportId.current = reportId
+    if (fileInputRef.current) fileInputRef.current.click()
+  }
+
+  const performUpload = async (report, file, replace) => {
+    const reportId = report._id
+    if (file.size > ATTACHMENT_MAX_BYTES) {
+      setUploadState(s => ({ ...s, [reportId]: { error: 'File is larger than the 10MB limit' } }))
+      return
+    }
+    setUploadState(s => ({ ...s, [reportId]: { progress: 0 } }))
+    try {
+      await patientService.uploadLabReportAttachment(selectedPatientId, reportId, file, {
+        replace,
+        onProgress: (progress) => setUploadState(s => ({ ...s, [reportId]: { progress } })),
+      })
+      toast.success(replace ? 'Attachment replaced successfully' : 'Attachment uploaded successfully')
+      setUploadState(s => { const next = { ...s }; delete next[reportId]; return next })
+      fetchPatientReports(selectedPatientId)
+    } catch (err) {
+      setUploadState(s => ({ ...s, [reportId]: { error: err.message || 'Upload failed' } }))
+    }
+  }
+
+  const handleFileSelected = (e) => {
+    const file = e.target.files?.[0]
+    const reportId = fileInputReportId.current
+    e.target.value = '' // allow re-selecting the same file later
+    if (!file || !reportId) return
+    const report = labReports.find(r => r._id === reportId)
+    if (report?.attachmentOriginalName) {
+      setPendingReplace({ report, file })
+    } else {
+      performUpload(report, file, false)
+    }
+  }
+
+  const handleDownloadAttachment = async (report) => {
+    const reportId = report._id
+    setUploadState(s => ({ ...s, [reportId]: { ...s[reportId], downloading: true } }))
+    try {
+      const blob = await patientService.downloadLabReportAttachment(selectedPatientId, reportId)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = report.attachmentOriginalName || 'report-attachment'
+      a.click()
+      URL.revokeObjectURL(url)
+      setUploadState(s => { const next = { ...s }; delete next[reportId]; return next })
+    } catch (err) {
+      setUploadState(s => ({ ...s, [reportId]: { error: err.message || 'Failed to download attachment' } }))
+    }
+  }
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Verified':
@@ -148,6 +219,15 @@ const TestReports = () => {
     p.userId?.name?.toLowerCase().includes(searchPatient.toLowerCase()) ||
     p.patientId?.toLowerCase().includes(searchPatient.toLowerCase())
   )
+
+  // Matches the backend's isRadiologyUser === isRadiologyReport check: a lab
+  // technician may only manage attachments on lab reports, a radiology
+  // technician only on radiology reports; doctors/nurses are unrestricted.
+  const isReportOwnerRole = (report) => {
+    if (!capability.canAdd) return false
+    if (!isDiagnosticStaff) return true
+    return isRadiology === RADIOLOGY_REPORT_TYPES.includes(report.testType)
+  }
 
   return (
     <div className="space-y-6">
@@ -302,6 +382,63 @@ const TestReports = () => {
                       <p className="text-sm text-gray-500 italic">{report.notes}</p>
                     </div>
                   )}
+
+                  <div onClick={e => e.stopPropagation()}>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Attachment</p>
+                    {report.attachmentOriginalName ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Paperclip className="w-3.5 h-3.5 text-gray-400 shrink-0" aria-hidden="true" />
+                        <span className={`text-sm truncate max-w-[140px] ${textCls}`} title={report.attachmentOriginalName}>{report.attachmentOriginalName}</span>
+                        {report.attachmentSize != null && <span className="text-xs text-gray-400">{formatFileSize(report.attachmentSize)}</span>}
+                        <button
+                          onClick={() => handleDownloadAttachment(report)}
+                          disabled={uploadState[report._id]?.downloading}
+                          aria-label={`View or download attachment for ${report.testName}`}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        >
+                          {uploadState[report._id]?.downloading
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                            : <Download className="w-3.5 h-3.5" aria-hidden="true" />}
+                          View / Download
+                        </button>
+                        {isReportOwnerRole(report) && (
+                          <button
+                            onClick={() => openAttachmentPicker(report._id)}
+                            aria-label={`Replace attachment for ${report.testName}`}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                          >
+                            <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                            Replace
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400 italic">No file attached</span>
+                        {isReportOwnerRole(report) && (
+                          <button
+                            onClick={() => openAttachmentPicker(report._id)}
+                            aria-label={`Upload attachment for ${report.testName}`}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#2E86DE] text-white hover:bg-[#1a6db5] transition"
+                          >
+                            <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                            Upload file
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {uploadState[report._id]?.progress !== undefined && (
+                      <div role="status" aria-live="polite" className="mt-1.5">
+                        <div className="h-1.5 w-full max-w-[180px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 transition-all" style={{ width: `${uploadState[report._id].progress}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-400">Uploading… {uploadState[report._id].progress}%</span>
+                      </div>
+                    )}
+                    {uploadState[report._id]?.error && (
+                      <p role="alert" className="text-xs text-red-500 mt-1.5">{uploadState[report._id].error}</p>
+                    )}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -421,6 +558,30 @@ const TestReports = () => {
 
       {/* AI Report Analysis Agent */}
       <ReportAnalysisAgent open={showAiAnalysis} onClose={() => setShowAiAnalysis(false)} />
+
+      {/* Shared hidden input for both "Upload file" and "Replace" actions */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ATTACHMENT_ACCEPT}
+        onChange={handleFileSelected}
+        className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+
+      <ConfirmDialog
+        isOpen={!!pendingReplace}
+        onClose={() => setPendingReplace(null)}
+        onConfirm={() => {
+          const { report, file } = pendingReplace
+          setPendingReplace(null)
+          performUpload(report, file, true)
+        }}
+        title="Replace attachment"
+        message={pendingReplace ? `This report already has an attachment (${pendingReplace.report.attachmentOriginalName}). Uploading "${pendingReplace.file.name}" will replace it — this cannot be undone.` : ''}
+        confirmLabel="Replace"
+      />
     </div>
   )
 }

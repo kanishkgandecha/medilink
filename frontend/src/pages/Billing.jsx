@@ -36,6 +36,9 @@ const BILL_TYPE_META = {
   Other:        { icon: Receipt,      color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }
 }
 
+export const normalizeBillingStatusForDisplay = (status) =>
+  status === 'Partially_Paid' ? 'Partially-Paid' : status
+
 const STATUS_COLOR = {
   Paid:            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   'Partially-Paid':'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -298,7 +301,7 @@ const Billing = () => {
     setFetchError(null)
     try {
       const res = await billingService.getAllBills({ limit: 500 })
-      setBills(res.bills || [])
+      setBills((res.bills || []).map(b => ({ ...b, paymentStatus: normalizeBillingStatusForDisplay(b.paymentStatus) })))
     } catch (err) {
       setFetchError(err)
       toast.error(err.response?.data?.message || err.message || 'Failed to fetch bills')

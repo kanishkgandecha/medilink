@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { NEXT_STATUS_ACTION, normalizeStatusForDisplay } from './Appointments'
+import { NEXT_STATUS_ACTION, normalizeStatusForDisplay, slotTime, slotEndTime } from './Appointments'
 
 // Regression test for a Phase 7 defect: the appointment quick-action button
 // always tried to jump straight to "Completed" regardless of the
@@ -38,5 +38,28 @@ describe('normalizeStatusForDisplay', () => {
     for (const s of ['Scheduled', 'Confirmed', 'Completed', 'Cancelled']) {
       expect(normalizeStatusForDisplay(s)).toBe(s)
     }
+  })
+})
+
+// Regression test for a Stage 4 defect found live while testing the new
+// Reschedule modal: getDoctorAvailability's slots can come back as plain
+// time strings ("09:00") rather than {startTime, endTime} objects (the same
+// dual shape BookingWizard already handles). The modal assumed the object
+// shape unconditionally, so slot.startTime was undefined for every slot —
+// every time button rendered blank, and aria-pressed was true on all seven
+// of them simultaneously, since undefined === undefined.
+describe('slotTime / slotEndTime', () => {
+  it('reads the time from a plain string slot', () => {
+    expect(slotTime('09:00')).toBe('09:00')
+    expect(slotEndTime('09:00')).toBe('09:30')
+  })
+
+  it('reads the time from an {startTime, endTime} object slot', () => {
+    expect(slotTime({ startTime: '10:00', endTime: '10:30' })).toBe('10:00')
+    expect(slotEndTime({ startTime: '10:00', endTime: '10:30' })).toBe('10:30')
+  })
+
+  it('derives a 30-minute end time for an object slot with no endTime', () => {
+    expect(slotEndTime({ startTime: '11:30' })).toBe('12:00')
   })
 })

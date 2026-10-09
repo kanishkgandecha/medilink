@@ -220,6 +220,7 @@ model User {
   clinicalNotesCreated  ClinicalNote[]         @relation("ClinicalNoteCreator")
   clinicalNotesReviewed ClinicalNote[]         @relation("ClinicalNoteReviewer")
   clinicalNoteVersions  ClinicalNoteVersion[]  @relation("ClinicalNoteVersionAuthor")
+  labReportAttachmentsUploaded LabReport[]     @relation("LabReportAttachmentUploader")
 
   @@index([email])
   @@index([legacyMongoId])
@@ -403,6 +404,14 @@ model LabReport {
   normalRange    String?
   remarks        String?
   addedAt        DateTime  @default(now())
+
+  attachmentStoredName    String?
+  attachmentOriginalName  String?
+  attachmentMimeType      String?
+  attachmentSize          Int?
+  attachmentUploadedAt    DateTime?
+  attachmentUploadedById  String?
+  attachmentUploadedBy    User?     @relation("LabReportAttachmentUploader", fields: [attachmentUploadedById], references: [id], onDelete: SetNull)
 }
 
 model ImagingData {

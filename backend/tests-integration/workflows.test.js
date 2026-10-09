@@ -6,8 +6,11 @@ process.env.AI_REQUESTS_PER_MINUTE = '3';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('path');
+const fs = require('fs/promises');
 const prisma = require('../config/prisma');
 const { generateToken } = require('../utils/userHelpers');
+const { REPORT_ATTACHMENT_DIR } = require('../middleware/upload');
 const app = require('../server');
 
 let server;
@@ -15,6 +18,19 @@ let baseUrl;
 const fixtureUserIds = [];
 const fixtureWardIds = [];
 const fixtureMedicineIds = [];
+const fixtureAttachmentFiles = [];
+
+const apiUpload = async (apiPath, { token, fieldName, filename, mimetype, buffer, extraFields } = {}) => {
+  const form = new FormData();
+  form.append(fieldName || 'attachment', new Blob([buffer], { type: mimetype }), filename);
+  for (const [key, value] of Object.entries(extraFields || {})) form.append(key, value);
+  const response = await fetch(`${baseUrl}${apiPath}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  return { response, json: await response.json() };
+};
 
 const api = async (path, { token, method = 'GET', body } = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -115,7 +131,152 @@ test('diagnostic staff receive modality-scoped queues without general patient ac
   assert.equal(broadPatientList.response.status, 403);
 });
 
+const PDF_BYTES = Buffer.concat([Buffer.from('%PDF-1.4\n', 'ascii'), Buffer.alloc(64, 0)]);
+
+test('report attachments enforce modality scoping and record-level authorization on upload and download', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `attach-patient-${suffix}`, role: 'Patient' });
+  const otherPatientUser = await createUser({ suffix: `attach-other-patient-${suffix}`, role: 'Patient' });
+  const lab = await createUser({ suffix: `attach-lab-${suffix}`, role: 'Staff', subRole: 'LabTechnician' });
+  const radiology = await createUser({ suffix: `attach-radiology-${suffix}`, role: 'Staff', subRole: 'RadiologyTechnician' });
+  const doctor = await createUser({ suffix: `attach-doctor-${suffix}`, role: 'Doctor' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-ATTACH-${suffix}`,
+    labReports: { create: [
+      { testName: 'CBC', testType: 'Blood Test', status: 'Pending' },
+      { testName: 'Chest X-Ray', testType: 'X-Ray', status: 'Completed' },
+    ] },
+  }, include: { labReports: true } });
+  const cbcReport = patient.labReports.find((r) => r.testType === 'Blood Test');
+  const xrayReport = patient.labReports.find((r) => r.testType === 'X-Ray');
+
+  // Wrong modality: a lab technician cannot attach a file to an X-Ray report.
+  const wrongModality = await apiUpload(`/api/patients/${patient.id}/lab-report/${xrayReport.id}/attachment`, {
+    token: lab.token, filename: 'cbc-result.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES,
+  });
+  assert.equal(wrongModality.response.status, 403);
+
+  // Correct modality: lab tech uploads to the CBC (Blood Test) report.
+  const upload = await apiUpload(`/api/patients/${patient.id}/lab-report/${cbcReport.id}/attachment`, {
+    token: lab.token, filename: 'cbc-result.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES,
+  });
+  assert.equal(upload.response.status, 200);
+  assert.equal(upload.json.data.attachmentOriginalName, 'cbc-result.pdf');
+
+  const stored = await prisma.labReport.findUnique({ where: { id: cbcReport.id } });
+  fixtureAttachmentFiles.push(stored.attachmentStoredName);
+
+  // Radiology tech cannot download a lab-modality report's attachment.
+  const wrongModalityDownload = await api(`/api/patients/${patient.id}/lab-report/${cbcReport.id}/attachment`, { token: radiology.token });
+  assert.equal(wrongModalityDownload.response.status, 403);
+
+  // Owning patient can download their own attachment.
+  const ownerDownload = await fetch(`${baseUrl}/api/patients/${patient.id}/lab-report/${cbcReport.id}/attachment`, {
+    headers: { Authorization: `Bearer ${patientUser.token}` },
+  });
+  assert.equal(ownerDownload.status, 200);
+  assert.equal(ownerDownload.headers.get('content-type'), 'application/pdf');
+
+  // Doctor (unrestricted role) can also download it. A successful download
+  // streams raw PDF bytes, not JSON, so it needs a plain fetch — the shared
+  // `api()` helper always parses the body as JSON and would fail here.
+  const doctorDownload = await fetch(`${baseUrl}/api/patients/${patient.id}/lab-report/${cbcReport.id}/attachment`, {
+    headers: { Authorization: `Bearer ${doctor.token}` },
+  });
+  assert.equal(doctorDownload.status, 200);
+
+  // A different patient has neither ownership nor a staff role — denied.
+  const otherPatientDownload = await api(`/api/patients/${patient.id}/lab-report/${cbcReport.id}/attachment`, { token: otherPatientUser.token });
+  assert.equal(otherPatientDownload.response.status, 403);
+});
+
+test('replacing a report attachment requires explicit confirmation and cleans up the previous file', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `replace-patient-${suffix}`, role: 'Patient' });
+  const doctor = await createUser({ suffix: `replace-doctor-${suffix}`, role: 'Doctor' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-REPLACE-${suffix}`,
+    labReports: { create: [{ testName: 'Lipid Profile', testType: 'Lipid Profile', status: 'Pending' }] },
+  }, include: { labReports: true } });
+  const report = patient.labReports[0];
+
+  const first = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
+    token: doctor.token, filename: 'first.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES,
+  });
+  assert.equal(first.response.status, 200);
+  const afterFirst = await prisma.labReport.findUnique({ where: { id: report.id } });
+  const firstStoredName = afterFirst.attachmentStoredName;
+  const firstPath = path.join(REPORT_ATTACHMENT_DIR, firstStoredName);
+  assert.equal(await fs.access(firstPath).then(() => true, () => false), true);
+
+  // Without replace=true, a second upload is rejected — no silent overwrite.
+  const blockedReplace = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
+    token: doctor.token, filename: 'second.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES,
+  });
+  assert.equal(blockedReplace.response.status, 409);
+  assert.equal(blockedReplace.json.existingAttachment.originalName, 'first.pdf');
+
+  // With explicit replace=true, the new file is stored and the old one removed.
+  const confirmedReplace = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
+    token: doctor.token, filename: 'second.pdf', mimetype: 'application/pdf', buffer: PDF_BYTES, extraFields: { replace: 'true' },
+  });
+  assert.equal(confirmedReplace.response.status, 200);
+  assert.equal(confirmedReplace.json.message, 'Attachment replaced successfully');
+
+  const afterReplace = await prisma.labReport.findUnique({ where: { id: report.id } });
+  fixtureAttachmentFiles.push(afterReplace.attachmentStoredName);
+  assert.notEqual(afterReplace.attachmentStoredName, firstStoredName);
+  assert.equal(await fs.access(firstPath).then(() => true, () => false), false, 'previous attachment file should be deleted after a confirmed replace');
+});
+
+test('report attachment uploads reject files whose content does not match a validated signature', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `sig-patient-${suffix}`, role: 'Patient' });
+  const doctor = await createUser({ suffix: `sig-doctor-${suffix}`, role: 'Doctor' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-SIG-${suffix}`,
+    labReports: { create: [{ testName: 'X-Ray Chest', testType: 'X-Ray', status: 'Pending' }] },
+  }, include: { labReports: true } });
+  const report = patient.labReports[0];
+
+  const spoofed = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
+    token: doctor.token, filename: 'fake.pdf', mimetype: 'application/pdf', buffer: Buffer.from('#!/bin/sh\necho not a pdf'),
+  });
+  assert.equal(spoofed.response.status, 400);
+
+  const afterRejection = await prisma.labReport.findUnique({ where: { id: report.id } });
+  assert.equal(afterRejection.attachmentStoredName, null);
+});
+
+test('report attachment uploads reject files over the 10MB size limit', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `size-patient-${suffix}`, role: 'Patient' });
+  const doctor = await createUser({ suffix: `size-doctor-${suffix}`, role: 'Doctor' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id,
+    patientId: `IT-SIZE-${suffix}`,
+    labReports: { create: [{ testName: 'MRI Scan', testType: 'MRI Scan', status: 'Pending' }] },
+  }, include: { labReports: true } });
+  const report = patient.labReports[0];
+
+  const oversized = Buffer.concat([Buffer.from('%PDF-1.4\n', 'ascii'), Buffer.alloc(11 * 1024 * 1024, 0)]); // 11MB > 10MB limit
+  const tooLarge = await apiUpload(`/api/patients/${patient.id}/lab-report/${report.id}/attachment`, {
+    token: doctor.token, filename: 'huge.pdf', mimetype: 'application/pdf', buffer: oversized,
+  });
+  assert.equal(tooLarge.response.status, 400);
+
+  const afterRejection = await prisma.labReport.findUnique({ where: { id: report.id } });
+  assert.equal(afterRejection.attachmentStoredName, null);
+});
+
 test.after(async () => {
+  if (fixtureAttachmentFiles.length) {
+    await Promise.all(fixtureAttachmentFiles.map((name) =>
+      fs.unlink(path.join(REPORT_ATTACHMENT_DIR, name)).catch(() => {})));
+  }
   if (fixtureWardIds.length) {
     await prisma.ward.deleteMany({ where: { id: { in: fixtureWardIds } } });
   }
@@ -221,6 +382,159 @@ test('appointment booking is idempotent and rejects a competing active slot', as
   });
   assert.equal(conflict.response.status, 409);
   assert.equal(conflict.json.code, 'slot_conflict');
+});
+
+const createAvailableDoctor = async (suffix, offsetDays = 7) => {
+  const doctorUser = await createUser({ suffix: `resched-doctor-${suffix}`, role: 'Doctor' });
+  const appointmentDate = new Date();
+  appointmentDate.setUTCDate(appointmentDate.getUTCDate() + offsetDays);
+  appointmentDate.setUTCHours(0, 0, 0, 0);
+  const dateText = appointmentDate.toISOString().slice(0, 10);
+  const day = appointmentDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+  const doctor = await prisma.doctor.create({ data: {
+    userId: doctorUser.user.id,
+    specialization: 'General Medicine', qualification: 'MBBS', experience: 5,
+    licenseNumber: `IT-RESCHED-LIC-${suffix}`, department: 'General Medicine', consultationFee: 500,
+    availability: [{ day, slots: [{ startTime: '09:00', endTime: '13:00', isAvailable: true }] }],
+  } });
+  return { doctorUser, doctor, dateText };
+};
+
+test('a receptionist can reschedule a scheduled appointment to a new available slot', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `resched-patient-${suffix}`, role: 'Patient' });
+  const receptionist = await createUser({ suffix: `resched-recep-${suffix}`, role: 'Staff', subRole: 'Receptionist' });
+  await prisma.patient.create({ data: { userId: patientUser.user.id, patientId: `IT-RESCHED-${suffix}`, allergies: [] } });
+  const { doctor, dateText } = await createAvailableDoctor(suffix);
+
+  const booked = await api('/api/appointments', {
+    token: patientUser.token, method: 'POST', body: {
+      doctor: doctor.id, appointmentDate: dateText, timeSlot: { startTime: '09:00', endTime: '09:30' },
+      type: 'Consultation', bookingKey: `resched-booking-${suffix}`,
+    },
+  });
+  assert.equal(booked.response.status, 201);
+  const appointmentId = booked.json.data.id;
+
+  const rescheduled = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: receptionist.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '10:00', endTime: '10:30' },
+    },
+  });
+  assert.equal(rescheduled.response.status, 200);
+  assert.equal(rescheduled.json.data.timeSlot.startTime, '10:00');
+
+  // The same new time is visible consistently to both the doctor and the patient afterward.
+  const doctorView = await api(`/api/appointments/${appointmentId}`, { token: receptionist.token });
+  assert.equal(doctorView.json.data.timeSlot.startTime, '10:00');
+});
+
+test('rescheduling rejects a past date, a conflicting slot, and an appointment that is not in an eligible state', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `resched-invalid-patient-${suffix}`, role: 'Patient' });
+  const receptionist = await createUser({ suffix: `resched-invalid-recep-${suffix}`, role: 'Staff', subRole: 'Receptionist' });
+  await prisma.patient.create({ data: { userId: patientUser.user.id, patientId: `IT-RESCHED-INV-${suffix}`, allergies: [] } });
+  const { doctor, dateText } = await createAvailableDoctor(suffix);
+
+  const booked = await api('/api/appointments', {
+    token: patientUser.token, method: 'POST', body: {
+      doctor: doctor.id, appointmentDate: dateText, timeSlot: { startTime: '09:00', endTime: '09:30' },
+      type: 'Consultation', bookingKey: `resched-invalid-booking-${suffix}`,
+    },
+  });
+  assert.equal(booked.response.status, 201);
+  const appointmentId = booked.json.data.id;
+
+  // A second, already-occupied slot on the same doctor/day to reschedule into.
+  const occupied = await api('/api/appointments', {
+    token: patientUser.token, method: 'POST', body: {
+      doctor: doctor.id, appointmentDate: dateText, timeSlot: { startTime: '11:00', endTime: '11:30' },
+      type: 'Consultation', bookingKey: `resched-occupied-booking-${suffix}`,
+    },
+  });
+  assert.equal(occupied.response.status, 201);
+
+  const pastDate = new Date();
+  pastDate.setUTCDate(pastDate.getUTCDate() - 3);
+  const pastRequest = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: receptionist.token, method: 'PUT', body: {
+      appointmentDate: pastDate.toISOString().slice(0, 10), timeSlot: { startTime: '09:00', endTime: '09:30' },
+    },
+  });
+  assert.equal(pastRequest.response.status, 400);
+  assert.equal(pastRequest.json.code, 'past_date');
+
+  const conflictRequest = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: receptionist.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '11:00', endTime: '11:30' },
+    },
+  });
+  assert.equal(conflictRequest.response.status, 409);
+  assert.equal(conflictRequest.json.code, 'slot_conflict');
+
+  // The original appointment is unchanged after both failed attempts.
+  const unchanged = await api(`/api/appointments/${appointmentId}`, { token: receptionist.token });
+  assert.equal(unchanged.json.data.timeSlot.startTime, '09:00');
+
+  // Complete the appointment, then confirm a completed appointment is no longer eligible.
+  await prisma.appointment.update({ where: { id: appointmentId }, data: { status: 'Completed' } });
+  const ineligible = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: receptionist.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '12:00', endTime: '12:30' },
+    },
+  });
+  assert.equal(ineligible.response.status, 409);
+  assert.equal(ineligible.json.code, 'invalid_status');
+});
+
+test('rescheduling is restricted to authorized roles, and a doctor may only reschedule their own appointment', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const patientUser = await createUser({ suffix: `resched-auth-patient-${suffix}`, role: 'Patient' });
+  const pharmacist = await createUser({ suffix: `resched-auth-pharm-${suffix}`, role: 'Staff', subRole: 'Pharmacist' });
+  const otherDoctor = await createUser({ suffix: `resched-auth-otherdoc-${suffix}`, role: 'Doctor' });
+  await prisma.patient.create({ data: { userId: patientUser.user.id, patientId: `IT-RESCHED-AUTH-${suffix}`, allergies: [] } });
+  const { doctorUser, doctor, dateText } = await createAvailableDoctor(suffix);
+
+  const booked = await api('/api/appointments', {
+    token: patientUser.token, method: 'POST', body: {
+      doctor: doctor.id, appointmentDate: dateText, timeSlot: { startTime: '09:00', endTime: '09:30' },
+      type: 'Consultation', bookingKey: `resched-auth-booking-${suffix}`,
+    },
+  });
+  assert.equal(booked.response.status, 201);
+  const appointmentId = booked.json.data.id;
+
+  // The patient who owns the appointment still cannot reschedule it themselves — only staff can.
+  const patientAttempt = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: patientUser.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '10:00', endTime: '10:30' },
+    },
+  });
+  assert.equal(patientAttempt.response.status, 403);
+
+  // An unrelated staff role is denied entirely.
+  const pharmacistAttempt = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: pharmacist.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '10:00', endTime: '10:30' },
+    },
+  });
+  assert.equal(pharmacistAttempt.response.status, 403);
+
+  // A different doctor (not assigned to this appointment) is denied.
+  const otherDoctorAttempt = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: otherDoctor.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '10:00', endTime: '10:30' },
+    },
+  });
+  assert.equal(otherDoctorAttempt.response.status, 403);
+
+  // The assigned doctor may reschedule their own appointment.
+  const ownDoctorAttempt = await api(`/api/appointments/${appointmentId}/reschedule`, {
+    token: doctorUser.token, method: 'PUT', body: {
+      appointmentDate: dateText, timeSlot: { startTime: '10:00', endTime: '10:30' },
+    },
+  });
+  assert.equal(ownDoctorAttempt.response.status, 200);
 });
 
 test('AI-derived clinical notes require doctor confirmation and preserve every version', async () => {
@@ -403,6 +717,40 @@ test('billing staff can create a bill (createdByRole matches the top-level Role 
   });
   assert.equal(result.response.status, 201);
   assert.equal(result.json.bill.createdByRole, 'Staff');
+});
+
+// Regression test for a defect found during the post-pull Stage 1 regression pass:
+// the Prisma Billing.paymentStatus enum stores "Partially_Paid" with an underscore
+// (like Appointment.status and Prescription.status before them), but the frontend's
+// STATUS_COLOR map and paymentStatus equality checks are keyed on the hyphenated
+// display form "Partially-Paid" and the list endpoint's status filter passed the
+// query value straight into the Prisma `where` clause unnormalized.
+test('a partially paid bill accepts the hyphenated status filter the UI would send', async () => {
+  const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const billing = await createUser({ suffix: `billing-filter-${suffix}`, role: 'Staff', subRole: 'BillingStaff' });
+  const patientUser = await createUser({ suffix: `billing-filter-patient-${suffix}`, role: 'Patient' });
+  const patient = await prisma.patient.create({ data: {
+    userId: patientUser.user.id, patientId: `IT-BILLF-${suffix}`, allergies: [],
+  } });
+
+  const created = await api('/api/billing', {
+    token: billing.token, method: 'POST', body: {
+      patient: patientUser.user.id, billType: 'Other',
+      items: [{ description: 'Integration test charge', unitPrice: 200, quantity: 1 }],
+    },
+  });
+  assert.equal(created.response.status, 201);
+  const billId = created.json.bill._id || created.json.bill.id;
+
+  const payment = await api(`/api/billing/${billId}/payment`, {
+    token: billing.token, method: 'POST', body: { amount: 100, paymentMethod: 'Cash' },
+  });
+  assert.equal(payment.response.status, 200);
+  assert.equal(payment.json.bill.paymentStatus, 'Partially_Paid');
+
+  const filtered = await api('/api/billing?paymentStatus=Partially-Paid', { token: billing.token });
+  assert.equal(filtered.response.status, 200);
+  assert.ok(filtered.json.bills.some((b) => (b._id || b.id) === billId));
 });
 
 test('AI degrades safely, exposes admin-only reliability, and rate limits per user', async () => {

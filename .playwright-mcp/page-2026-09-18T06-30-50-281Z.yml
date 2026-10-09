@@ -1,0 +1,530 @@
+- generic [ref=f9e10]:
+  - generic [ref=f9e12]:
+    - generic [ref=f9e13]:
+      - banner [ref=f9e14]:
+        - generic [ref=f9e15]:
+          - link "MediLink" [ref=f9e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f9e18]:
+            - link "Dashboard" [ref=f9e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f9e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Billing" [ref=f9e21] [cursor=pointer]:
+              - /url: /billing
+          - generic [ref=f9e22]:
+            - button "Settings" [ref=f9e23] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f9e28] [cursor=pointer]
+            - button "Notifications (1 unread)" [ref=f9e32] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f9e37]: "1"
+            - button "Account menu for Vijay Trivedi" [ref=f9e39] [cursor=pointer]: VT
+      - main [ref=f9e40]:
+        - generic [ref=f9e42]:
+          - generic [ref=f9e43]:
+            - generic [ref=f9e44]:
+              - generic [ref=f9e45]:
+                - heading "Billing & Payments" [level=1] [ref=f9e46]
+                - generic [ref=f9e47]: All invoices
+              - paragraph [ref=f9e51]: Manage invoices, payments, and outstanding balances
+            - button "Generate Invoice" [ref=f9e52] [cursor=pointer]
+          - generic [ref=f9e54]:
+            - complementary [ref=f9e55]:
+              - generic [ref=f9e614]:
+                - generic [ref=f9e615]:
+                  - paragraph [ref=f9e617]: Total Revenue
+                  - heading "₹301,500" [level=3] [ref=f9e621]
+                - generic [ref=f9e622]:
+                  - paragraph [ref=f9e624]: Collected
+                  - heading "₹175,000" [level=3] [ref=f9e629]
+                - generic [ref=f9e630]:
+                  - paragraph [ref=f9e632]: Pending
+                  - heading "₹126,500" [level=3] [ref=f9e637]
+                - generic [ref=f9e638]:
+                  - paragraph [ref=f9e640]: Total Invoices
+                  - heading "151" [level=3] [ref=f9e645]
+            - generic [ref=f9e88]:
+              - generic [ref=f9e89]:
+                - button "All100" [ref=f9e90] [cursor=pointer]
+                - button "Consultation34" [ref=f9e91] [cursor=pointer]
+                - button "Pharmacy33" [ref=f9e92] [cursor=pointer]
+                - button "Test0" [ref=f9e93] [cursor=pointer]
+                - button "Ward33" [ref=f9e94] [cursor=pointer]
+                - button "Other0" [ref=f9e95] [cursor=pointer]
+              - generic [ref=f9e97]:
+                - textbox "Search by bill number or patient name…" [ref=f9e102]
+                - generic [ref=f9e103]: 100 bills
+              - generic [ref=f9e104]:
+                - generic [ref=f9e105]:
+                  - generic [ref=f9e106]: Unpaid
+                  - generic [ref=f9e108]:
+                    - generic [ref=f9e109]: RG
+                    - generic [ref=f9e110]:
+                      - paragraph [ref=f9e111]: Rahul Gupta
+                      - paragraph [ref=f9e112]: PT-IND-1000
+                    - generic [ref=f9e113]: Consultation
+                  - generic [ref=f9e118]: Today
+                  - generic [ref=f9e123]:
+                    - generic [ref=f9e124]:
+                      - paragraph [ref=f9e125]: Total
+                      - paragraph [ref=f9e126]: ₹1,500
+                    - generic [ref=f9e127]:
+                      - paragraph [ref=f9e128]: Paid
+                      - paragraph [ref=f9e129]: ₹0
+                    - generic [ref=f9e130]:
+                      - paragraph [ref=f9e131]: Balance
+                      - paragraph [ref=f9e132]: ₹1,500
+                  - generic [ref=f9e133]:
+                    - button "Invoice" [ref=f9e134] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e138] [cursor=pointer]
+                    - button "Pay" [ref=f9e142] [cursor=pointer]
+                    - button "Ins." [ref=f9e145] [cursor=pointer]
+                - generic [ref=f9e149]:
+                  - generic [ref=f9e150]:
+                    - generic [ref=f9e151]: BILL-2026-10055
+                    - generic [ref=f9e152]: Unpaid
+                  - generic [ref=f9e153]:
+                    - generic [ref=f9e154]: RK
+                    - generic [ref=f9e155]:
+                      - paragraph [ref=f9e156]: Ritu Kapoor
+                      - paragraph [ref=f9e157]: PT-IND-1055
+                    - generic [ref=f9e158]: Pharmacy
+                  - generic [ref=f9e162]: 28 Jan 2026
+                  - generic [ref=f9e167]:
+                    - generic [ref=f9e168]:
+                      - paragraph [ref=f9e169]: Total
+                      - paragraph [ref=f9e170]: ₹1,000
+                    - generic [ref=f9e171]:
+                      - paragraph [ref=f9e172]: Paid
+                      - paragraph [ref=f9e173]: ₹0
+                    - generic [ref=f9e174]:
+                      - paragraph [ref=f9e175]: Balance
+                      - paragraph [ref=f9e176]: ₹1,000
+                  - generic [ref=f9e177]:
+                    - button "Invoice" [ref=f9e178] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e182] [cursor=pointer]
+                    - button "Pay" [ref=f9e186] [cursor=pointer]
+                - generic [ref=f9e189]:
+                  - generic [ref=f9e190]:
+                    - generic [ref=f9e191]: BILL-2026-10111
+                    - generic [ref=f9e192]: Partially-Paid
+                  - generic [ref=f9e193]:
+                    - generic [ref=f9e194]: RP
+                    - generic [ref=f9e195]:
+                      - paragraph [ref=f9e196]: Ritu Pillai
+                      - paragraph [ref=f9e197]: PT-IND-1111
+                    - generic [ref=f9e198]: Consultation
+                  - generic [ref=f9e203]: 28 Jan 2026
+                  - generic [ref=f9e208]:
+                    - generic [ref=f9e209]:
+                      - paragraph [ref=f9e210]: Total
+                      - paragraph [ref=f9e211]: ₹1,500
+                    - generic [ref=f9e212]:
+                      - paragraph [ref=f9e213]: Paid
+                      - paragraph [ref=f9e214]: ₹750
+                    - generic [ref=f9e215]:
+                      - paragraph [ref=f9e216]: Balance
+                      - paragraph [ref=f9e217]: ₹750
+                  - generic [ref=f9e218]:
+                    - button "Invoice" [ref=f9e219] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e223] [cursor=pointer]
+                    - button "Pay" [ref=f9e227] [cursor=pointer]
+                    - button "Ins." [ref=f9e230] [cursor=pointer]
+                - generic [ref=f9e234]:
+                  - generic [ref=f9e235]:
+                    - generic [ref=f9e236]: BILL-2026-10139
+                    - generic [ref=f9e237]: Unpaid
+                  - generic [ref=f9e238]:
+                    - generic [ref=f9e239]: ST
+                    - generic [ref=f9e240]:
+                      - paragraph [ref=f9e241]: Sangeeta Tripathi
+                      - paragraph [ref=f9e242]: PT-IND-1139
+                    - generic [ref=f9e243]: Pharmacy
+                  - generic [ref=f9e247]: 28 Jan 2026
+                  - generic [ref=f9e252]:
+                    - generic [ref=f9e253]:
+                      - paragraph [ref=f9e254]: Total
+                      - paragraph [ref=f9e255]: ₹3,000
+                    - generic [ref=f9e256]:
+                      - paragraph [ref=f9e257]: Paid
+                      - paragraph [ref=f9e258]: ₹0
+                    - generic [ref=f9e259]:
+                      - paragraph [ref=f9e260]: Balance
+                      - paragraph [ref=f9e261]: ₹3,000
+                  - generic [ref=f9e262]:
+                    - button "Invoice" [ref=f9e263] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e267] [cursor=pointer]
+                    - button "Pay" [ref=f9e271] [cursor=pointer]
+                    - button "Ins." [ref=f9e274] [cursor=pointer]
+                - generic [ref=f9e278]:
+                  - generic [ref=f9e279]:
+                    - generic [ref=f9e280]: BILL-2026-10083
+                    - generic [ref=f9e281]: Unpaid
+                  - generic [ref=f9e282]:
+                    - generic [ref=f9e283]: PT
+                    - generic [ref=f9e284]:
+                      - paragraph [ref=f9e285]: Preeti Tripathi
+                      - paragraph [ref=f9e286]: PT-IND-1083
+                    - generic [ref=f9e287]: Ward
+                  - generic [ref=f9e290]: 28 Jan 2026
+                  - generic [ref=f9e295]:
+                    - generic [ref=f9e296]:
+                      - paragraph [ref=f9e297]: Total
+                      - paragraph [ref=f9e298]: ₹2,500
+                    - generic [ref=f9e299]:
+                      - paragraph [ref=f9e300]: Paid
+                      - paragraph [ref=f9e301]: ₹0
+                    - generic [ref=f9e302]:
+                      - paragraph [ref=f9e303]: Balance
+                      - paragraph [ref=f9e304]: ₹2,500
+                  - generic [ref=f9e305]:
+                    - button "Invoice" [ref=f9e306] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e310] [cursor=pointer]
+                    - button "Pay" [ref=f9e314] [cursor=pointer]
+                    - button "Ins." [ref=f9e317] [cursor=pointer]
+                - generic [ref=f9e321]:
+                  - generic [ref=f9e322]:
+                    - generic [ref=f9e323]: BILL-2026-10027
+                    - generic [ref=f9e324]: Partially-Paid
+                  - generic [ref=f9e325]:
+                    - generic [ref=f9e326]: ND
+                    - generic [ref=f9e327]:
+                      - paragraph [ref=f9e328]: Nisha Deshmukh
+                      - paragraph [ref=f9e329]: PT-IND-1027
+                    - generic [ref=f9e330]: Consultation
+                  - generic [ref=f9e335]: 28 Jan 2026
+                  - generic [ref=f9e340]:
+                    - generic [ref=f9e341]:
+                      - paragraph [ref=f9e342]: Total
+                      - paragraph [ref=f9e343]: ₹2,000
+                    - generic [ref=f9e344]:
+                      - paragraph [ref=f9e345]: Paid
+                      - paragraph [ref=f9e346]: ₹1,000
+                    - generic [ref=f9e347]:
+                      - paragraph [ref=f9e348]: Balance
+                      - paragraph [ref=f9e349]: ₹1,000
+                  - generic [ref=f9e350]:
+                    - button "Invoice" [ref=f9e351] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e355] [cursor=pointer]
+                    - button "Pay" [ref=f9e359] [cursor=pointer]
+                    - button "Ins." [ref=f9e362] [cursor=pointer]
+                - generic [ref=f9e366]:
+                  - generic [ref=f9e367]:
+                    - generic [ref=f9e368]: BILL-2026-10054
+                    - generic [ref=f9e369]: Paid
+                  - generic [ref=f9e370]:
+                    - generic [ref=f9e371]: MS
+                    - generic [ref=f9e372]:
+                      - paragraph [ref=f9e373]: Mahesh Singh
+                      - paragraph [ref=f9e374]: PT-IND-1054
+                    - generic [ref=f9e375]: Consultation
+                  - generic [ref=f9e380]: 27 Jan 2026
+                  - generic [ref=f9e385]:
+                    - generic [ref=f9e386]:
+                      - paragraph [ref=f9e387]: Total
+                      - paragraph [ref=f9e388]: ₹3,000
+                    - generic [ref=f9e389]:
+                      - paragraph [ref=f9e390]: Paid
+                      - paragraph [ref=f9e391]: ₹3,000
+                    - generic [ref=f9e392]:
+                      - paragraph [ref=f9e393]: Balance
+                      - paragraph [ref=f9e394]: ₹0
+                  - generic [ref=f9e395]:
+                    - button "Invoice" [ref=f9e396] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e400] [cursor=pointer]
+                - generic [ref=f9e404]:
+                  - generic [ref=f9e405]:
+                    - generic [ref=f9e406]: BILL-2026-10110
+                    - generic [ref=f9e407]: Paid
+                  - generic [ref=f9e408]:
+                    - generic [ref=f9e409]: SB
+                    - generic [ref=f9e410]:
+                      - paragraph [ref=f9e411]: Suresh Bannerjee
+                      - paragraph [ref=f9e412]: PT-IND-1110
+                    - generic [ref=f9e413]: Ward
+                  - generic [ref=f9e416]: 27 Jan 2026
+                  - generic [ref=f9e421]:
+                    - generic [ref=f9e422]:
+                      - paragraph [ref=f9e423]: Total
+                      - paragraph [ref=f9e424]: ₹1,000
+                    - generic [ref=f9e425]:
+                      - paragraph [ref=f9e426]: Paid
+                      - paragraph [ref=f9e427]: ₹1,000
+                    - generic [ref=f9e428]:
+                      - paragraph [ref=f9e429]: Balance
+                      - paragraph [ref=f9e430]: ₹0
+                  - generic [ref=f9e431]:
+                    - button "Invoice" [ref=f9e432] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e436] [cursor=pointer]
+                - generic [ref=f9e440]:
+                  - generic [ref=f9e441]:
+                    - generic [ref=f9e442]: BILL-2026-10026
+                    - generic [ref=f9e443]: Paid
+                  - generic [ref=f9e444]:
+                    - generic [ref=f9e445]: SA
+                    - generic [ref=f9e446]:
+                      - paragraph [ref=f9e447]: Sunil Agrawal
+                      - paragraph [ref=f9e448]: PT-IND-1026
+                    - generic [ref=f9e449]: Ward
+                  - generic [ref=f9e452]: 27 Jan 2026
+                  - generic [ref=f9e457]:
+                    - generic [ref=f9e458]:
+                      - paragraph [ref=f9e459]: Total
+                      - paragraph [ref=f9e460]: ₹1,500
+                    - generic [ref=f9e461]:
+                      - paragraph [ref=f9e462]: Paid
+                      - paragraph [ref=f9e463]: ₹1,500
+                    - generic [ref=f9e464]:
+                      - paragraph [ref=f9e465]: Balance
+                      - paragraph [ref=f9e466]: ₹0
+                  - generic [ref=f9e467]:
+                    - button "Invoice" [ref=f9e468] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e472] [cursor=pointer]
+                - generic [ref=f9e476]:
+                  - generic [ref=f9e477]:
+                    - generic [ref=f9e478]: BILL-2026-10138
+                    - generic [ref=f9e479]: Paid
+                  - generic [ref=f9e480]:
+                    - generic [ref=f9e481]: MR
+                    - generic [ref=f9e482]:
+                      - paragraph [ref=f9e483]: Manish Reddy
+                      - paragraph [ref=f9e484]: PT-IND-1138
+                    - generic [ref=f9e485]: Consultation
+                  - generic [ref=f9e490]: 27 Jan 2026
+                  - generic [ref=f9e495]:
+                    - generic [ref=f9e496]:
+                      - paragraph [ref=f9e497]: Total
+                      - paragraph [ref=f9e498]: ₹2,500
+                    - generic [ref=f9e499]:
+                      - paragraph [ref=f9e500]: Paid
+                      - paragraph [ref=f9e501]: ₹2,500
+                    - generic [ref=f9e502]:
+                      - paragraph [ref=f9e503]: Balance
+                      - paragraph [ref=f9e504]: ₹0
+                  - generic [ref=f9e505]:
+                    - button "Invoice" [ref=f9e506] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e510] [cursor=pointer]
+                - generic [ref=f9e514]:
+                  - generic [ref=f9e515]:
+                    - generic [ref=f9e516]: BILL-2026-10082
+                    - generic [ref=f9e517]: Paid
+                  - generic [ref=f9e518]:
+                    - generic [ref=f9e519]: MJ
+                    - generic [ref=f9e520]:
+                      - paragraph [ref=f9e521]: Mahesh Joshi
+                      - paragraph [ref=f9e522]: PT-IND-1082
+                    - generic [ref=f9e523]: Pharmacy
+                  - generic [ref=f9e527]: 27 Jan 2026
+                  - generic [ref=f9e532]:
+                    - generic [ref=f9e533]:
+                      - paragraph [ref=f9e534]: Total
+                      - paragraph [ref=f9e535]: ₹2,000
+                    - generic [ref=f9e536]:
+                      - paragraph [ref=f9e537]: Paid
+                      - paragraph [ref=f9e538]: ₹2,000
+                    - generic [ref=f9e539]:
+                      - paragraph [ref=f9e540]: Balance
+                      - paragraph [ref=f9e541]: ₹0
+                  - generic [ref=f9e542]:
+                    - button "Invoice" [ref=f9e543] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e547] [cursor=pointer]
+                - generic [ref=f9e551]:
+                  - generic [ref=f9e552]:
+                    - generic [ref=f9e553]: BILL-2026-10081
+                    - generic [ref=f9e554]: Partially-Paid
+                  - generic [ref=f9e555]:
+                    - generic [ref=f9e556]: DD
+                    - generic [ref=f9e557]:
+                      - paragraph [ref=f9e558]: Divya Das
+                      - paragraph [ref=f9e559]: PT-IND-1081
+                    - generic [ref=f9e560]: Consultation
+                  - generic [ref=f9e565]: 26 Jan 2026
+                  - generic [ref=f9e570]:
+                    - generic [ref=f9e571]:
+                      - paragraph [ref=f9e572]: Total
+                      - paragraph [ref=f9e573]: ₹1,500
+                    - generic [ref=f9e574]:
+                      - paragraph [ref=f9e575]: Paid
+                      - paragraph [ref=f9e576]: ₹750
+                    - generic [ref=f9e577]:
+                      - paragraph [ref=f9e578]: Balance
+                      - paragraph [ref=f9e579]: ₹750
+                  - generic [ref=f9e580]:
+                    - button "Invoice" [ref=f9e581] [cursor=pointer]
+                    - button "Download PDF" [ref=f9e585] [cursor=pointer]
+                    - button "Pay" [ref=f9e589] [cursor=pointer]
+                    - button "Ins." [ref=f9e592] [cursor=pointer]
+              - navigation "Pagination" [ref=f9e596]:
+                - paragraph [ref=f9e597]: 1–12 of 100
+                - generic [ref=f9e598]:
+                  - button "Previous page" [disabled] [ref=f9e599]
+                  - button "Page 1" [ref=f9e602] [cursor=pointer]: "1"
+                  - button "Page 2" [ref=f9e603] [cursor=pointer]: "2"
+                  - button "Page 3" [ref=f9e604] [cursor=pointer]: "3"
+                  - button "Page 4" [ref=f9e605] [cursor=pointer]: "4"
+                  - button "Page 5" [ref=f9e606] [cursor=pointer]: "5"
+                  - button "Next page" [ref=f9e607] [cursor=pointer]
+    - button "Open MediLink Assistant" [ref=f9e613] [cursor=pointer]
+  - dialog [ref=f9e646]:
+    - generic [ref=f9e648]:
+      - generic [ref=f9e649]:
+        - heading "Generate Invoice" [level=3] [ref=f9e650]
+        - button "Close dialog" [active] [ref=f9e651] [cursor=pointer]
+      - generic [ref=f9e655]:
+        - generic [ref=f9e656]:
+          - generic [ref=f9e657]:
+            - generic [ref=f9e658]: Select Patient *
+            - combobox [ref=f9e662]:
+              - option "— Select patient (100 available) —" [selected]
+              - option "Nisha Das — PT-IND-1149"
+              - option "Pradeep Patel — PT-IND-1148"
+              - option "Manju Saxena — PT-IND-1147"
+              - option "Anand Rane — PT-IND-1146"
+              - option "Neha Qureshi — PT-IND-1145"
+              - option "Vikram Sundaram — PT-IND-1144"
+              - option "Reena Bhatia — PT-IND-1143"
+              - option "Pradeep Kapoor — PT-IND-1142"
+              - option "Bhavna Mehta — PT-IND-1141"
+              - option "Manish Deshmukh — PT-IND-1140"
+              - option "Sangeeta Tripathi — PT-IND-1139"
+              - option "Manish Reddy — PT-IND-1138"
+              - option "Ananya Patel — PT-IND-1137"
+              - option "Karan Deshmukh — PT-IND-1136"
+              - option "Ritu Iyer — PT-IND-1135"
+              - option "Rohan Deshmukh — PT-IND-1134"
+              - option "Kiran Nambiar — PT-IND-1133"
+              - option "Deepak Sharma — PT-IND-1132"
+              - option "Reena Nambiar — PT-IND-1131"
+              - option "Nitin Qureshi — PT-IND-1130"
+              - option "Priyanka Kapoor — PT-IND-1129"
+              - option "Anand Pillai — PT-IND-1128"
+              - option "Priya Mehta — PT-IND-1127"
+              - option "Siddharth Swaminathan — PT-IND-1126"
+              - option "Kavita Bannerjee — PT-IND-1125"
+              - option "Siddharth Nambiar — PT-IND-1124"
+              - option "Nisha Tripathi — PT-IND-1123"
+              - option "Rajesh Rao — PT-IND-1122"
+              - option "Rohini Verma — PT-IND-1121"
+              - option "Farhan Reddy — PT-IND-1120"
+              - option "Divya Trivedi — PT-IND-1119"
+              - option "Rohan Reddy — PT-IND-1118"
+              - option "Ananya Nambiar — PT-IND-1117"
+              - option "Harish Chandra — PT-IND-1116"
+              - option "Swati Gupta — PT-IND-1115"
+              - option "Rahul Patel — PT-IND-1114"
+              - option "Ritu Trivedi — PT-IND-1113"
+              - option "Aditya Iyer — PT-IND-1112"
+              - option "Ritu Pillai — PT-IND-1111"
+              - option "Suresh Bannerjee — PT-IND-1110"
+              - option "Geeta Sengupta — PT-IND-1109"
+              - option "Aditya Pillai — PT-IND-1108"
+              - option "Ananya Sharma — PT-IND-1107"
+              - option "Vikas Bhatia — PT-IND-1106"
+              - option "Ananya Chandra — PT-IND-1105"
+              - option "Harish Sharma — PT-IND-1104"
+              - option "Rohini Mehta — PT-IND-1103"
+              - option "Alok Joshi — PT-IND-1102"
+              - option "Shweta Nambiar — PT-IND-1101"
+              - option "Mahesh Kulkarni — PT-IND-1100"
+              - option "Preeti Rao — PT-IND-1099"
+              - option "Pankaj Swaminathan — PT-IND-1098"
+              - option "Priyanka Rane — PT-IND-1097"
+              - option "Rahul Sengupta — PT-IND-1096"
+              - option "Anjali Sharma — PT-IND-1095"
+              - option "Siddharth Deshmukh — PT-IND-1094"
+              - option "Kiran Pillai — PT-IND-1093"
+              - option "Pradeep Nair — PT-IND-1092"
+              - option "Ananya Das — PT-IND-1091"
+              - option "Pankaj Gupta — PT-IND-1090"
+              - option "Geeta Agrawal — PT-IND-1089"
+              - option "Alok Bhatia — PT-IND-1088"
+              - option "Smita Agrawal — PT-IND-1087"
+              - option "Harish Rane — PT-IND-1086"
+              - option "Ananya Chandra — PT-IND-1085"
+              - option "Vijay Bannerjee — PT-IND-1084"
+              - option "Preeti Tripathi — PT-IND-1083"
+              - option "Mahesh Joshi — PT-IND-1082"
+              - option "Divya Das — PT-IND-1081"
+              - option "Arjun Sengupta — PT-IND-1080"
+              - option "Neha Nambiar — PT-IND-1079"
+              - option "Vikas Deshmukh — PT-IND-1078"
+              - option "Bhavna Rao — PT-IND-1077"
+              - option "Vikas Gupta — PT-IND-1076"
+              - option "Anjali Rane — PT-IND-1075"
+              - option "Rohan Das — PT-IND-1074"
+              - option "Neha Saxena — PT-IND-1073"
+              - option "Rahul Saxena — PT-IND-1072"
+              - option "Manju Tripathi — PT-IND-1071"
+              - option "Devendra Singh — PT-IND-1070"
+              - option "Pooja Rao — PT-IND-1069"
+              - option "Devendra Patel — PT-IND-1068"
+              - option "Sangeeta Singh — PT-IND-1067"
+              - option "Rajesh Nambiar — PT-IND-1066"
+              - option "Fatima Deshmukh — PT-IND-1065"
+              - option "Tarun Rane — PT-IND-1064"
+              - option "Meena Saxena — PT-IND-1063"
+              - option "Ashok Sundaram — PT-IND-1062"
+              - option "Anjali Sen — PT-IND-1061"
+              - option "Rohan Sharma — PT-IND-1060"
+              - option "Sunita Rao — PT-IND-1059"
+              - option "Gaurav Nair — PT-IND-1058"
+              - option "Neha Gupta — PT-IND-1057"
+              - option "Nitin Sen — PT-IND-1056"
+              - option "Ritu Kapoor — PT-IND-1055"
+              - option "Mahesh Singh — PT-IND-1054"
+              - option "Ananya Nambiar — PT-IND-1053"
+              - option "Vikram Sen — PT-IND-1052"
+              - option "Meena Nambiar — PT-IND-1051"
+              - option "Manish Das — PT-IND-1050"
+          - generic [ref=f9e663]:
+            - generic [ref=f9e664]: Bill Type
+            - generic [ref=f9e665]:
+              - button "Consultation" [ref=f9e666] [cursor=pointer]
+              - button "Pharmacy" [ref=f9e671] [cursor=pointer]
+              - button "Test" [ref=f9e675] [cursor=pointer]
+              - button "Ward" [ref=f9e678] [cursor=pointer]
+              - button "Other" [ref=f9e681] [cursor=pointer]
+          - generic [ref=f9e685]:
+            - paragraph [ref=f9e686]: Add Item
+            - generic [ref=f9e687]:
+              - generic [ref=f9e688]:
+                - generic [ref=f9e689]: Service / Item
+                - combobox "Service / Item" [ref=f9e690]:
+                  - option "Select template…" [selected]
+                  - option "General Consultation"
+                  - option "Specialist Consultation"
+                  - option "Complete Blood Count (CBC)"
+                  - option "Blood Sugar Test"
+                  - option "Lipid Profile"
+                  - option "X-Ray Chest"
+                  - option "Ultrasound"
+                  - option "CT Scan"
+                  - option "MRI Scan"
+                  - option "ECG"
+                  - option "Room Charges (General)"
+                  - option "Room Charges (Private)"
+                  - option "Room Charges (ICU)"
+                  - option "Emergency Service"
+                  - option "Minor Surgery"
+                  - option "Major Surgery"
+                  - option "Medicine (Custom)"
+              - generic [ref=f9e691]:
+                - generic [ref=f9e692]: Custom name
+                - textbox "Custom name" [ref=f9e693]:
+                  - /placeholder: or type custom…
+              - generic [ref=f9e694]:
+                - generic [ref=f9e695]: Qty
+                - spinbutton "Qty" [ref=f9e696]: "1"
+              - generic [ref=f9e697]:
+                - generic [ref=f9e698]: Price (₹)
+                - spinbutton "Price (₹)" [ref=f9e699]: "0"
+              - button "Add item" [ref=f9e701] [cursor=pointer]
+          - generic [ref=f9e703]:
+            - generic [ref=f9e704]: Notes (optional)
+            - textbox "Additional notes…" [ref=f9e705]
+          - group [ref=f9e706]:
+            - generic "Insurance Coverage (optional) Click to expand" [ref=f9e707] [cursor=pointer]:
+              - text: Insurance Coverage (optional)
+              - generic [ref=f9e711]: Click to expand
+        - generic [ref=f9e712]:
+          - button "Cancel" [ref=f9e713] [cursor=pointer]
+          - button "Create Bill" [ref=f9e714] [cursor=pointer]

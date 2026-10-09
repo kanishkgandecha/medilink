@@ -1,0 +1,352 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e108] [cursor=pointer]:
+      - alert [ref=e109]:
+        - generic [ref=e113]: Welcome back, System Admin!
+      - button "close" [ref=e114]
+      - progressbar "notification timer" [ref=e117]
+    - generic [ref=e118]:
+      - banner [ref=e119]:
+        - generic [ref=e120]:
+          - link "MediLink" [ref=e121] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=e123]:
+            - link "Dashboard" [ref=e124] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=e125] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Patients" [ref=e126] [cursor=pointer]:
+              - /url: /patients
+            - link "Doctors" [ref=e127] [cursor=pointer]:
+              - /url: /doctors
+            - link "Staff" [ref=e128] [cursor=pointer]:
+              - /url: /staff
+            - link "Appointments" [ref=e129] [cursor=pointer]:
+              - /url: /appointments
+            - link "Wards & Beds" [ref=e130] [cursor=pointer]:
+              - /url: /wards
+            - link "Pharmacy" [ref=e131] [cursor=pointer]:
+              - /url: /pharmacy
+            - link "Billing" [ref=e132] [cursor=pointer]:
+              - /url: /billing
+            - link "Reports" [ref=e133] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=e134]:
+            - button "Settings" [ref=e135] [cursor=pointer]
+            - button "Switch to dark mode" [ref=e140] [cursor=pointer]
+            - button "Notifications (3 unread)" [ref=e144] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e149]: "3"
+            - button "Account menu for System Admin" [ref=e151] [cursor=pointer]: SA
+      - main [ref=e152]:
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - heading "Good Morning, System" [level=1] [ref=e159]
+              - paragraph [ref=e160]: Friday, 18 September 2026
+            - generic "Dashboard figures reflect the most recent request to the server; this is not a continuous live stream or a service health check." [ref=e161]: Dashboard data · Updated just now
+          - generic [ref=e163]:
+            - generic [ref=e171]:
+              - paragraph [ref=e172]: "150"
+              - paragraph [ref=e173]: Total Patients
+            - generic [ref=e178]:
+              - paragraph [ref=e179]: "0"
+              - paragraph [ref=e180]: Appointments
+            - generic [ref=e185]:
+              - paragraph [ref=e186]: "35"
+              - paragraph [ref=e187]: Available Beds
+            - generic [ref=e194]:
+              - paragraph [ref=e195]: "6"
+              - paragraph [ref=e196]: Doctors On Duty
+            - generic [ref=e202]:
+              - paragraph [ref=e203]: ₹0
+              - paragraph [ref=e204]: Revenue Today
+            - generic [ref=e209]:
+              - paragraph [ref=e210]: "75"
+              - paragraph [ref=e211]: Active Alerts
+          - generic [ref=e212]:
+            - button [ref=e213] [cursor=pointer]:
+              - generic [ref=e219]:
+                - generic [ref=e220]:
+                  - paragraph [ref=e221]: Symptom Checker
+                  - generic "Generated using a configured language-model provider." [ref=e222]: LLM
+                - paragraph [ref=e225]: Safety-screen symptoms and suggest an appropriate department for review
+            - button [ref=e228] [cursor=pointer]:
+              - generic [ref=e233]:
+                - generic [ref=e234]:
+                  - paragraph [ref=e235]: Report Analyzer
+                  - generic "Generated using a configured language-model provider." [ref=e236]: LLM
+                - paragraph [ref=e239]: Extract submitted values and compare them with printed reference ranges
+            - button [ref=e242] [cursor=pointer]:
+              - generic [ref=e248]:
+                - generic [ref=e249]:
+                  - paragraph [ref=e250]: Risk Predictor
+                  - generic "Produced by deterministic clinical or operational rules." [ref=e251]: Rules
+                - paragraph [ref=e255]: Transparent rules-based screening score from selected risk factors
+          - generic [ref=e259]:
+            - generic [ref=e265]:
+              - paragraph [ref=e266]: AI Reliability · 24h
+              - paragraph [ref=e267]: openai/gpt-4o-mini
+            - generic [ref=e268]:
+              - paragraph [ref=e269]: "0"
+              - paragraph [ref=e270]: Requests
+            - generic [ref=e271]:
+              - paragraph [ref=e272]: —
+              - paragraph [ref=e273]: Success
+            - generic [ref=e274]:
+              - paragraph [ref=e275]: —
+              - paragraph [ref=e276]: Degraded
+            - generic [ref=e277]:
+              - paragraph [ref=e278]: 0 ms
+              - paragraph [ref=e279]: Avg latency
+            - paragraph [ref=e280]: Metadata retained 90 days · prompts not stored
+          - generic [ref=e281]:
+            - generic [ref=e282]:
+              - status [ref=e283]:
+                - generic [ref=e284]:
+                  - heading "Alerts" [level=3] [ref=e287]
+                  - generic [ref=e288]: "75"
+                - generic [ref=e289]: 75 pending bills
+              - generic [ref=e292]:
+                - paragraph [ref=e293]: Latest Patient
+                - generic [ref=e294]:
+                  - generic [ref=e295]: ND
+                  - generic [ref=e301]:
+                    - paragraph [ref=e302]: Nisha Das
+                    - paragraph [ref=e303]: Female
+                  - generic [ref=e304]:
+                    - generic [ref=e305]: B+
+                    - generic [ref=e306]: Active
+                - generic [ref=e307]:
+                  - generic [ref=e308]:
+                    - paragraph [ref=e309]: "150"
+                    - paragraph [ref=e310]: Patients
+                  - generic [ref=e311]:
+                    - paragraph [ref=e312]: "0"
+                    - paragraph [ref=e313]: Today
+                  - generic [ref=e314]:
+                    - paragraph [ref=e315]: "35"
+                    - paragraph [ref=e316]: Beds
+              - generic [ref=e317]:
+                - generic [ref=e318]:
+                  - paragraph [ref=e319]: Live Metrics
+                  - generic "Calculated from the latest available application records." [ref=e320]: Live Records
+                - paragraph [ref=e323]: Updated just now
+                - generic [ref=e325]:
+                  - generic [ref=e326]: Bed Occupancy
+                  - generic [ref=e327]: 0%
+                - generic [ref=e330]:
+                  - generic [ref=e331]: Appointment Fill
+                  - generic [ref=e332]: 0%
+                - generic [ref=e335]:
+                  - generic [ref=e336]: Revenue Growth
+                  - generic [ref=e337]: No comparison data
+              - generic [ref=e339]:
+                - paragraph [ref=e343]: Quick Actions
+                - generic [ref=e344]:
+                  - button [ref=e345] [cursor=pointer]
+                  - button [ref=e354] [cursor=pointer]
+                  - button [ref=e360] [cursor=pointer]
+                  - button [ref=e366] [cursor=pointer]
+            - generic [ref=e372]:
+              - generic [ref=e373]:
+                - generic [ref=e374]:
+                  - generic [ref=e375]:
+                    - heading "Revenue Overview" [level=2] [ref=e376]
+                    - paragraph [ref=e377]: 2026 — monthly revenue trend
+                  - generic [ref=e378]: No comparison data
+                - img [ref=e384]:
+                  - generic [ref=e388]:
+                    - generic [ref=e389]: Jan
+                    - generic [ref=e391]: Feb
+                    - generic [ref=e393]: Mar
+                    - generic [ref=e395]: Apr
+                    - generic [ref=e397]: May
+                    - generic [ref=e399]: Jun
+                    - generic [ref=e401]: Jul
+                    - generic [ref=e403]: Aug
+                    - generic [ref=e405]: Sep
+                    - generic [ref=e407]: Oct
+                    - generic [ref=e409]: Nov
+                    - generic [ref=e411]: Dec
+                  - generic [ref=e414]:
+                    - generic [ref=e415]: ₹0k
+                    - generic [ref=e417]: ₹45k
+                    - generic [ref=e419]: ₹90k
+                    - generic [ref=e421]: ₹135k
+                    - generic [ref=e423]: ₹180k
+              - generic [ref=e442]:
+                - generic [ref=e443]:
+                  - generic [ref=e444]:
+                    - heading "Recent Appointments" [level=2] [ref=e445]
+                    - button "View all" [ref=e446] [cursor=pointer]
+                  - generic [ref=e449]:
+                    - generic [ref=e450]:
+                      - generic [ref=e451]:
+                        - generic [ref=e452]: PR
+                        - generic [ref=e453]:
+                          - paragraph [ref=e454]: Preeti Rao
+                          - paragraph [ref=e455]: Dr. Farhan Qureshi · 10:00
+                      - generic [ref=e456]: Completed
+                    - generic [ref=e457]:
+                      - generic [ref=e458]:
+                        - generic [ref=e459]: PS
+                        - generic [ref=e460]:
+                          - paragraph [ref=e461]: Pankaj Swaminathan
+                          - paragraph [ref=e462]: Dr. Manoj Bhatia · 09:00
+                      - generic [ref=e463]: Completed
+                    - generic [ref=e464]:
+                      - generic [ref=e465]:
+                        - generic [ref=e466]: PR
+                        - generic [ref=e467]:
+                          - paragraph [ref=e468]: Priyanka Rane
+                          - paragraph [ref=e469]: Dr. Kavitha Sundaram · 16:00
+                      - generic [ref=e470]: Completed
+                    - generic [ref=e471]:
+                      - generic [ref=e472]:
+                        - generic [ref=e473]: RS
+                        - generic [ref=e474]:
+                          - paragraph [ref=e475]: Rahul Sengupta
+                          - paragraph [ref=e476]: Dr. Rajesh Chandra · 15:00
+                      - generic [ref=e477]: Completed
+                    - generic [ref=e478]:
+                      - generic [ref=e479]:
+                        - generic [ref=e480]: AS
+                        - generic [ref=e481]:
+                          - paragraph [ref=e482]: Anjali Sharma
+                          - paragraph [ref=e483]: Dr. Deepali Joshi · 14:00
+                      - generic [ref=e484]: Completed
+                - generic [ref=e485]:
+                  - heading "Bed Status" [level=2] [ref=e486]
+                  - generic [ref=e487]:
+                    - generic:
+                      - generic:
+                        - paragraph: "0"
+                        - paragraph: / 35
+                  - generic [ref=e494]:
+                    - generic [ref=e495]:
+                      - generic [ref=e496]: Total Beds
+                      - generic [ref=e497]: "35"
+                    - generic [ref=e498]:
+                      - generic [ref=e499]: Occupied
+                      - generic [ref=e500]: "0"
+                    - generic [ref=e501]:
+                      - generic [ref=e502]: Available
+                      - generic [ref=e503]: "35"
+              - generic [ref=e504]:
+                - generic [ref=e506]:
+                  - heading "Weekly Appointments" [level=2] [ref=e507]
+                  - paragraph [ref=e508]: This week's scheduling activity
+                - img [ref=e511]:
+                  - generic [ref=e515]:
+                    - generic [ref=e516]: Mon
+                    - generic [ref=e518]: Tue
+                    - generic [ref=e520]: Wed
+                    - generic [ref=e522]: Thu
+                    - generic [ref=e524]: Fri
+                    - generic [ref=e526]: Sat
+                  - generic [ref=e529]:
+                    - generic [ref=e530]: "0"
+                    - generic [ref=e532]: "1"
+                    - generic [ref=e534]: "2"
+                    - generic [ref=e536]: "3"
+                    - generic [ref=e538]: "4"
+              - generic [ref=e540]:
+                - generic [ref=e541]:
+                  - generic [ref=e545]:
+                    - heading "Doctor Load Balancer" [level=2] [ref=e546]
+                    - paragraph [ref=e547]: Available doctors sorted by today's appointment count — a deterministic sort, not a prediction
+                  - generic "Calculated from the latest available application records." [ref=e548]: Live Records
+                - generic [ref=e551]:
+                  - generic [ref=e552]:
+                    - generic [ref=e558]:
+                      - generic [ref=e559]:
+                        - paragraph [ref=e560]: Dr. Siddharth Pillai
+                        - generic [ref=e561]: Best
+                      - paragraph [ref=e562]: Radiology
+                    - generic [ref=e564]:
+                      - generic [ref=e565]: Today's load
+                      - generic [ref=e566]: 0 apts
+                  - generic [ref=e573]:
+                    - generic [ref=e579]:
+                      - paragraph [ref=e581]: Dr. Neha Tripathi
+                      - paragraph [ref=e582]: Pathology
+                    - generic [ref=e584]:
+                      - generic [ref=e585]: Today's load
+                      - generic [ref=e586]: 0 apts
+                  - generic [ref=e593]:
+                    - generic [ref=e599]:
+                      - paragraph [ref=e601]: Dr. Vivek Rane
+                      - paragraph [ref=e602]: Anesthesiology
+                    - generic [ref=e604]:
+                      - generic [ref=e605]: Today's load
+                      - generic [ref=e606]: 0 apts
+                  - generic [ref=e613]:
+                    - generic [ref=e619]:
+                      - paragraph [ref=e621]: Dr. Preeti Agrawal
+                      - paragraph [ref=e622]: Endocrinology
+                    - generic [ref=e624]:
+                      - generic [ref=e625]: Today's load
+                      - generic [ref=e626]: 0 apts
+                  - generic [ref=e633]:
+                    - generic [ref=e639]:
+                      - paragraph [ref=e641]: Dr. Harish Nambiar
+                      - paragraph [ref=e642]: Rheumatology
+                    - generic [ref=e644]:
+                      - generic [ref=e645]: Today's load
+                      - generic [ref=e646]: 0 apts
+                  - generic [ref=e653]:
+                    - generic [ref=e659]:
+                      - paragraph [ref=e661]: Dr. Tarun Sengupta
+                      - paragraph [ref=e662]: Ophthalmology
+                    - generic [ref=e664]:
+                      - generic [ref=e665]: Today's load
+                      - generic [ref=e666]: 0 apts
+            - generic [ref=e673]:
+              - generic [ref=e674]:
+                - generic [ref=e675]:
+                  - heading "Insights" [level=3] [ref=e679]
+                  - generic "Calculated from the latest available application records." [ref=e680]: Live Records
+                - paragraph [ref=e683]: Deterministic thresholds applied to current hospital records.
+                - button "₹125,000 in outstanding bills need follow-up info Click to view →" [ref=e685] [cursor=pointer]:
+                  - generic [ref=e687]:
+                    - generic [ref=e688]:
+                      - paragraph [ref=e689]: ₹125,000 in outstanding bills need follow-up
+                      - generic [ref=e690]: info
+                    - paragraph [ref=e691]: Click to view →
+              - generic [ref=e692]:
+                - generic [ref=e693]:
+                  - heading "Recent Patients" [level=3] [ref=e694]
+                  - button "View all" [ref=e695] [cursor=pointer]
+                - generic [ref=e696]:
+                  - button "View Nisha Das in Patients" [ref=e697] [cursor=pointer]:
+                    - generic [ref=e698]: ND
+                    - generic [ref=e699]:
+                      - paragraph [ref=e700]: Nisha Das
+                      - paragraph
+                  - button "View Pradeep Patel in Patients" [ref=e703] [cursor=pointer]:
+                    - generic [ref=e704]: PP
+                    - generic [ref=e705]:
+                      - paragraph [ref=e706]: Pradeep Patel
+                      - paragraph
+                  - button "View Manju Saxena in Patients" [ref=e709] [cursor=pointer]:
+                    - generic [ref=e710]: MS
+                    - generic [ref=e711]:
+                      - paragraph [ref=e712]: Manju Saxena
+                      - paragraph
+                  - button "View Anand Rane in Patients" [ref=e715] [cursor=pointer]:
+                    - generic [ref=e716]: AR
+                    - generic [ref=e717]:
+                      - paragraph [ref=e718]: Anand Rane
+                      - paragraph
+                  - button "View Neha Qureshi in Patients" [ref=e721] [cursor=pointer]:
+                    - generic [ref=e722]: NQ
+                    - generic [ref=e723]:
+                      - paragraph [ref=e724]: Neha Qureshi
+                      - paragraph
+                  - button "View Vikram Sundaram in Patients" [ref=e727] [cursor=pointer]:
+                    - generic [ref=e728]: VS
+                    - generic [ref=e729]:
+                      - paragraph [ref=e730]: Vikram Sundaram
+                      - paragraph
+    - button "Open MediLink Assistant" [ref=e735] [cursor=pointer]
+  - generic [aria-hidden] [ref=e736]: "3"

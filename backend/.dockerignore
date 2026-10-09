@@ -4,3 +4,4 @@ node_modules
 logs
 uploads/*
 !uploads/.gitkeep
+private-uploads

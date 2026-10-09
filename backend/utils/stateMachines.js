@@ -34,6 +34,9 @@ const canTransitionPrescription = (from, to) => {
   return Boolean(PRESCRIPTION_TRANSITIONS[normalizedFrom]?.has(normalizedTo));
 };
 
+const normalizeBillingStatus = (status) =>
+  status ? String(status).replace('Partially-Paid', 'Partially_Paid') : status;
+
 module.exports = {
   APPOINTMENT_TRANSITIONS,
   normalizeAppointmentStatus,
@@ -41,4 +44,5 @@ module.exports = {
   PRESCRIPTION_TRANSITIONS,
   normalizePrescriptionStatus,
   canTransitionPrescription,
+  normalizeBillingStatus,
 };

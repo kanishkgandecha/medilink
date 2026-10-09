@@ -5,6 +5,9 @@ const { formatAppointment } = require('../utils/virtuals');
 const { getPagination } = require('../utils/pagination');
 const { runSerializableTransaction } = require('../utils/transactions');
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs/promises');
+const { REPORT_ATTACHMENT_DIR } = require('../middleware/upload');
 const toAuditJson = (value) => JSON.parse(JSON.stringify(value));
 
 const generatePatientId = () => `PAT${Date.now().toString().slice(-6)}${crypto.randomInt(100000, 1000000)}`;
@@ -700,6 +703,111 @@ exports.addLabReport = asyncHandler(async (req, res) => {
     message: 'Lab report added successfully',
     data: formatPatientResponse(updatedPatient),
   });
+});
+
+// Diagnostic staff may only attach to / view reports within their own modality
+// (the same scoping getDiagnosticWorkspace/getDiagnosticRecords already enforce
+// for reading the report list) — a lab technician cannot touch an X-Ray report
+// and vice versa, even though both roles pass requirePatientAccess.
+const isDiagnosticRole = (user) => {
+  const key = String(user?.subRole || user?.role || '').replace(/[^a-z]/gi, '').toLowerCase();
+  return key === 'labtechnician' || key === 'radiologytechnician';
+};
+
+exports.uploadLabReportAttachment = asyncHandler(async (req, res) => {
+  const patient = req.patientResource;
+  const report = await prisma.labReport.findFirst({
+    where: { id: req.params.reportId, patientId: patient.id },
+  });
+
+  if (!report) {
+    if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
+    return res.status(404).json({ success: false, message: 'Report not found' });
+  }
+
+  if (isDiagnosticRole(req.user) && isRadiologyUser(req.user) !== isRadiologyReport(report)) {
+    if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
+    return res.status(403).json({ success: false, message: 'Not authorized to attach a file to this report' });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file provided' });
+  }
+
+  const wantsReplace = req.query.replace === 'true' || req.body.replace === 'true' || req.body.replace === true;
+  if (report.attachmentStoredName && !wantsReplace) {
+    await fs.unlink(req.file.path).catch(() => {});
+    return res.status(409).json({
+      success: false,
+      message: `This report already has an attachment (${report.attachmentOriginalName}). Resubmit with replace=true to overwrite it.`,
+      existingAttachment: {
+        originalName: report.attachmentOriginalName,
+        uploadedAt: report.attachmentUploadedAt,
+      },
+    });
+  }
+
+  const previousStoredName = report.attachmentStoredName;
+  let updated;
+  try {
+    updated = await prisma.labReport.update({
+      where: { id: report.id },
+      data: {
+        attachmentStoredName: req.file.filename,
+        attachmentOriginalName: req.file.originalname,
+        attachmentMimeType: req.file.mimetype,
+        attachmentSize: req.file.size,
+        attachmentUploadedAt: new Date(),
+        attachmentUploadedById: req.user.id,
+      },
+    });
+  } catch (err) {
+    await fs.unlink(req.file.path).catch(() => {});
+    throw err;
+  }
+
+  // Only remove the previous file once the new one is safely recorded.
+  if (previousStoredName && previousStoredName !== req.file.filename) {
+    await fs.unlink(path.join(REPORT_ATTACHMENT_DIR, previousStoredName)).catch(() => {});
+  }
+
+  res.status(200).json({
+    success: true,
+    message: previousStoredName ? 'Attachment replaced successfully' : 'Attachment uploaded successfully',
+    data: {
+      attachmentOriginalName: updated.attachmentOriginalName,
+      attachmentMimeType: updated.attachmentMimeType,
+      attachmentSize: updated.attachmentSize,
+      attachmentUploadedAt: updated.attachmentUploadedAt,
+    },
+  });
+});
+
+exports.downloadLabReportAttachment = asyncHandler(async (req, res) => {
+  const patient = req.patientResource;
+  const report = await prisma.labReport.findFirst({
+    where: { id: req.params.reportId, patientId: patient.id },
+  });
+
+  if (!report || !report.attachmentStoredName) {
+    return res.status(404).json({ success: false, message: 'No attachment found for this report' });
+  }
+
+  if (isDiagnosticRole(req.user) && isRadiologyUser(req.user) !== isRadiologyReport(report)) {
+    return res.status(403).json({ success: false, message: 'Not authorized to access this report' });
+  }
+
+  const filePath = path.join(REPORT_ATTACHMENT_DIR, report.attachmentStoredName);
+  try {
+    await fs.access(filePath);
+  } catch {
+    return res.status(404).json({ success: false, message: 'Attachment file is no longer available' });
+  }
+
+  const safeName = (report.attachmentOriginalName || 'report').replace(/[\r\n"]/g, '_');
+  res.setHeader('Content-Type', report.attachmentMimeType || 'application/octet-stream');
+  res.setHeader('Content-Disposition', `inline; filename="${safeName}"`);
+  res.sendFile(filePath);
 });
 
 exports.getPatientStats = asyncHandler(async (req, res) => {

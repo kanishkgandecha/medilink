@@ -1,0 +1,279 @@
+- generic [ref=f29e12]:
+  - generic [ref=f29e13]:
+    - banner [ref=f29e14]:
+      - generic [ref=f29e15]:
+        - link "MediLink" [ref=f29e16] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f29e18]:
+          - link "Dashboard" [ref=f29e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f29e20] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Appointments" [ref=f29e21] [cursor=pointer]:
+            - /url: /appointments
+          - link "Patients" [ref=f29e22] [cursor=pointer]:
+            - /url: /patients
+          - link "Billing" [ref=f29e23] [cursor=pointer]:
+            - /url: /billing
+        - generic [ref=f29e24]:
+          - button "Settings" [ref=f29e25] [cursor=pointer]
+          - button "Switch to dark mode" [ref=f29e30] [cursor=pointer]
+          - button "Notifications (2 unread)" [ref=f29e34] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f29e39]: "2"
+          - button "Account menu for Sunita Verma" [ref=f29e41] [cursor=pointer]: SV
+    - main [ref=f29e42]:
+      - generic [ref=f29e44]:
+        - generic [ref=f29e45]:
+          - generic [ref=f29e46]:
+            - generic [ref=f29e47]:
+              - heading "Appointment Management" [level=1] [ref=f29e48]
+              - generic [ref=f29e49]: All appointments
+            - paragraph [ref=f29e53]: Manage all patient appointments
+          - button "Book Appointment" [ref=f29e54] [cursor=pointer]
+        - generic [ref=f29e56]:
+          - complementary [ref=f29e57]:
+            - generic [ref=f29e58]:
+              - 'button "Total: 251" [ref=f29e539] [cursor=pointer]':
+                - paragraph [ref=f29e62]: Total
+                - paragraph [ref=f29e66]: "251"
+              - 'button "Today: 0" [ref=f29e67] [cursor=pointer]':
+                - paragraph [ref=f29e70]: Today
+                - paragraph [ref=f29e75]: "0"
+              - 'button "Active: 9" [ref=f29e540] [cursor=pointer]':
+                - paragraph [ref=f29e79]: Active
+                - paragraph [ref=f29e83]: "9"
+              - 'button "Completed: 185" [ref=f29e84] [cursor=pointer]':
+                - paragraph [ref=f29e87]: Completed
+                - paragraph [ref=f29e92]: "185"
+          - generic [ref=f29e93]:
+            - generic [ref=f29e94]:
+              - generic [ref=f29e95]:
+                - textbox "Search patient, doctor, ID…" [ref=f29e100]
+                - combobox [ref=f29e101]:
+                  - option "All statuses" [selected]
+                  - option "Scheduled"
+                  - option "Confirmed"
+                  - option "In-Progress"
+                  - option "Completed"
+                  - option "Cancelled"
+                  - option "No-Show"
+                - generic [ref=f29e102]: 251 results
+              - generic [ref=f29e103]:
+                - button "All dates" [ref=f29e106] [cursor=pointer]
+                - button "Today" [ref=f29e107] [cursor=pointer]
+                - button "This week" [ref=f29e108] [cursor=pointer]
+                - button "This month" [ref=f29e109] [cursor=pointer]
+            - generic [ref=f29e541]:
+              - generic [ref=f29e542]:
+                - generic [ref=f29e543]:
+                  - generic [ref=f29e544]: APT-MU6MAAST-949F06
+                  - generic [ref=f29e545]: Scheduled
+                - generic [ref=f29e546]:
+                  - generic [ref=f29e547]: VM
+                  - generic [ref=f29e548]:
+                    - paragraph [ref=f29e549]: Dr. Vikramaditya Mehta
+                    - paragraph [ref=f29e550]: Cardiology
+                  - generic [ref=f29e551]: RG
+                - paragraph [ref=f29e552]: "Patient: Rahul Gupta"
+                - generic [ref=f29e553]:
+                  - generic [ref=f29e554]:
+                    - generic [ref=f29e555]:
+                      - generic [ref=f29e559]: 25 Sep 2026
+                      - generic [ref=f29e560]: • 9:00 AM
+                    - generic [ref=f29e561]: in 7d
+                  - generic [ref=f29e562]: Consultation
+                - generic [ref=f29e563]:
+                  - button "Confirm" [ref=f29e564] [cursor=pointer]
+                  - button "Reschedule appointment APT-MU6MAAST-949F06" [ref=f29e568] [cursor=pointer]: Reschedule
+                  - button "Cancel" [ref=f29e572] [cursor=pointer]
+              - generic [ref=f29e577]:
+                - generic [ref=f29e578]:
+                  - generic [ref=f29e579]: APT-2026-10039
+                  - generic [ref=f29e580]: Scheduled
+                - generic [ref=f29e581]:
+                  - generic [ref=f29e582]: SP
+                  - generic [ref=f29e583]:
+                    - paragraph [ref=f29e584]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e585]: Radiology
+                  - generic [ref=f29e586]: MN
+                - paragraph [ref=f29e587]: "Patient: Manju Nambiar"
+                - generic [ref=f29e588]:
+                  - generic [ref=f29e590]:
+                    - generic [ref=f29e594]: 17 Aug 2026
+                    - generic [ref=f29e595]: • 4:00 PM
+                  - generic [ref=f29e596]: Surgery
+                - generic [ref=f29e597]:
+                  - button "Confirm" [ref=f29e598] [cursor=pointer]
+                  - button "Reschedule appointment APT-2026-10039" [ref=f29e602] [cursor=pointer]: Reschedule
+                  - button "Cancel" [ref=f29e606] [cursor=pointer]
+              - generic [ref=f29e611]:
+                - generic [ref=f29e612]:
+                  - generic [ref=f29e613]: APT-2026-10239
+                  - generic [ref=f29e614]: Cancelled
+                - generic [ref=f29e615]:
+                  - generic [ref=f29e616]: SP
+                  - generic [ref=f29e617]:
+                    - paragraph [ref=f29e618]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e619]: Radiology
+                  - generic [ref=f29e620]: GA
+                - paragraph [ref=f29e621]: "Patient: Geeta Agrawal"
+                - generic [ref=f29e622]:
+                  - generic [ref=f29e624]:
+                    - generic [ref=f29e628]: 17 Aug 2026
+                    - generic [ref=f29e629]: • 4:00 PM
+                  - generic [ref=f29e630]: Surgery
+              - generic [ref=f29e631]:
+                - generic [ref=f29e632]:
+                  - generic [ref=f29e633]: APT-2026-10159
+                  - generic [ref=f29e634]: Cancelled
+                - generic [ref=f29e635]:
+                  - generic [ref=f29e636]: SP
+                  - generic [ref=f29e637]:
+                    - paragraph [ref=f29e638]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e639]: Radiology
+                  - generic [ref=f29e640]: RQ
+                - paragraph [ref=f29e641]: "Patient: Ritu Qureshi"
+                - generic [ref=f29e642]:
+                  - generic [ref=f29e644]:
+                    - generic [ref=f29e648]: 17 Aug 2026
+                    - generic [ref=f29e649]: • 4:00 PM
+                  - generic [ref=f29e650]: Surgery
+              - generic [ref=f29e651]:
+                - generic [ref=f29e652]:
+                  - generic [ref=f29e653]: APT-2026-10079
+                  - generic [ref=f29e654]: Completed
+                - generic [ref=f29e655]:
+                  - generic [ref=f29e656]: SP
+                  - generic [ref=f29e657]:
+                    - paragraph [ref=f29e658]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e659]: Radiology
+                  - generic [ref=f29e660]: NN
+                - paragraph [ref=f29e661]: "Patient: Neha Nambiar"
+                - generic [ref=f29e662]:
+                  - generic [ref=f29e664]:
+                    - generic [ref=f29e668]: 17 Aug 2026
+                    - generic [ref=f29e669]: • 4:00 PM
+                  - generic [ref=f29e670]: Surgery
+              - generic [ref=f29e671]:
+                - generic [ref=f29e672]:
+                  - generic [ref=f29e673]: APT-2026-10119
+                  - generic [ref=f29e674]: Cancelled
+                - generic [ref=f29e675]:
+                  - generic [ref=f29e676]: SP
+                  - generic [ref=f29e677]:
+                    - paragraph [ref=f29e678]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e679]: Radiology
+                  - generic [ref=f29e680]: DT
+                - paragraph [ref=f29e681]: "Patient: Divya Trivedi"
+                - generic [ref=f29e682]:
+                  - generic [ref=f29e684]:
+                    - generic [ref=f29e688]: 17 Aug 2026
+                    - generic [ref=f29e689]: • 4:00 PM
+                  - generic [ref=f29e690]: Surgery
+              - generic [ref=f29e691]:
+                - generic [ref=f29e692]:
+                  - generic [ref=f29e693]: APT-2026-10199
+                  - generic [ref=f29e694]: Completed
+                - generic [ref=f29e695]:
+                  - generic [ref=f29e696]: SP
+                  - generic [ref=f29e697]:
+                    - paragraph [ref=f29e698]: Dr. Siddharth Pillai
+                    - paragraph [ref=f29e699]: Radiology
+                  - generic [ref=f29e700]: RB
+                - paragraph [ref=f29e701]: "Patient: Rohini Bhatia"
+                - generic [ref=f29e702]:
+                  - generic [ref=f29e704]:
+                    - generic [ref=f29e708]: 17 Aug 2026
+                    - generic [ref=f29e709]: • 4:00 PM
+                  - generic [ref=f29e710]: Surgery
+              - generic [ref=f29e711]:
+                - generic [ref=f29e712]:
+                  - generic [ref=f29e713]: APT-2026-10078
+                  - generic [ref=f29e714]: Completed
+                - generic [ref=f29e715]:
+                  - generic [ref=f29e716]: NT
+                  - generic [ref=f29e717]:
+                    - paragraph [ref=f29e718]: Dr. Neha Tripathi
+                    - paragraph [ref=f29e719]: Pathology
+                  - generic [ref=f29e720]: VD
+                - paragraph [ref=f29e721]: "Patient: Vikas Deshmukh"
+                - generic [ref=f29e722]:
+                  - generic [ref=f29e724]:
+                    - generic [ref=f29e728]: 16 Aug 2026
+                    - generic [ref=f29e729]: • 3:00 PM
+                  - generic [ref=f29e730]: Emergency
+              - generic [ref=f29e731]:
+                - generic [ref=f29e732]:
+                  - generic [ref=f29e733]: APT-2026-10198
+                  - generic [ref=f29e734]: Completed
+                - generic [ref=f29e735]:
+                  - generic [ref=f29e736]: NT
+                  - generic [ref=f29e737]:
+                    - paragraph [ref=f29e738]: Dr. Neha Tripathi
+                    - paragraph [ref=f29e739]: Pathology
+                  - generic [ref=f29e740]: MM
+                - paragraph [ref=f29e741]: "Patient: Manish Mehta"
+                - generic [ref=f29e742]:
+                  - generic [ref=f29e744]:
+                    - generic [ref=f29e748]: 16 Aug 2026
+                    - generic [ref=f29e749]: • 3:00 PM
+                  - generic [ref=f29e750]: Emergency
+              - generic [ref=f29e751]:
+                - generic [ref=f29e752]:
+                  - generic [ref=f29e753]: APT-2026-10118
+                  - generic [ref=f29e754]: Cancelled
+                - generic [ref=f29e755]:
+                  - generic [ref=f29e756]: NT
+                  - generic [ref=f29e757]:
+                    - paragraph [ref=f29e758]: Dr. Neha Tripathi
+                    - paragraph [ref=f29e759]: Pathology
+                  - generic [ref=f29e760]: RR
+                - paragraph [ref=f29e761]: "Patient: Rohan Reddy"
+                - generic [ref=f29e762]:
+                  - generic [ref=f29e764]:
+                    - generic [ref=f29e768]: 16 Aug 2026
+                    - generic [ref=f29e769]: • 3:00 PM
+                  - generic [ref=f29e770]: Emergency
+              - generic [ref=f29e771]:
+                - generic [ref=f29e772]:
+                  - generic [ref=f29e773]: APT-2026-10038
+                  - generic [ref=f29e774]: Completed
+                - generic [ref=f29e775]:
+                  - generic [ref=f29e776]: NT
+                  - generic [ref=f29e777]:
+                    - paragraph [ref=f29e778]: Dr. Neha Tripathi
+                    - paragraph [ref=f29e779]: Pathology
+                  - generic [ref=f29e780]: KT
+                - paragraph [ref=f29e781]: "Patient: Karan Tripathi"
+                - generic [ref=f29e782]:
+                  - generic [ref=f29e784]:
+                    - generic [ref=f29e788]: 16 Aug 2026
+                    - generic [ref=f29e789]: • 3:00 PM
+                  - generic [ref=f29e790]: Emergency
+              - generic [ref=f29e791]:
+                - generic [ref=f29e792]:
+                  - generic [ref=f29e793]: APT-2026-10158
+                  - generic [ref=f29e794]: Completed
+                - generic [ref=f29e795]:
+                  - generic [ref=f29e796]: NT
+                  - generic [ref=f29e797]:
+                    - paragraph [ref=f29e798]: Dr. Neha Tripathi
+                    - paragraph [ref=f29e799]: Pathology
+                  - generic [ref=f29e800]: HR
+                - paragraph [ref=f29e801]: "Patient: Harish Rane"
+                - generic [ref=f29e802]:
+                  - generic [ref=f29e804]:
+                    - generic [ref=f29e808]: 16 Aug 2026
+                    - generic [ref=f29e809]: • 3:00 PM
+                  - generic [ref=f29e810]: Emergency
+            - navigation "Pagination" [ref=f29e811]:
+              - paragraph [ref=f29e812]: 1–12 of 251
+              - generic [ref=f29e813]:
+                - button "Previous page" [disabled] [ref=f29e814]
+                - button "Page 1" [ref=f29e817] [cursor=pointer]: "1"
+                - button "Page 2" [ref=f29e818] [cursor=pointer]: "2"
+                - button "Page 3" [ref=f29e819] [cursor=pointer]: "3"
+                - button "Page 4" [ref=f29e820] [cursor=pointer]: "4"
+                - button "Page 5" [ref=f29e821] [cursor=pointer]: "5"
+                - button "Next page" [ref=f29e822] [cursor=pointer]
+  - button "Open MediLink Assistant" [ref=f29e381] [cursor=pointer]

@@ -1,0 +1,33 @@
+- generic [ref=f11e5]:
+  - generic [ref=f11e6]:
+    - generic [ref=f11e9]: MediLink
+    - paragraph [ref=f11e10]: Smart Healthcare, Simplified.
+  - generic [ref=f11e11]:
+    - generic [ref=f11e12]:
+      - heading "Welcome back" [level=2] [ref=f11e15]
+      - paragraph [ref=f11e16]: Sign in to your MediLink account
+    - generic [ref=f11e17]:
+      - generic [ref=f11e20]:
+        - textbox "Email Address" [ref=f11e21]:
+          - /placeholder: " "
+        - generic: Email Address
+      - generic [ref=f11e24]:
+        - textbox "Password" [ref=f11e25]:
+          - /placeholder: " "
+        - generic: Password
+        - button "Show password" [ref=f11e26] [cursor=pointer]
+      - generic [ref=f11e30]:
+        - generic [ref=f11e31] [cursor=pointer]:
+          - checkbox "Keep me signed in" [ref=f11e32]
+          - generic [ref=f11e33]: Keep me signed in
+        - link "Forgot password?" [ref=f11e34] [cursor=pointer]:
+          - /url: /forgot-password
+      - button "Sign In" [ref=f11e36] [cursor=pointer]
+    - paragraph [ref=f11e39]:
+      - text: Don't have an account?
+      - link "Register here" [ref=f11e40] [cursor=pointer]:
+        - /url: /register
+  - generic [ref=f11e41]:
+    - generic [ref=f11e42]: Secure Login
+    - generic [ref=f11e44]: Prototype System
+    - generic [ref=f11e46]: Role-based Access

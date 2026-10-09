@@ -1,0 +1,94 @@
+- generic [ref=f4e3]:
+  - generic [ref=f4e108] [cursor=pointer]:
+    - alert [ref=f4e109]:
+      - generic [ref=f4e113]: Welcome back, Vijay Trivedi!
+    - button "close" [ref=f4e114]
+    - progressbar "notification timer" [ref=f4e117]
+  - generic [ref=f4e118]:
+    - banner [ref=f4e119]:
+      - generic [ref=f4e120]:
+        - link "MediLink" [ref=f4e121] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f4e123]:
+          - link "Dashboard" [ref=f4e124] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f4e125] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Billing" [ref=f4e126] [cursor=pointer]:
+            - /url: /billing
+        - generic [ref=f4e127]:
+          - button "Settings" [ref=f4e128] [cursor=pointer]
+          - button "Switch to dark mode" [ref=f4e133] [cursor=pointer]
+          - button "Notifications (1 unread)" [ref=f4e137] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f4e142]: "1"
+          - button "Account menu for Vijay Trivedi" [ref=f4e144] [cursor=pointer]: VT
+    - main [ref=f4e145]:
+      - generic [ref=f4e148]:
+        - generic [ref=f4e149]:
+          - generic [ref=f4e150]:
+            - heading "Billing Staff Dashboard" [level=1] [ref=f4e151]
+            - paragraph [ref=f4e152]: Invoice, collection, and outstanding-payment overview
+          - button "Open billing workspace" [ref=f4e153] [cursor=pointer]
+        - generic [ref=f4e157]:
+          - generic [ref=f4e158]:
+            - paragraph [ref=f4e162]: "151"
+            - paragraph [ref=f4e163]: Total invoices
+          - generic [ref=f4e164]:
+            - paragraph [ref=f4e168]: ₹3,01,500
+            - paragraph [ref=f4e169]: Total billed
+          - generic [ref=f4e170]:
+            - paragraph [ref=f4e174]: ₹1,75,000
+            - paragraph [ref=f4e175]: Collected
+          - generic [ref=f4e176]:
+            - paragraph [ref=f4e180]: ₹1,26,500
+            - paragraph [ref=f4e181]: Outstanding
+        - generic [ref=f4e182]:
+          - generic [ref=f4e183]:
+            - generic [ref=f4e184]:
+              - heading "Recent invoices" [level=2] [ref=f4e185]
+              - paragraph [ref=f4e186]: Latest billing records
+            - button "Refresh billing dashboard" [ref=f4e187] [cursor=pointer]
+          - generic [ref=f4e193]:
+            - generic [ref=f4e194]:
+              - generic [ref=f4e195]:
+                - paragraph
+                - paragraph [ref=f4e196]: Rahul Gupta
+              - generic [ref=f4e197]:
+                - paragraph [ref=f4e198]: ₹1,500
+                - text: Unpaid
+            - generic [ref=f4e199]:
+              - generic [ref=f4e200]:
+                - paragraph [ref=f4e201]: BILL-2026-10139
+                - paragraph [ref=f4e202]: Sangeeta Tripathi
+              - generic [ref=f4e203]:
+                - paragraph [ref=f4e204]: ₹3,000
+                - text: Unpaid
+            - generic [ref=f4e205]:
+              - generic [ref=f4e206]:
+                - paragraph [ref=f4e207]: BILL-2026-10111
+                - paragraph [ref=f4e208]: Ritu Pillai
+              - generic [ref=f4e209]:
+                - paragraph [ref=f4e210]: ₹1,500
+                - text: Partially Paid
+            - generic [ref=f4e211]:
+              - generic [ref=f4e212]:
+                - paragraph [ref=f4e213]: BILL-2026-10083
+                - paragraph [ref=f4e214]: Preeti Tripathi
+              - generic [ref=f4e215]:
+                - paragraph [ref=f4e216]: ₹2,500
+                - text: Unpaid
+            - generic [ref=f4e217]:
+              - generic [ref=f4e218]:
+                - paragraph [ref=f4e219]: BILL-2026-10055
+                - paragraph [ref=f4e220]: Ritu Kapoor
+              - generic [ref=f4e221]:
+                - paragraph [ref=f4e222]: ₹1,000
+                - text: Unpaid
+            - generic [ref=f4e223]:
+              - generic [ref=f4e224]:
+                - paragraph [ref=f4e225]: BILL-2026-10027
+                - paragraph [ref=f4e226]: Nisha Deshmukh
+              - generic [ref=f4e227]:
+                - paragraph [ref=f4e228]: ₹2,000
+                - text: Partially Paid
+  - button "Open MediLink Assistant" [ref=f4e231] [cursor=pointer]

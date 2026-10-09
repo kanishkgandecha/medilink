@@ -1,0 +1,118 @@
+- generic [ref=f15e3]:
+  - generic [ref=f15e108] [cursor=pointer]:
+    - alert [ref=f15e109]:
+      - generic [ref=f15e113]: Welcome back, Rahul Gupta!
+    - button "close" [ref=f15e114]
+    - progressbar "notification timer" [ref=f15e117]
+  - generic [ref=f15e118]:
+    - banner [ref=f15e119]:
+      - generic [ref=f15e120]:
+        - link "MediLink" [ref=f15e121] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f15e123]:
+          - link "Dashboard" [ref=f15e124] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f15e125] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Appointments" [ref=f15e126] [cursor=pointer]:
+            - /url: /appointments
+          - link "Prescriptions" [ref=f15e127] [cursor=pointer]:
+            - /url: /prescriptions
+          - link "My Bills" [ref=f15e128] [cursor=pointer]:
+            - /url: /billing
+          - link "Test Reports" [ref=f15e129] [cursor=pointer]:
+            - /url: /test-reports
+        - generic [ref=f15e130]:
+          - button "Settings" [ref=f15e131] [cursor=pointer]
+          - button "Switch to dark mode" [ref=f15e136] [cursor=pointer]
+          - button "Notifications (2 unread)" [ref=f15e140] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f15e145]: "2"
+          - button "Account menu for Rahul Gupta" [ref=f15e147] [cursor=pointer]: RG
+    - main [ref=f15e148]:
+      - generic [ref=f15e151]:
+        - generic [ref=f15e152]:
+          - generic [ref=f15e153]:
+            - heading "Good afternoon, Rahul" [level=1] [ref=f15e154]
+            - paragraph [ref=f15e155]: Your health overview for today
+          - generic [ref=f15e156]: "Health Score: 83 — Excellent"
+        - generic [ref=f15e159]:
+          - generic [ref=f15e164]:
+            - paragraph [ref=f15e165]: "0"
+            - paragraph [ref=f15e166]: Upcoming Appointments
+          - generic [ref=f15e172]:
+            - paragraph [ref=f15e173]: "0"
+            - paragraph [ref=f15e174]: Active Prescriptions
+          - generic [ref=f15e180]:
+            - paragraph [ref=f15e181]: "1"
+            - paragraph [ref=f15e182]: Pending Bills
+          - generic [ref=f15e188]:
+            - paragraph [ref=f15e189]: ₹1,500
+            - paragraph [ref=f15e190]: Amount Due
+        - generic [ref=f15e191]:
+          - generic [ref=f15e192]:
+            - generic [ref=f15e193]:
+              - heading "Health Summary" [level=2] [ref=f15e194]
+              - generic [ref=f15e195]:
+                - generic [ref=f15e201]:
+                  - paragraph [ref=f15e202]: Blood Group
+                  - paragraph [ref=f15e203]: B+
+                - generic [ref=f15e204]:
+                  - paragraph [ref=f15e208]: Conditions
+                  - generic [ref=f15e209]: Essential Hypertension
+                - generic [ref=f15e211]:
+                  - paragraph [ref=f15e215]: Allergies
+                  - generic [ref=f15e216]: Penicillin
+            - generic [ref=f15e218]:
+              - generic [ref=f15e219]:
+                - heading "Upcoming Appointments" [level=2] [ref=f15e220]
+                - paragraph [ref=f15e225]: No upcoming appointments
+              - generic [ref=f15e226]:
+                - heading "Active Prescriptions" [level=2] [ref=f15e227]
+                - paragraph [ref=f15e233]: No active prescriptions
+            - generic [ref=f15e234]:
+              - heading "Pending Bills" [level=2] [ref=f15e235]
+              - generic [ref=f15e237]:
+                - generic [ref=f15e238]:
+                  - paragraph
+                  - generic [ref=f15e239]: Unpaid
+                - generic [ref=f15e240]:
+                  - paragraph [ref=f15e241]: 18 Sept 2026
+                  - paragraph [ref=f15e242]: ₹1,500
+          - generic [ref=f15e243]:
+            - generic [ref=f15e244]:
+              - heading "Health Score" [level=3] [ref=f15e248]
+              - generic [ref=f15e249]:
+                - generic [ref=f15e251]:
+                  - paragraph [ref=f15e252]: "83"
+                  - paragraph [ref=f15e253]: / 100
+                - generic [ref=f15e254]: Excellent
+              - generic [ref=f15e255]:
+                - generic [ref=f15e256]:
+                  - generic [ref=f15e257]: Active Conditions
+                  - generic [ref=f15e261]: "1"
+                - generic [ref=f15e262]:
+                  - generic [ref=f15e263]: Known Allergies
+                  - generic [ref=f15e267]: "1"
+                - generic [ref=f15e268]:
+                  - generic [ref=f15e269]: Pending Bills
+                  - generic [ref=f15e274]: "1"
+                - generic [ref=f15e275]:
+                  - generic [ref=f15e276]: Blood Group
+                  - generic [ref=f15e281]: B+
+            - generic [ref=f15e282]:
+              - heading "AI Health Tools" [level=3] [ref=f15e287]
+              - generic [ref=f15e288]:
+                - button [ref=f15e289] [cursor=pointer]:
+                  - generic [ref=f15e294]:
+                    - paragraph [ref=f15e295]: Symptom Checker
+                    - paragraph [ref=f15e296]: AI triage for your symptoms
+                - button [ref=f15e299] [cursor=pointer]:
+                  - generic [ref=f15e303]:
+                    - paragraph [ref=f15e304]: MediBot Chat
+                    - paragraph [ref=f15e305]: Personalized health guidance
+                - button [ref=f15e308] [cursor=pointer]:
+                  - generic [ref=f15e312]:
+                    - paragraph [ref=f15e313]: Health Risk Predictor
+                    - paragraph [ref=f15e314]: Assess your health risk level
+              - button "+4 more tools" [ref=f15e317] [cursor=pointer]
+  - button "Open MediLink Assistant" [ref=f15e320] [cursor=pointer]

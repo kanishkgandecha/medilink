@@ -1,0 +1,54 @@
+- generic [ref=f8e4]:
+  - generic [ref=f8e6]:
+    - generic [ref=f8e14]:
+      - paragraph [ref=f8e15]: Role
+      - paragraph [ref=f8e16]: Scoped access
+    - generic [ref=f8e23]:
+      - paragraph [ref=f8e24]: Safe
+      - paragraph [ref=f8e25]: Validated workflows
+    - generic [ref=f8e31]:
+      - paragraph [ref=f8e32]: Audit
+      - paragraph [ref=f8e33]: Traceable changes
+    - generic [ref=f8e35]:
+      - generic [ref=f8e36]: MediLink
+      - generic [ref=f8e41]:
+        - generic [ref=f8e42]: Healthcare Platform
+        - generic [ref=f8e45]:
+          - heading "Smart Healthcare, Simplified." [level=2] [ref=f8e46]: Smart Healthcare,Simplified.
+          - paragraph [ref=f8e47]: One platform for patients, appointments, billing, and clinical workflows.
+        - paragraph [ref=f8e49]: Live system monitor
+        - generic [ref=f8e53]:
+          - generic [ref=f8e54]: Patient-centred care management
+          - generic [ref=f8e59]: Role-based secure access control
+          - generic [ref=f8e64]: Transactional scheduling & billing
+      - paragraph [ref=f8e69]: © 2026 MediLink · Safety-oriented engineering prototype
+  - generic [ref=f8e70]:
+    - generic [ref=f8e71]:
+      - generic [ref=f8e72]:
+        - heading "Welcome back" [level=2] [ref=f8e75]
+        - paragraph [ref=f8e76]: Sign in to your MediLink account
+      - generic [ref=f8e77]:
+        - generic [ref=f8e80]:
+          - textbox "Email Address" [ref=f8e81]:
+            - /placeholder: " "
+          - generic: Email Address
+        - generic [ref=f8e84]:
+          - textbox "Password" [ref=f8e85]:
+            - /placeholder: " "
+          - generic: Password
+          - button "Show password" [ref=f8e86] [cursor=pointer]
+        - generic [ref=f8e90]:
+          - generic [ref=f8e91] [cursor=pointer]:
+            - checkbox "Keep me signed in" [ref=f8e92]
+            - generic [ref=f8e93]: Keep me signed in
+          - link "Forgot password?" [ref=f8e94] [cursor=pointer]:
+            - /url: /forgot-password
+        - button "Sign In" [ref=f8e96] [cursor=pointer]
+      - paragraph [ref=f8e99]:
+        - text: Don't have an account?
+        - link "Register here" [ref=f8e100] [cursor=pointer]:
+          - /url: /register
+    - generic [ref=f8e101]:
+      - generic [ref=f8e102]: Secure Login
+      - generic [ref=f8e104]: Prototype System
+      - generic [ref=f8e106]: Role-based Access

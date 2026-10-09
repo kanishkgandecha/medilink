@@ -96,6 +96,28 @@ export const addLabReport = async (id, data) => {
   return await api.post(`/patients/${id}/lab-report`, data)
 }
 
+// Upload (or, with replace: true, overwrite) a report's file attachment.
+// onProgress receives a 0-100 integer for an accessible progress indicator.
+export const uploadLabReportAttachment = async (patientId, reportId, file, { replace = false, onProgress } = {}) => {
+  const form = new FormData()
+  form.append('attachment', file)
+  if (replace) form.append('replace', 'true')
+  return await api.post(`/patients/${patientId}/lab-report/${reportId}/attachment`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: onProgress
+      ? (event) => onProgress(event.total ? Math.round((event.loaded / event.total) * 100) : 0)
+      : undefined,
+  })
+}
+
+// Downloads the attachment as a Blob for client-side viewing/saving — the
+// file is never reachable via a plain URL, only through this authenticated call.
+export const downloadLabReportAttachment = async (patientId, reportId) => {
+  return await api.get(`/patients/${patientId}/lab-report/${reportId}/attachment`, {
+    responseType: 'blob',
+  })
+}
+
 // Get patient appointments
 export const getPatientAppointments = async (id) => {
   return await api.get(`/patients/${id}/appointments`)

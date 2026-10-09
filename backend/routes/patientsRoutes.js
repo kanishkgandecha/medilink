@@ -4,6 +4,7 @@ const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
 const { requirePatientAccess } = require('../middleware/patientAccess');
+const { uploadReportAttachment, validateReportAttachmentSignature } = require('../middleware/upload');
 const prisma = require('../config/prisma');
 const {
   createPatient,
@@ -16,6 +17,8 @@ const {
   updateMedicalHistory,
   deleteMedicalHistory,
   addLabReport,
+  uploadLabReportAttachment,
+  downloadLabReportAttachment,
   getPatientMedicalRecords,
   getPatientAppointments,
   getPatientStats,
@@ -183,6 +186,28 @@ router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Tech
   body('remarks').optional({ nullable: true }).isLength({ max: 2000 }),
   validate,
 ], addLabReport);
+
+// Report file attachments: stored privately (never a public static URL),
+// generated storage names, PDF/JPEG/PNG only, size/extension/MIME/signature
+// validated. Same uploader roles as report creation; diagnostic staff are
+// further scoped to their own modality inside the controller.
+router.post(
+  '/:id/lab-report/:reportId/attachment',
+  requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'),
+  (req, res, next) => {
+    uploadReportAttachment(req, res, (err) => {
+      if (err) return res.status(400).json({ success: false, message: err.message });
+      next();
+    });
+  },
+  validateReportAttachmentSignature,
+  uploadLabReportAttachment
+);
+router.get(
+  '/:id/lab-report/:reportId/attachment',
+  requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'),
+  downloadLabReportAttachment
+);
 
 // Generated/record-derived content remains a separate unverified draft until a doctor confirms it.
 router.get('/:id/clinical-notes', requirePatientAccess('Admin', 'Doctor', 'Nurse'), listClinicalNotes);

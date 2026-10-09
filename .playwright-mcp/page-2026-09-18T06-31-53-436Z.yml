@@ -1,0 +1,396 @@
+- generic [active] [ref=f11e1]:
+  - generic [ref=f11e3]:
+    - generic [ref=f11e48] [cursor=pointer]:
+      - alert [ref=f11e49]:
+        - generic [ref=f11e53]: Welcome back, System Admin!
+      - button "close" [ref=f11e54]
+      - progressbar "notification timer" [ref=f11e57]
+    - generic [ref=f11e58]:
+      - banner [ref=f11e59]:
+        - generic [ref=f11e60]:
+          - link "MediLink" [ref=f11e61] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f11e63]:
+            - button "Settings" [ref=f11e64] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f11e68] [cursor=pointer]
+            - button "Notifications (3 unread)" [ref=f11e72] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f11e77]: "3"
+            - button "Account menu for System Admin" [ref=f11e79] [cursor=pointer]: SA
+      - main [ref=f11e80]:
+        - generic [ref=f11e84]:
+          - generic [ref=f11e85]:
+            - generic [ref=f11e86]:
+              - heading "Good Afternoon, System" [level=1] [ref=f11e87]
+              - paragraph [ref=f11e88]: Friday, 18 September 2026
+            - generic "Dashboard figures reflect the most recent request to the server; this is not a continuous live stream or a service health check." [ref=f11e89]: Dashboard data · Updated just now
+          - generic [ref=f11e91]:
+            - generic [ref=f11e99]:
+              - paragraph [ref=f11e100]: "150"
+              - paragraph [ref=f11e101]: Total Patients
+            - generic [ref=f11e106]:
+              - paragraph [ref=f11e107]: "0"
+              - paragraph [ref=f11e108]: Appointments
+            - generic [ref=f11e113]:
+              - paragraph [ref=f11e114]: "35"
+              - paragraph [ref=f11e115]: Available Beds
+            - generic [ref=f11e122]:
+              - paragraph [ref=f11e123]: "6"
+              - paragraph [ref=f11e124]: Doctors On Duty
+            - generic [ref=f11e130]:
+              - paragraph [ref=f11e131]: ₹0
+              - paragraph [ref=f11e132]: Revenue Today
+            - generic [ref=f11e137]:
+              - paragraph [ref=f11e138]: "76"
+              - paragraph [ref=f11e139]: Active Alerts
+          - generic [ref=f11e140]:
+            - button [ref=f11e141] [cursor=pointer]:
+              - generic [ref=f11e147]:
+                - generic [ref=f11e148]:
+                  - paragraph [ref=f11e149]: Symptom Checker
+                  - generic "Generated using a configured language-model provider." [ref=f11e150]: LLM
+                - paragraph [ref=f11e153]: Safety-screen symptoms and suggest an appropriate department for review
+            - button [ref=f11e156] [cursor=pointer]:
+              - generic [ref=f11e161]:
+                - generic [ref=f11e162]:
+                  - paragraph [ref=f11e163]: Report Analyzer
+                  - generic "Generated using a configured language-model provider." [ref=f11e164]: LLM
+                - paragraph [ref=f11e167]: Extract submitted values and compare them with printed reference ranges
+            - button [ref=f11e170] [cursor=pointer]:
+              - generic [ref=f11e176]:
+                - generic [ref=f11e177]:
+                  - paragraph [ref=f11e178]: Risk Predictor
+                  - generic "Produced by deterministic clinical or operational rules." [ref=f11e179]: Rules
+                - paragraph [ref=f11e183]: Transparent rules-based screening score from selected risk factors
+          - generic [ref=f11e187]:
+            - generic [ref=f11e193]:
+              - paragraph [ref=f11e194]: AI Reliability · 24h
+              - paragraph [ref=f11e195]: Rules-only mode
+            - generic [ref=f11e196]:
+              - paragraph [ref=f11e197]: "4"
+              - paragraph [ref=f11e198]: Requests
+            - generic [ref=f11e199]:
+              - paragraph [ref=f11e200]: 100%
+              - paragraph [ref=f11e201]: Success
+            - generic [ref=f11e202]:
+              - paragraph [ref=f11e203]: 0%
+              - paragraph [ref=f11e204]: Degraded
+            - generic [ref=f11e205]:
+              - paragraph [ref=f11e206]: 143 ms
+              - paragraph [ref=f11e207]: Avg latency
+            - paragraph [ref=f11e208]: Metadata retained 90 days · prompts not stored
+          - generic [ref=f11e209]:
+            - generic [ref=f11e210]:
+              - status [ref=f11e211]:
+                - generic [ref=f11e212]:
+                  - heading "Alerts" [level=3] [ref=f11e215]
+                  - generic [ref=f11e216]: "76"
+                - generic [ref=f11e217]: 76 pending bills
+              - generic [ref=f11e220]:
+                - paragraph [ref=f11e221]: Latest Patient
+                - generic [ref=f11e222]:
+                  - generic [ref=f11e223]: ND
+                  - generic [ref=f11e229]:
+                    - paragraph [ref=f11e230]: Nisha Das
+                    - paragraph [ref=f11e231]: Female
+                  - generic [ref=f11e232]:
+                    - generic [ref=f11e233]: B+
+                    - generic [ref=f11e234]: Active
+                - generic [ref=f11e235]:
+                  - generic [ref=f11e236]:
+                    - paragraph [ref=f11e237]: "150"
+                    - paragraph [ref=f11e238]: Patients
+                  - generic [ref=f11e239]:
+                    - paragraph [ref=f11e240]: "0"
+                    - paragraph [ref=f11e241]: Today
+                  - generic [ref=f11e242]:
+                    - paragraph [ref=f11e243]: "35"
+                    - paragraph [ref=f11e244]: Beds
+              - generic [ref=f11e245]:
+                - generic [ref=f11e246]:
+                  - paragraph [ref=f11e247]: Live Metrics
+                  - generic "Calculated from the latest available application records." [ref=f11e248]: Live Records
+                - paragraph [ref=f11e251]: Updated just now
+                - generic [ref=f11e253]:
+                  - generic [ref=f11e254]: Bed Occupancy
+                  - generic [ref=f11e255]: 0%
+                - generic [ref=f11e258]:
+                  - generic [ref=f11e259]: Appointment Fill
+                  - generic [ref=f11e260]: 0%
+                - generic [ref=f11e263]:
+                  - generic [ref=f11e264]: Revenue Growth
+                  - generic [ref=f11e265]: No comparison data
+              - generic [ref=f11e267]:
+                - paragraph [ref=f11e271]: Quick Actions
+                - generic [ref=f11e272]:
+                  - button [ref=f11e273] [cursor=pointer]
+                  - button [ref=f11e282] [cursor=pointer]
+                  - button [ref=f11e288] [cursor=pointer]
+                  - button [ref=f11e294] [cursor=pointer]
+            - generic [ref=f11e300]:
+              - generic [ref=f11e301]:
+                - generic [ref=f11e302]:
+                  - generic [ref=f11e303]:
+                    - heading "Revenue Overview" [level=2] [ref=f11e304]
+                    - paragraph [ref=f11e305]: 2026 — monthly revenue trend
+                  - generic [ref=f11e306]: No comparison data
+                - img [ref=f11e312]:
+                  - generic [ref=f11e316]:
+                    - generic [ref=f11e317]: Feb
+                    - generic [ref=f11e319]: Apr
+                    - generic [ref=f11e321]: Jun
+                    - generic [ref=f11e323]: Aug
+                    - generic [ref=f11e325]: Oct
+                    - generic [ref=f11e327]: Dec
+                  - generic [ref=f11e330]:
+                    - generic [ref=f11e331]: ₹0k
+                    - generic [ref=f11e333]: ₹45k
+                    - generic [ref=f11e335]: ₹90k
+                    - generic [ref=f11e337]: ₹135k
+                    - generic [ref=f11e339]: ₹180k
+              - generic [ref=f11e358]:
+                - generic [ref=f11e359]:
+                  - generic [ref=f11e360]:
+                    - heading "Recent Appointments" [level=2] [ref=f11e361]
+                    - button "View all" [ref=f11e362] [cursor=pointer]
+                  - generic [ref=f11e365]:
+                    - generic [ref=f11e366]:
+                      - generic [ref=f11e367]:
+                        - generic [ref=f11e368]: RG
+                        - generic [ref=f11e369]:
+                          - paragraph [ref=f11e370]: Rahul Gupta
+                          - paragraph [ref=f11e371]: Dr. Vikramaditya Mehta · 09:00
+                      - generic [ref=f11e372]: Completed
+                    - generic [ref=f11e373]:
+                      - generic [ref=f11e374]:
+                        - generic [ref=f11e375]: PR
+                        - generic [ref=f11e376]:
+                          - paragraph [ref=f11e377]: Preeti Rao
+                          - paragraph [ref=f11e378]: Dr. Farhan Qureshi · 10:00
+                      - generic [ref=f11e379]: Completed
+                    - generic [ref=f11e380]:
+                      - generic [ref=f11e381]:
+                        - generic [ref=f11e382]: PS
+                        - generic [ref=f11e383]:
+                          - paragraph [ref=f11e384]: Pankaj Swaminathan
+                          - paragraph [ref=f11e385]: Dr. Manoj Bhatia · 09:00
+                      - generic [ref=f11e386]: Completed
+                    - generic [ref=f11e387]:
+                      - generic [ref=f11e388]:
+                        - generic [ref=f11e389]: PR
+                        - generic [ref=f11e390]:
+                          - paragraph [ref=f11e391]: Priyanka Rane
+                          - paragraph [ref=f11e392]: Dr. Kavitha Sundaram · 16:00
+                      - generic [ref=f11e393]: Completed
+                    - generic [ref=f11e394]:
+                      - generic [ref=f11e395]:
+                        - generic [ref=f11e396]: RS
+                        - generic [ref=f11e397]:
+                          - paragraph [ref=f11e398]: Rahul Sengupta
+                          - paragraph [ref=f11e399]: Dr. Rajesh Chandra · 15:00
+                      - generic [ref=f11e400]: Completed
+                - generic [ref=f11e401]:
+                  - heading "Bed Status" [level=2] [ref=f11e402]
+                  - generic [ref=f11e403]:
+                    - generic:
+                      - generic:
+                        - paragraph: "0"
+                        - paragraph: / 35
+                  - generic [ref=f11e410]:
+                    - generic [ref=f11e411]:
+                      - generic [ref=f11e412]: Total Beds
+                      - generic [ref=f11e413]: "35"
+                    - generic [ref=f11e414]:
+                      - generic [ref=f11e415]: Occupied
+                      - generic [ref=f11e416]: "0"
+                    - generic [ref=f11e417]:
+                      - generic [ref=f11e418]: Available
+                      - generic [ref=f11e419]: "35"
+              - generic [ref=f11e420]:
+                - generic [ref=f11e422]:
+                  - heading "Weekly Appointments" [level=2] [ref=f11e423]
+                  - paragraph [ref=f11e424]: This week's scheduling activity
+                - img [ref=f11e427]:
+                  - generic [ref=f11e431]:
+                    - generic [ref=f11e432]: Mon
+                    - generic [ref=f11e434]: Tue
+                    - generic [ref=f11e436]: Wed
+                    - generic [ref=f11e438]: Thu
+                    - generic [ref=f11e440]: Fri
+                    - generic [ref=f11e442]: Sat
+                  - generic [ref=f11e445]:
+                    - generic [ref=f11e446]: "0"
+                    - generic [ref=f11e448]: "1"
+                    - generic [ref=f11e450]: "2"
+                    - generic [ref=f11e452]: "3"
+                    - generic [ref=f11e454]: "4"
+              - generic [ref=f11e456]:
+                - generic [ref=f11e457]:
+                  - generic [ref=f11e461]:
+                    - heading "Doctor Load Balancer" [level=2] [ref=f11e462]
+                    - paragraph [ref=f11e463]: Available doctors sorted by today's appointment count — a deterministic sort, not a prediction
+                  - generic "Calculated from the latest available application records." [ref=f11e464]: Live Records
+                - generic [ref=f11e467]:
+                  - generic [ref=f11e468]:
+                    - generic [ref=f11e474]:
+                      - generic [ref=f11e475]:
+                        - paragraph [ref=f11e476]: Dr. Siddharth Pillai
+                        - generic [ref=f11e477]: Best
+                      - paragraph [ref=f11e478]: Radiology
+                    - generic [ref=f11e480]:
+                      - generic [ref=f11e481]: Today's load
+                      - generic [ref=f11e482]: 0 apts
+                  - generic [ref=f11e489]:
+                    - generic [ref=f11e495]:
+                      - paragraph [ref=f11e497]: Dr. Neha Tripathi
+                      - paragraph [ref=f11e498]: Pathology
+                    - generic [ref=f11e500]:
+                      - generic [ref=f11e501]: Today's load
+                      - generic [ref=f11e502]: 0 apts
+                  - generic [ref=f11e509]:
+                    - generic [ref=f11e515]:
+                      - paragraph [ref=f11e517]: Dr. Vivek Rane
+                      - paragraph [ref=f11e518]: Anesthesiology
+                    - generic [ref=f11e520]:
+                      - generic [ref=f11e521]: Today's load
+                      - generic [ref=f11e522]: 0 apts
+                  - generic [ref=f11e529]:
+                    - generic [ref=f11e535]:
+                      - paragraph [ref=f11e537]: Dr. Preeti Agrawal
+                      - paragraph [ref=f11e538]: Endocrinology
+                    - generic [ref=f11e540]:
+                      - generic [ref=f11e541]: Today's load
+                      - generic [ref=f11e542]: 0 apts
+                  - generic [ref=f11e549]:
+                    - generic [ref=f11e555]:
+                      - paragraph [ref=f11e557]: Dr. Harish Nambiar
+                      - paragraph [ref=f11e558]: Rheumatology
+                    - generic [ref=f11e560]:
+                      - generic [ref=f11e561]: Today's load
+                      - generic [ref=f11e562]: 0 apts
+                  - generic [ref=f11e569]:
+                    - generic [ref=f11e575]:
+                      - paragraph [ref=f11e577]: Dr. Tarun Sengupta
+                      - paragraph [ref=f11e578]: Ophthalmology
+                    - generic [ref=f11e580]:
+                      - generic [ref=f11e581]: Today's load
+                      - generic [ref=f11e582]: 0 apts
+            - generic [ref=f11e589]:
+              - generic [ref=f11e590]:
+                - generic [ref=f11e591]:
+                  - heading "Insights" [level=3] [ref=f11e595]
+                  - generic "Calculated from the latest available application records." [ref=f11e596]: Live Records
+                - paragraph [ref=f11e599]: Deterministic thresholds applied to current hospital records.
+                - button "₹126,500 in outstanding bills need follow-up info Click to view →" [ref=f11e601] [cursor=pointer]:
+                  - generic [ref=f11e603]:
+                    - generic [ref=f11e604]:
+                      - paragraph [ref=f11e605]: ₹126,500 in outstanding bills need follow-up
+                      - generic [ref=f11e606]: info
+                    - paragraph [ref=f11e607]: Click to view →
+              - generic [ref=f11e608]:
+                - generic [ref=f11e609]:
+                  - heading "Recent Patients" [level=3] [ref=f11e610]
+                  - button "View all" [ref=f11e611] [cursor=pointer]
+                - generic [ref=f11e612]:
+                  - button "View Nisha Das in Patients" [ref=f11e613] [cursor=pointer]:
+                    - generic [ref=f11e614]: ND
+                    - generic [ref=f11e615]:
+                      - paragraph [ref=f11e616]: Nisha Das
+                      - paragraph
+                  - button "View Pradeep Patel in Patients" [ref=f11e619] [cursor=pointer]:
+                    - generic [ref=f11e620]: PP
+                    - generic [ref=f11e621]:
+                      - paragraph [ref=f11e622]: Pradeep Patel
+                      - paragraph
+                  - button "View Manju Saxena in Patients" [ref=f11e625] [cursor=pointer]:
+                    - generic [ref=f11e626]: MS
+                    - generic [ref=f11e627]:
+                      - paragraph [ref=f11e628]: Manju Saxena
+                      - paragraph
+                  - button "View Anand Rane in Patients" [ref=f11e631] [cursor=pointer]:
+                    - generic [ref=f11e632]: AR
+                    - generic [ref=f11e633]:
+                      - paragraph [ref=f11e634]: Anand Rane
+                      - paragraph
+                  - button "View Neha Qureshi in Patients" [ref=f11e637] [cursor=pointer]:
+                    - generic [ref=f11e638]: NQ
+                    - generic [ref=f11e639]:
+                      - paragraph [ref=f11e640]: Neha Qureshi
+                      - paragraph
+                  - button "View Vikram Sundaram in Patients" [ref=f11e643] [cursor=pointer]:
+                    - generic [ref=f11e644]: VS
+                    - generic [ref=f11e645]:
+                      - paragraph [ref=f11e646]: Vikram Sundaram
+                      - paragraph
+      - menu [aria-hidden]:
+        - generic:
+          - paragraph: All Pages
+          - generic:
+            - link:
+              - /url: /dashboard
+              - generic: Dashboard
+            - link:
+              - /url: /ai-agents
+              - generic: AI Agents
+            - link:
+              - /url: /patients
+              - generic: Patients
+            - link:
+              - /url: /doctors
+              - generic: Doctors
+            - link:
+              - /url: /staff
+              - generic: Staff
+            - link:
+              - /url: /appointments
+              - generic: Appointments
+            - link:
+              - /url: /wards
+              - generic: Wards & Beds
+            - link:
+              - /url: /pharmacy
+              - generic: Pharmacy
+            - link:
+              - /url: /billing
+              - generic: Billing
+            - link:
+              - /url: /reports
+              - generic: Reports
+          - generic:
+            - link:
+              - /url: /profile
+              - generic: Profile
+            - link:
+              - /url: /settings
+              - generic: Settings
+      - navigation "Primary mobile navigation" [ref=f11e649]:
+        - generic [ref=f11e650]:
+          - link "Home" [ref=f11e651] [cursor=pointer]:
+            - /url: /dashboard
+          - link "AI Agents" [ref=f11e657] [cursor=pointer]:
+            - /url: /ai-agents
+          - link "Patients" [ref=f11e662] [cursor=pointer]:
+            - /url: /patients
+          - link "Schedule" [ref=f11e670] [cursor=pointer]:
+            - /url: /appointments
+          - button "More" [ref=f11e675] [cursor=pointer]
+    - dialog [aria-hidden] [ref=f11e682]:
+      - button [ref=f11e683] [cursor=pointer]
+      - generic [ref=f11e685]:
+        - generic [ref=f11e688]:
+          - paragraph [ref=f11e689]: MediLink Assistant
+          - paragraph [ref=f11e692]: Guidance and navigation assistant
+        - button [ref=f11e694] [cursor=pointer]
+      - log [ref=f11e698]:
+        - generic [ref=f11e699]: Hi! I'm MediLink Assistant. I can help you book appointments, answer questions about prescriptions, billing, and more. How can I help?
+      - generic [ref=f11e704]:
+        - button [ref=f11e705] [cursor=pointer]: Book Appointment
+        - button [ref=f11e709] [cursor=pointer]: My prescriptions
+        - button [ref=f11e710] [cursor=pointer]: Billing info
+        - button [ref=f11e711] [cursor=pointer]: Emergency help
+      - generic [ref=f11e712]:
+        - generic [ref=f11e713]: Message to MediLink Assistant
+        - textbox [ref=f11e714]:
+          - /placeholder: Ask me anything…
+        - button [disabled] [ref=f11e715]
+    - button "Open MediLink Assistant" [ref=f11e721] [cursor=pointer]
+  - generic [aria-hidden] [ref=f11e722]: "3"

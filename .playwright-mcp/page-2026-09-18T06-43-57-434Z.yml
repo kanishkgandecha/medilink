@@ -1,0 +1,94 @@
+- generic [ref=f21e10]:
+  - generic [ref=f21e12]:
+    - generic [ref=f21e13]:
+      - banner [ref=f21e14]:
+        - generic [ref=f21e15]:
+          - link "MediLink" [ref=f21e16] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f21e18]:
+            - link "Dashboard" [ref=f21e19] [cursor=pointer]:
+              - /url: /dashboard
+            - link "AI Agents" [ref=f21e20] [cursor=pointer]:
+              - /url: /ai-agents
+            - link "Appointments" [ref=f21e21] [cursor=pointer]:
+              - /url: /appointments
+            - link "Prescriptions" [ref=f21e22] [cursor=pointer]:
+              - /url: /prescriptions
+            - link "My Bills" [ref=f21e23] [cursor=pointer]:
+              - /url: /billing
+            - link "Test Reports" [ref=f21e24] [cursor=pointer]:
+              - /url: /test-reports
+          - generic [ref=f21e25]:
+            - button "Settings" [ref=f21e26] [cursor=pointer]
+            - button "Switch to dark mode" [ref=f21e31] [cursor=pointer]
+            - button "Notifications (2 unread)" [ref=f21e35] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f21e40]: "2"
+            - button "Account menu for Rahul Gupta" [ref=f21e42] [cursor=pointer]: RG
+      - main [ref=f21e43]:
+        - generic [ref=f21e47]:
+          - generic [ref=f21e49]:
+            - generic [ref=f21e50]: MediLink Decision Support
+            - heading "Clinical & Operational Decision-Support Tools" [level=1] [ref=f21e53]
+            - paragraph [ref=f21e54]: Safety-screened guidance, record-grounded summaries, current bed/doctor lookups, and transparent rules-based risk scoring. All clinical outputs require professional review.
+          - tablist "AI decision-support tools" [ref=f21e55]:
+            - tab "Symptom Checker Popular" [selected] [ref=f21e56] [cursor=pointer]:
+              - generic [ref=f21e61]: Symptom Checker
+              - generic [ref=f21e62]: Popular
+            - tab "Health Risk Calculator Rules Engine" [ref=f21e63] [cursor=pointer]:
+              - generic [ref=f21e67]: Health Risk Calculator
+              - generic [ref=f21e68]: Rules Engine
+            - tab "Lab Report Analyzer Diagnostics" [ref=f21e69] [cursor=pointer]:
+              - generic [ref=f21e73]: Lab Report Analyzer
+              - generic [ref=f21e74]: Diagnostics
+            - tab "Appointment Optimizer Scheduling" [ref=f21e75] [cursor=pointer]:
+              - generic [ref=f21e78]: Appointment Optimizer
+              - generic [ref=f21e79]: Scheduling
+            - tab "Patient Clinical Summary EHR Intelligence" [ref=f21e80] [cursor=pointer]:
+              - generic [ref=f21e85]: Patient Clinical Summary
+              - generic [ref=f21e86]: EHR Intelligence
+            - tab "MediBot Assistant Guidance" [ref=f21e87] [cursor=pointer]:
+              - generic [ref=f21e91]: MediBot Assistant
+              - generic [ref=f21e92]: Guidance
+          - generic [ref=f21e93]:
+            - heading "Choose a decision-support tool" [level=2] [ref=f21e94]
+            - paragraph [ref=f21e95]: Select a tool above. Only options available to your role are shown.
+    - button "Open MediLink Assistant" [ref=f21e98] [cursor=pointer]
+  - dialog [ref=f21e99]:
+    - generic [ref=f21e101]:
+      - generic [ref=f21e102]:
+        - generic [ref=f21e103]:
+          - heading "Symptom Guidance" [level=2] [ref=f21e107]
+          - generic [ref=f21e108]: Personalized · Non-diagnostic
+        - button "Close symptom guidance" [active] [ref=f21e109] [cursor=pointer]
+      - generic [ref=f21e113]:
+        - paragraph [ref=f21e114]: Select or enter symptoms to receive personalized self-care, urgency, warning-sign, and doctor-consultation guidance. This tool does not identify diseases.
+        - generic [ref=f21e115]:
+          - paragraph [ref=f21e116]: Common Symptoms
+          - generic [ref=f21e117]:
+            - button "Fever" [ref=f21e118] [cursor=pointer]
+            - button "Headache" [ref=f21e119] [cursor=pointer]
+            - button "Chest pain" [ref=f21e120] [cursor=pointer]
+            - button "Cough" [ref=f21e121] [cursor=pointer]
+            - button "Nausea" [ref=f21e122] [cursor=pointer]
+            - button "Fatigue" [ref=f21e123] [cursor=pointer]
+            - button "Joint pain" [ref=f21e124] [cursor=pointer]
+            - button "Skin rash" [ref=f21e125] [cursor=pointer]
+            - button "Breathing difficulty" [ref=f21e126] [cursor=pointer]
+            - button "Stomach pain" [ref=f21e127] [cursor=pointer]
+            - button "Dizziness" [ref=f21e128] [cursor=pointer]
+            - button "Back pain" [ref=f21e129] [cursor=pointer]
+        - generic [ref=f21e130]:
+          - paragraph [ref=f21e131]: Add Custom Symptom
+          - generic [ref=f21e132]:
+            - textbox "e.g., neck stiffness, ear pain…" [ref=f21e133]
+            - button "Add" [ref=f21e134] [cursor=pointer]
+        - generic [ref=f21e135]:
+          - paragraph [ref=f21e136]: Selected (2)
+          - generic [ref=f21e137]:
+            - generic [ref=f21e138]:
+              - text: Chest pain
+              - button [ref=f21e139] [cursor=pointer]
+            - generic [ref=f21e143]:
+              - text: Breathing difficulty
+              - button [ref=f21e144] [cursor=pointer]
+        - button "Analyse Symptoms" [ref=f21e148] [cursor=pointer]
