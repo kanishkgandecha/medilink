@@ -49,15 +49,18 @@ const SAFE_AI_ROUTES = new Set([
   '/settings', '/profile', '/ai-agents', '/symptom-checker', '/report-analyzer', '/health-risk',
 ])
 
+// Emergency (112) and Tele-MANAS mental-health (14416) call actions.
+const SAFE_CALL_ROUTES = new Set(['tel:112', 'tel:14416'])
+
 const safeAiActions = (actions, urgent = false) => (Array.isArray(actions) ? actions : [])
   .slice(0, 5)
   .filter(action => {
-    if (urgent && action?.route === 'tel:112') return true
+    if (urgent && SAFE_CALL_ROUTES.has(action?.route)) return true
     const routePath = String(action?.route || '').split('?')[0]
     return action?.type === 'navigate' && SAFE_AI_ROUTES.has(routePath)
   })
   .map(action => ({ label: String(action.label || 'Open').slice(0, 80), route: action.route,
-    type: action.route === 'tel:112' ? 'external' : 'navigate' }))
+    type: SAFE_CALL_ROUTES.has(action.route) ? 'external' : 'navigate' }))
 
 const WELCOME_MSG = {
   id: 1, role: 'bot',
@@ -574,7 +577,7 @@ const FloatingChatbot = () => {
               <button
                 key={i}
                 onClick={() => {
-                  if (action.type === 'external' && action.route === 'tel:112') window.location.href = action.route
+                  if (action.type === 'external' && SAFE_CALL_ROUTES.has(action.route)) window.location.href = action.route
                   else navigate(action.route)
                   setMessages(prev => prev.map(m => m.id === msgId ? { ...m, widget: { ...m.widget, handled: true } } : m))
                 }}

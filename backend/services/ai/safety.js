@@ -1,10 +1,12 @@
 'use strict';
 
 const { DISCLAIMER } = require('./promptTemplates');
+const { detectEmergency, EMERGENCY_CONTACTS } = require('./emergency');
 
-const EMERGENCY_PATTERN = /\b(severe chest pain|chest pressure|chest squeezing|can(?:not|'t) breathe|difficulty breathing|blue lips|throat swelling|unconscious|fainting|stroke|face drooping|slurred speech|sudden confusion|heavy bleeding|vomiting blood|blood in vomit|severe abdominal pain|thunderclap headache|suicid(?:e|al)|self[- ]harm|anaphylaxis|seizure)\b/i;
 const CHEST_DISCOMFORT_PATTERN = /\b(chest pain|chest discomfort|chest tightness)\b/i;
-const CHEST_RED_FLAG_PATTERN = /\b(shortness of breath|breathlessness|cold sweat|sweating|faint(?:ed|ing)?|lightheaded|jaw pain|arm pain|back pain)\b/i;
+// Presentations that need same-day care: they raise urgency to at least
+// Moderate but are not emergencies on their own.
+const URGENT_PATTERN = /\b(cannot bear weight|can'?t bear weight|unable to walk|high fever|fever (?:for|since) (?:\d+|two|three|four|five|several) days|(?:for|since) (?:\d+|three|four|five|several) days\b.*\b(?:diarrh|vomit|very weak)|very weak|persistent vomiting|blood in (?:my )?urine|severe pain|dehydrat|fever with (?:back|flank) pain|urinat\w*\b.*\bfever|fever\b.*\burinat)/i;
 const MEDICATION_PATTERN = /\b(aspirin|paracetamol|acetaminophen|ibuprofen|antibiotic|antacid|antihistamine|cetirizine|tablet|dose|dosage|mg\b)/i;
 const URGENCIES = ['Critical', 'High', 'Moderate', 'Low'];
 const SAFE_INTERNAL_ROUTES = new Set([
@@ -17,10 +19,11 @@ const text = (value, fallback = '', max = 2000) =>
 const list = (value, max = 10) => Array.isArray(value) ? value.slice(0, max) : [];
 
 function isEmergencyInput(value) {
-  const input = Array.isArray(value) ? value.join(' ') : String(value || '');
-  return EMERGENCY_PATTERN.test(input)
-    || (CHEST_DISCOMFORT_PATTERN.test(input) && CHEST_RED_FLAG_PATTERN.test(input));
+  return detectEmergency(value).emergency;
 }
+
+const isSelfHarm = (value) => detectEmergency(value).categories.includes('self-harm');
+const MENTAL_HEALTH_LINE = `For thoughts of suicide or self-harm you can also call ${EMERGENCY_CONTACTS.mentalHealth.label}, free and available 24×7.`;
 
 function safeAdvice(items) {
   return list(items, 8).map((item) => {
@@ -35,6 +38,8 @@ function enforceSymptomSafety(result, symptoms) {
   const emergency = isEmergencyInput(symptoms);
   const symptomText = Array.isArray(symptoms) ? symptoms.join(' ') : String(symptoms || '');
   const chestDiscomfort = CHEST_DISCOMFORT_PATTERN.test(symptomText);
+  const urgentFloor = URGENT_PATTERN.test(symptomText);
+  const modelUrgency = URGENCIES.includes(result?.overallUrgency) ? result.overallUrgency : 'Moderate';
   const conditions = list(result?.conditions, 5).map((condition) => ({
     name: text(condition?.name, 'Possible condition requires clinical assessment', 200),
     probability: ['High', 'Medium', 'Low'].includes(condition?.probability) ? condition.probability : 'Low',
@@ -61,7 +66,7 @@ function enforceSymptomSafety(result, symptoms) {
       ? 'Critical'
       : (chestDiscomfort
         ? 'High'
-        : (URGENCIES.includes(result?.overallUrgency) ? result.overallUrgency : 'Moderate')),
+        : (urgentFloor && modelUrgency === 'Low' ? 'Moderate' : modelUrgency)),
     department: emergency ? 'Emergency' : text(result?.department || primary?.department, 'General Medicine', 100),
     recommendedSpeciality: emergency
       ? 'Emergency Medicine'
@@ -74,7 +79,7 @@ function enforceSymptomSafety(result, symptoms) {
         ? 'Chest discomfort can have different causes and cannot be safely identified here. Arrange a same-day medical assessment; seek emergency care immediately if warning signs appear.'
         : text(result?.guidanceSummary, 'These symptoms cannot be diagnosed here. Use the guidance below and consult a qualified clinician if they persist, worsen, or concern you.', 1000)),
     selfCare: emergency
-      ? ['Call emergency services (112 in India) or go to the nearest emergency department now.', 'Do not drive yourself; ask someone to accompany you.']
+      ? ['Call emergency services (112 in India) or go to the nearest emergency department now.', 'Do not drive yourself; ask someone to accompany you.', ...(isSelfHarm(symptoms) ? [MENTAL_HEALTH_LINE] : [])]
       : (chestDiscomfort
         ? ['Stop strenuous activity and rest while arranging a same-day medical assessment.', 'If discomfort becomes severe, persistent, or occurs with breathlessness, sweating, fainting, or arm/jaw/back pain, call emergency services (112 in India).']
         : (selfCare.length ? selfCare : ['Rest, stay hydrated if appropriate, and monitor how your symptoms change.', 'Arrange a clinical consultation if symptoms persist or worsen.'])),
@@ -126,16 +131,23 @@ function enforceHealthRiskSafety(result, acuteSymptoms) {
 }
 
 function enforceAssistantSafety(result, message) {
-  if (!isEmergencyInput(message)) return {
+  // Escalation from either the shared detector or the agent itself (rules or
+  // model) wins; neither can remove the other's emergency response.
+  const emergency = isEmergencyInput(message) || result?.urgent === true || result?.intent === 'emergency';
+  if (!emergency) return {
     ...result,
     actions: sanitizeAssistantActions(result?.actions),
-    urgent: Boolean(result?.urgent),
+    urgent: false,
     disclaimer: DISCLAIMER,
   };
+  const selfHarm = isSelfHarm(message);
   return {
     ...result, intent: 'emergency', urgent: true,
-    reply: 'This may be a medical emergency. Call 112 now or go to the nearest emergency department. Do not rely on this chat or wait for another response.',
-    actions: [{ label: 'Call Emergency (112)', route: 'tel:112', type: 'external' }],
+    reply: `This may be a medical emergency. Call 112 now or go to the nearest emergency department. Do not rely on this chat or wait for another response.${selfHarm ? ` ${MENTAL_HEALTH_LINE}` : ''}`,
+    actions: [
+      { label: EMERGENCY_CONTACTS.emergency.label, route: `tel:${EMERGENCY_CONTACTS.emergency.number}`, type: 'external' },
+      ...(selfHarm ? [{ label: EMERGENCY_CONTACTS.mentalHealth.label, route: `tel:${EMERGENCY_CONTACTS.mentalHealth.number}`, type: 'external' }] : []),
+    ],
     followUpQuestions: [], disclaimer: DISCLAIMER,
   };
 }

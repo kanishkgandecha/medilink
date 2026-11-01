@@ -3,6 +3,7 @@ const { callLLM } = require('../llmClient');
 const { APPOINTMENT_OPTIMIZER, DISCLAIMER } = require('../promptTemplates');
 const prisma = require('../../../config/prisma');
 const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
+const { isEmergency } = require('../emergency');
 
 // The recommended doctor is always recomputed from a live query of doctor
 // availability and today's load, never taken from the LLM's own answer (see
@@ -18,18 +19,17 @@ const liveRecordsSourceMeta = () => buildSourceMeta(null, {
 
 const DEPT_MAP = [
   { keywords: ['chest', 'cardiac', 'heart', 'palpitation', 'bp', 'blood pressure'], dept: 'Cardiology', specs: ['cardiologist', 'cardiology'] },
-  { keywords: ['headache', 'migraine', 'seizure', 'memory', 'paralysis', 'stroke', 'numbness', 'dizziness'], dept: 'Neurology', specs: ['neurologist', 'neurology'] },
+  { keywords: ['headache', 'migraine', 'seizure', 'memory', 'paralysis', 'stroke', 'numbness', 'dizziness', 'face drooping', 'slurred speech', 'one side'], dept: 'Neurology', specs: ['neurologist', 'neurology'] },
   { keywords: ['joint', 'knee', 'back', 'bone', 'fracture', 'arthritis', 'muscle', 'sprain'], dept: 'Orthopaedics', specs: ['orthopaedic', 'orthopedic', 'orthopedics'] },
   { keywords: ['skin', 'rash', 'acne', 'allergy', 'itching', 'eczema', 'derma'], dept: 'Dermatology', specs: ['dermatologist', 'dermatology'] },
   { keywords: ['child', 'baby', 'infant', 'pediatric', 'kid', 'growth'], dept: 'Paediatrics', specs: ['pediatrician', 'paediatrician', 'pediatric'] },
-  { keywords: ['stomach', 'abdomen', 'liver', 'bowel', 'colon', 'digestion', 'gastro', 'nausea', 'acid'], dept: 'Gastroenterology', specs: ['gastroenterologist', 'gastroenterology', 'gastro'] },
+  { keywords: ['stomach', 'abdomen', 'liver', 'bowel', 'colon', 'digestion', 'gastro', 'nausea', 'acid', 'vomiting blood', 'blood in vomit', 'black stool', 'tarry stool'], dept: 'Gastroenterology', specs: ['gastroenterologist', 'gastroenterology', 'gastro'] },
   { keywords: ['fever', 'cough', 'cold', 'flu', 'fatigue', 'weakness', 'general', 'routine', 'check'], dept: 'General Medicine', specs: ['general physician', 'general medicine', 'internal medicine'] },
 ];
 
-const URGENCY_KEYWORDS = {
-  Emergency: ['chest pain', "can't breathe", 'unconscious', 'heart attack', 'stroke', 'seizure', 'severe bleeding', 'not breathing'],
-  Urgent: ['breathlessness', 'high fever', 'vomiting blood', 'blood in stool', 'severe pain', 'chest pressure'],
-};
+// Emergencies come from the shared detector so every agent escalates the same
+// presentations; these keywords only distinguish urgent from routine.
+const URGENT_KEYWORDS = ['chest pain', 'chest discomfort', 'breathlessness', 'high fever', 'fever for', 'blood in stool', 'blood in urine', 'severe pain', 'persistent vomiting'];
 
 function detectDept(symptoms) {
   const lower = symptoms.toLowerCase();
@@ -47,11 +47,9 @@ function departmentRule(department) {
 }
 
 function detectUrgency(symptoms) {
+  if (isEmergency(symptoms)) return 'Emergency';
   const lower = symptoms.toLowerCase();
-  for (const [level, kws] of Object.entries(URGENCY_KEYWORDS)) {
-    if (kws.some((k) => lower.includes(k))) return level;
-  }
-  return 'Routine';
+  return URGENT_KEYWORDS.some((k) => lower.includes(k)) ? 'Urgent' : 'Routine';
 }
 
 async function fetchDoctorsWithLoad() {
