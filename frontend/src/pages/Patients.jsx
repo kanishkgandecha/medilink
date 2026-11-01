@@ -15,6 +15,7 @@ import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
 import { getPatientsCapability } from '../config/pageCapabilities'
 import { formatEnumLabel } from '../utils/format'
+import { fetchAllPages } from '../services/pagination'
 
 const EMPTY_FORM = {
   // User fields (only on create)
@@ -155,7 +156,7 @@ const Patients = () => {
     setLoading(true)
     setFetchError(null)
     try {
-      const data = await patientService.getAllPatients({ limit: 500 })
+      const data = await fetchAllPages(patientService.getAllPatients)
       setPatients(data.data || data.patients || [])
     } catch (err) {
       setFetchError(err)
@@ -419,7 +420,9 @@ const Patients = () => {
               <label className={lbl}>Blood Group</label>
               <select value={formData.bloodGroup} onChange={e => setFormData(f => ({ ...f, bloodGroup: e.target.value }))} className={inp}>
                 <option value="">Select blood group</option>
-                {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g}>{g}</option>)}
+                {/* Values are the API enum names (what GET returns), labels are display form */}
+                {[['A_POSITIVE','A+'],['A_NEGATIVE','A-'],['B_POSITIVE','B+'],['B_NEGATIVE','B-'],['AB_POSITIVE','AB+'],['AB_NEGATIVE','AB-'],['O_POSITIVE','O+'],['O_NEGATIVE','O-']]
+                  .map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </div>
             <div>

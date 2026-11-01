@@ -4,6 +4,7 @@ const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
 const { requireAppointmentAccess } = require('../middleware/appointmentAccess');
+const { appointmentListQuery } = require('../middleware/queryValidation');
 const {
   createAppointment,
   getAppointments,
@@ -24,7 +25,7 @@ router.get('/availability/:doctorId', getDoctorAvailability);
 // Appointment lists are limited to roles with a scheduling or clinical need.
 // Patient and Doctor are further scoped to their own appointments in the controller.
 router.route('/')
-  .get(authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Receptionist'), getAppointments)
+  .get(authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Receptionist'), appointmentListQuery, getAppointments)
   .post(authorize('Admin', 'Receptionist', 'Doctor', 'Patient'), [
     body('patient').custom((value, { req }) => {
       if (req.user.role === 'Patient' && !value) return true;

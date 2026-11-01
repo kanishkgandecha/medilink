@@ -79,6 +79,7 @@ function createFakePrisma(state) {
       if (typeof method !== 'string' || method === 'then') return undefined;
       return async (args = {}) => {
         calls.push({ model, method, args });
+        if ((state.failModels || []).includes(model)) throw Object.assign(new Error('synthetic storage failure'), { code: 'P2021' });
         const handler = handlers[model]?.[method];
         return handler ? handler(args) : defaultFor(method);
       };
@@ -92,7 +93,12 @@ function createFakePrisma(state) {
         return async (arg) => (typeof arg === 'function' ? arg(client) : Promise.all(arg));
       }
       if (prop === '$connect' || prop === '$disconnect') return async () => {};
-      if (prop === '$queryRaw') return async () => [{ '?column?': 1 }];
+      if (prop === '$queryRaw') {
+        return async () => {
+          if (state.failQueryRaw) throw Object.assign(new Error('synthetic connection failure to db.internal:5432'), { name: 'PrismaClientInitializationError' });
+          return [{ '?column?': 1 }];
+        };
+      }
       return modelProxy(prop);
     },
   });

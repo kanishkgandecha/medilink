@@ -128,17 +128,3 @@ export const createAppointment = async (data) => {
   return await api.post('/appointments', data)
 }
 
-// Get patient history
-export const getPatientHistory = async (id) => {
-  return await api.get(`/patients/${id}/history`)
-}
-
-// Get patient prescriptions
-export const getPatientPrescriptions = async (id) => {
-  return await api.get(`/patients/${id}/prescriptions`)
-}
-
-// Get patient bills
-export const getPatientBills = async (id) => {
-  return await api.get(`/patients/${id}/bills`)
-}

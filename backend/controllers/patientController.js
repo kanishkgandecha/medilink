@@ -11,6 +11,7 @@ const { REPORT_ATTACHMENT_DIR } = require('../middleware/upload');
 const { SAFE_USER_SELECT } = require('../utils/safeUser');
 const { isDoctorUser, getDoctorProfileId, doctorCareWhere } = require('../utils/careScope');
 const { patientListSelectForUser, canViewClinicalDetail } = require('../utils/patientProjection');
+const { normalizeBloodGroup } = require('../utils/bloodGroup');
 const toAuditJson = (value) => JSON.parse(JSON.stringify(value));
 
 const generatePatientId = () => `PAT${Date.now().toString().slice(-6)}${crypto.randomInt(100000, 1000000)}`;
@@ -181,7 +182,7 @@ exports.createPatient = asyncHandler(async (req, res) => {
     }
 
     return tx.patient.create({
-      data: { userId: targetUser.id, patientId: generatePatientId(), bloodGroup: bloodGroup || null,
+      data: { userId: targetUser.id, patientId: generatePatientId(), bloodGroup: normalizeBloodGroup(bloodGroup) || null,
         emergencyContact: emergencyContact || null, allergies: allergies || [], insuranceInfo: insuranceInfo || null },
       include: {
       user: {
@@ -255,7 +256,7 @@ exports.getPatients = asyncHandler(async (req, res) => {
   const { search, bloodGroup } = req.query;
 
   const where = { archivedAt: null, user: { isActive: true } };
-  if (bloodGroup) where.bloodGroup = bloodGroup;
+  if (bloodGroup) where.bloodGroup = normalizeBloodGroup(bloodGroup);
 
   // Doctors see only patients they are in a care relationship with.
   if (isDoctorUser(req.user)) {
@@ -445,7 +446,7 @@ exports.updatePatient = asyncHandler(async (req, res) => {
   }
 
   const data = {};
-  if (req.body.bloodGroup) data.bloodGroup = req.body.bloodGroup;
+  if (req.body.bloodGroup) data.bloodGroup = normalizeBloodGroup(req.body.bloodGroup);
   if (req.body.emergencyContact) data.emergencyContact = req.body.emergencyContact;
   if (req.body.allergies) data.allergies = req.body.allergies;
   if (req.body.insuranceInfo) data.insuranceInfo = req.body.insuranceInfo;

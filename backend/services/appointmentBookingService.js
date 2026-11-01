@@ -1,6 +1,9 @@
 'use strict';
 const prisma = require('../config/prisma');
 const { SAFE_USER_SELECT } = require('../utils/safeUser');
+
+// Booking responses carry patient identity only.
+const APPOINTMENT_PATIENT_SELECT = { id: true, patientId: true, userId: true, user: { select: SAFE_USER_SELECT } };
 const { runSerializableTransaction } = require('../utils/transactions');
 const crypto = require('crypto');
 
@@ -42,7 +45,7 @@ async function bookAppointmentTransaction(input) {
     return await runSerializableTransaction(async (tx) => {
       if (input.bookingKey) {
         const replay = await tx.appointment.findUnique({ where: { bookingKey: input.bookingKey },
-          include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
+          include: { patient: { select: APPOINTMENT_PATIENT_SELECT }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
         if (replay) return { appointment: replay, replayed: true };
       }
 
@@ -73,7 +76,7 @@ async function bookAppointmentTransaction(input) {
         startTime: input.startTime, endTime: input.endTime,
         type: input.type === 'Follow-up' ? 'Follow_up' : input.type,
         symptoms: input.symptoms || null, priority: input.priority || 'Normal', createdById: input.createdById,
-      }, include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
+      }, include: { patient: { select: APPOINTMENT_PATIENT_SELECT }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
       return { appointment, replayed: false };
     });
   } catch (error) {
@@ -99,7 +102,7 @@ async function rescheduleAppointmentTransaction({ appointmentIdentifier, appoint
       if (conflict) return { error: 'slot_conflict' };
       const updated = await tx.appointment.update({ where: { id: appointment.id }, data: {
         appointmentDate: window.date, startTime, endTime, status: 'Scheduled',
-      }, include: { patient: { include: { user: { select: SAFE_USER_SELECT } } }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
+      }, include: { patient: { select: APPOINTMENT_PATIENT_SELECT }, doctor: { include: { user: { select: SAFE_USER_SELECT } } } } });
       return { appointment: updated };
     });
   } catch (error) {

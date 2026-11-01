@@ -8,6 +8,7 @@ import { analyzeSymptoms } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 import { normalizeSymptomGuidance } from '../utils/symptomGuidance'
 import useModalA11y from '../hooks/useModalA11y'
+import { fetchAllPages } from '../services/pagination'
 
 // ─── Condition Knowledge Base ─────────────────────────────────────────────────
 const CONDITIONS = [
@@ -163,7 +164,7 @@ const SymptomCheckerAgent = ({ open, onClose, onBookAppointment, showTechnicalSo
       }, selected)
       // Fetch matched doctors
       try {
-        const doctorRes = await api.get('/doctors', { params: { limit: 200 } })
+        const doctorRes = await fetchAllPages((params) => api.get('/doctors', { params }))
         const doctors = doctorRes.data?.data || doctorRes.data || []
         const dept = aiData.department?.toLowerCase() || ''
         const filtered = doctors.filter(d => d.isAvailable && (d.specialization || '').toLowerCase().includes(dept.split(/\s+/)[0]))

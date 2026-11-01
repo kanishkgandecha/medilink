@@ -21,6 +21,7 @@ import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
 import { getAppointmentsCapability } from '../config/pageCapabilities'
 import { getUserRoleKey } from '../config/rolePolicy'
+import { fetchAllPages } from '../services/pagination'
 
 const drName = (name) => `Dr. ${(name || '').replace(/^Dr\.?\s*/i, '').trim()}`
 
@@ -934,7 +935,7 @@ const Appointments = () => {
     try {
       const [apptRes, doctorRes] = await Promise.all([
         appointmentService.getAllAppointments(),
-        doctorService.getAllDoctors({ limit: 200 }),
+        fetchAllPages(doctorService.getAllDoctors),
       ])
       setAppointments((apptRes.data || []).map(apt => ({ ...apt, status: normalizeStatusForDisplay(apt.status) })))
       setDoctors(doctorRes.data || [])

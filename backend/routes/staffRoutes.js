@@ -3,6 +3,7 @@ const router = express.Router();
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
+const { staffListQuery } = require('../middleware/queryValidation');
 const {
   createStaff,
   getStaff,
@@ -23,7 +24,7 @@ router.get('/stats', getStaffStats);
 router.get('/department/:department', getStaffByDepartment);
 
 router.route('/')
-  .get(getStaff)
+  .get(staffListQuery, getStaff)
   .post([
     body('department').notEmpty().withMessage('Department is required'),
     body('email').optional().isEmail().withMessage('Valid email is required'),

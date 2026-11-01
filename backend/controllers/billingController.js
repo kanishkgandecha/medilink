@@ -131,6 +131,9 @@ exports.createBill = asyncHandler(async (req, res) => {
   const discountAmount = Number(discount || 0);
   const taxAmount = Number(tax || 0);
   const totalAmount = subtotal - discountAmount + taxAmount;
+  if (totalAmount < 0) {
+    return res.status(400).json({ success: false, message: 'Discount cannot exceed the subtotal plus tax' });
+  }
 
   const year = new Date().getFullYear();
   const month = String(new Date().getMonth() + 1).padStart(2, '0');

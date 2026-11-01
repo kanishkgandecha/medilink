@@ -17,6 +17,7 @@ import BedAllocationAgent from '../agents/BedAllocationAgent'
 import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
 import { getWardsCapability } from '../config/pageCapabilities'
+import { fetchAllPages } from '../services/pagination'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const calcAge = (dob) => {
@@ -315,7 +316,7 @@ const Wards = () => {
 
   const fetchPatients = async () => {
     try {
-      const res = await api.get('/patients', { params: { limit: 1000 } })
+      const res = await fetchAllPages((params) => api.get('/patients', { params }))
       setPatients(res.data || [])
     } catch {
       // non-fatal

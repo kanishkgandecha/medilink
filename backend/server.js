@@ -89,7 +89,7 @@ app.use(helmet({
 // General API limiter — skip auth routes (they have their own limiter)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: Number(process.env.API_RATE_LIMIT_MAX) || 500,
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => req.originalUrl.startsWith('/api/auth'),

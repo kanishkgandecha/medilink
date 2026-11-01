@@ -62,7 +62,19 @@ router.put('/update-password', protect, [
     .matches(/[0-9]/).withMessage('New password must contain a number'),
   validate
 ], updatePassword);
-router.put('/profile', protect, updateProfile);
+router.put('/profile', protect, [
+  body('name').optional().isString().trim().isLength({ min: 1, max: 100 }).withMessage('Name must be 1-100 characters'),
+  body('phone').optional().isString().trim().isLength({ min: 1, max: 30 }).withMessage('Phone is invalid'),
+  body('dateOfBirth').optional().isISO8601().withMessage('Valid date of birth is required'),
+  body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('Gender must be Male, Female, or Other'),
+  body('address').optional().isObject().withMessage('Address must be an object'),
+  // Cleared, a colour-preset key used by the Profile page (e.g. "blue"), or a
+  // server-issued avatar path. Arbitrary external URLs are not accepted.
+  body('avatar').optional().custom((value) => value === ''
+    || /^[a-z]{3,12}$/.test(value)
+    || /^\/uploads\/avatars\/[\w.-]+$/.test(value)).withMessage('Avatar must be a preset key or an uploaded avatar path'),
+  validate,
+], updateProfile);
 router.post('/avatar', protect, (req, res, next) => {
   uploadAvatar(req, res, (err) => {
     if (err) return res.status(400).json({ success: false, message: err.message });

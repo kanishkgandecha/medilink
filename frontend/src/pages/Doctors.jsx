@@ -16,6 +16,7 @@ import ErrorState from '../components/common/ErrorState'
 import { getDoctorsCapability } from '../config/pageCapabilities'
 import * as doctorService from '../services/doctorService'
 import { toast } from 'react-toastify'
+import { fetchAllPages } from '../services/pagination'
 
 const EMPTY_FORM = {
   name: '', email: '', phone: '', gender: '', dateOfBirth: '',
@@ -167,7 +168,7 @@ const Doctors = () => {
     setLoading(true)
     setFetchError(null)
     try {
-      const data = await doctorService.getAllDoctors({ limit: 200 })
+      const data = await fetchAllPages(doctorService.getAllDoctors)
       setDoctors(data.data || [])
     } catch (err) { setFetchError(err); toast.error('Failed to fetch doctors') }
     finally { setLoading(false) }

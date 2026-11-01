@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
+const { body, query } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
 const { requirePatientAccess } = require('../middleware/patientAccess');
@@ -30,6 +30,10 @@ const {
 const {
   listClinicalNotes, createClinicalDraft, reviewClinicalNote, amendClinicalNote,
 } = require('../controllers/clinicalNoteController');
+
+const { normalizeBloodGroup } = require('../utils/bloodGroup');
+// Accepts the enum name (A_POSITIVE) or the display label (A+); empty means "not set".
+const isBloodGroup = (value) => normalizeBloodGroup(value) !== undefined;
 
 router.use(protect);
 
@@ -123,6 +127,11 @@ router.get('/search', authorize('Admin', 'Doctor', 'Nurse', 'Receptionist'), asy
 router
   .route('/')
   .get(
+    [
+      query('bloodGroup').optional().custom(isBloodGroup).withMessage('Invalid blood group filter'),
+      query('search').optional().isString().isLength({ max: 100 }).withMessage('Search is too long'),
+      validate,
+    ],
     authorize(
       'Admin',
       'Doctor',
@@ -140,6 +149,10 @@ router
     [
       body('email').optional().isEmail().withMessage('Valid email is required'),
       body('phone').optional().notEmpty().withMessage('Phone is required'),
+      body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('Invalid gender'),
+      body('dateOfBirth').optional().isISO8601().withMessage('Valid date of birth is required'),
+      body('bloodGroup').optional({ nullable: true }).custom(isBloodGroup).withMessage('Invalid blood group'),
+      body('allergies').optional().isArray({ max: 50 }).withMessage('Allergies must be a list'),
       validate,
     ],
     createPatient
@@ -148,7 +161,14 @@ router
 router
   .route('/:id')
   .get(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager', 'Pharmacist'), getPatient)
-  .put(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), updatePatient)
+  .put(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), [
+    body('bloodGroup').optional({ nullable: true }).custom(isBloodGroup).withMessage('Invalid blood group'),
+    body('allergies').optional().isArray({ max: 50 }).withMessage('Allergies must be a list'),
+    body('allergies.*').optional().isString().isLength({ max: 200 }),
+    body('emergencyContact').optional().isObject().withMessage('Emergency contact must be an object'),
+    body('insuranceInfo').optional().isObject().withMessage('Insurance information must be an object'),
+    validate,
+  ], updatePatient)
   .delete(authorize('Admin'), deletePatient);
 
 // Medical records

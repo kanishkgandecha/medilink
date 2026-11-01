@@ -19,6 +19,7 @@ import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
 import { getBillingCapability } from '../config/pageCapabilities'
 import { getUserRoleKey } from '../config/rolePolicy'
+import { fetchAllPages } from '../services/pagination'
 
 const downloadBillPdf = async (bill) => {
   const { generateBillPdf } = await import('../utils/generateBillPdf')
@@ -300,7 +301,7 @@ const Billing = () => {
     setLoading(true)
     setFetchError(null)
     try {
-      const res = await billingService.getAllBills({ limit: 500 })
+      const res = await fetchAllPages(billingService.getAllBills, {}, { key: 'bills' })
       setBills((res.bills || []).map(b => ({ ...b, paymentStatus: normalizeBillingStatusForDisplay(b.paymentStatus) })))
     } catch (err) {
       setFetchError(err)
@@ -312,7 +313,7 @@ const Billing = () => {
 
   const fetchPatients = async () => {
     try {
-      const res = await billingService.getAllPatients({ limit: 1000 })
+      const res = await fetchAllPages(billingService.getAllPatients)
       setPatients(res.data || [])
     } catch (err) {
       toast.error(err.message || 'Failed to load patients for invoicing')
@@ -335,7 +336,7 @@ const Billing = () => {
   const fetchMedicines = async () => {
     setMedLoading(true)
     try {
-      const res = await api.get('/medicines', { params: { limit: 500, isActive: true } })
+      const res = await fetchAllPages((params) => api.get('/medicines', { params }))
       const list = res.data || []
       setMedicines(list)
       const qtys = {}

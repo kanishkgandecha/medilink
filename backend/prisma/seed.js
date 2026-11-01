@@ -410,7 +410,10 @@ async function seed() {
     apptDate.setDate(today.getDate() + daysOffset);
 
     const status = daysOffset < 0 ? (i % 10 === 0 ? 'Cancelled' : 'Completed') : apptStatuses[i % apptStatuses.length];
-    const hour = 9 + (i % 8);
+    // Doctor (i % 20) and day (i % 40) repeat every 40 appointments, so shift the
+    // hour each cycle; otherwise i and i + 40 share a slot and violate the
+    // active-slot unique index (Appointment_active_doctor_slot_key).
+    const hour = 9 + (((i % 8) + Math.floor(i / 40)) % 8);
     const startTime = `${String(hour).padStart(2, '0')}:00`;
     const endTime = `${String(hour).padStart(2, '0')}:30`;
 

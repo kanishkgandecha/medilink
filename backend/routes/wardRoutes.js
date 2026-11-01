@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
+const { wardListQuery } = require('../middleware/queryValidation');
 const {
   createWard,
   getWards,
@@ -12,20 +14,31 @@ const {
 } = require('../controllers/wardController');
 const { assignBed, dischargeBed } = require('../controllers/wardTransactionController');
 
+const WARD_TYPES = ['General', 'ICU', 'NICU', 'Private', 'Semi_Private', 'Emergency', 'Isolation'];
+const WARD_GENDERS = ['Male', 'Female', 'Mixed'];
+const wardDetailValidation = [
+  body('wardType').optional().isIn(WARD_TYPES).withMessage('Invalid ward type'),
+  body('gender').optional().isIn(WARD_GENDERS).withMessage('Invalid ward gender'),
+  body('floor').optional({ nullable: true }).isInt({ min: -5, max: 200 }).withMessage('Floor must be an integer'),
+  body('dailyRate').optional().isFloat({ min: 0, max: 10000000 }).withMessage('Daily rate must be a non-negative number'),
+  body('facilities').optional().isArray({ max: 50 }).withMessage('Facilities must be a list'),
+];
+
 router.use(protect);
 
 router.route('/')
-  .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), getWards)
+  .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), wardListQuery, getWards)
   .post(authorize('Admin'), [
     body('wardNumber').notEmpty().withMessage('Ward number is required'),
     body('wardName').notEmpty().withMessage('Ward name is required'),
-    body('totalBeds').isInt({ min: 1 }).withMessage('Total beds must be at least 1'),
+    body('totalBeds').isInt({ min: 1, max: 500 }).withMessage('Total beds must be between 1 and 500'),
+    ...wardDetailValidation,
     validate
   ], createWard);
 
 router.route('/:id')
   .get(authorize('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager'), getWard)
-  .put(authorize('Admin'), updateWard)
+  .put(authorize('Admin'), [body('wardName').optional().isString().trim().notEmpty(), ...wardDetailValidation, validate], updateWard)
   .delete(authorize('Admin'), deleteWard);
 
 // Existing: auto-assigns next available bed

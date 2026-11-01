@@ -20,6 +20,7 @@ import { computeTrend, formatTrendLabel } from '../../utils/trend'
 import { formatFreshness, formatEnumLabel } from '../../utils/format'
 import SourceBadge from '../ai/SourceBadge'
 import { SOURCE_TYPES } from '../../config/aiSourceTaxonomy'
+import { fetchAllPages } from '../../services/pagination'
 
 const STATUS_COLORS = {
   Confirmed: 'bg-emerald-100 text-emerald-700',
@@ -71,8 +72,8 @@ const AdminDashboard = () => {
       try {
         const today = new Date().toISOString().split('T')[0]
         const [aptRes, docRes, ptRes] = await Promise.all([
-          api.get('/appointments', { params: { date: today, limit: 500 } }),
-          api.get('/doctors',      { params: { limit: 200 } }),
+          api.get('/appointments', { params: { date: today } }), // not paginated server-side
+          fetchAllPages((params) => api.get('/doctors', { params })),
           api.get('/patients',     { params: { limit: 6, sort: '-createdAt' } }),
         ])
         const apts = aptRes.data?.data  || aptRes.data  || []

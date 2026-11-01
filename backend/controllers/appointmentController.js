@@ -1,6 +1,10 @@
 const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { SAFE_USER_SELECT } = require('../utils/safeUser');
+
+// Appointment responses carry patient identity only (no allergies, insurance,
+// or emergency contact); clinical detail lives behind care-scoped record routes.
+const APPOINTMENT_PATIENT_SELECT = { id: true, patientId: true, userId: true, user: { select: SAFE_USER_SELECT } };
 const { sendEmail } = require('../services/emailService');
 const { formatAppointment } = require('../utils/virtuals');
 const { normalizeAppointmentStatus, canTransitionAppointment } = require('../utils/stateMachines');
@@ -166,7 +170,7 @@ const getAppointment = asyncHandler(async (req, res) => {
   const appointment = await prisma.appointment.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      patient: { select: APPOINTMENT_PATIENT_SELECT },
       doctor: { include: { user: { select: SAFE_USER_SELECT } } },
       prescription: true,
     },
@@ -189,7 +193,7 @@ const updateAppointment = asyncHandler(async (req, res) => {
   let appointment = await prisma.appointment.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      patient: { select: APPOINTMENT_PATIENT_SELECT },
       doctor: { include: { user: { select: SAFE_USER_SELECT } } },
     },
   });
@@ -255,7 +259,7 @@ const updateAppointment = asyncHandler(async (req, res) => {
       where: { id: appointment.id },
       data: updateData,
       include: {
-        patient: { include: { user: { select: SAFE_USER_SELECT } } },
+        patient: { select: APPOINTMENT_PATIENT_SELECT },
         doctor: { include: { user: { select: SAFE_USER_SELECT } } },
         prescription: true,
       },
@@ -354,7 +358,7 @@ const cancelAppointment = asyncHandler(async (req, res) => {
       cancelReason: req.body.reason || 'No reason provided',
     },
     include: {
-      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      patient: { select: APPOINTMENT_PATIENT_SELECT },
       doctor: { include: { user: { select: SAFE_USER_SELECT } } },
     },
   });

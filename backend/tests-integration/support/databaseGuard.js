@@ -18,7 +18,7 @@ const TEST_DATABASE_NAME = /^[a-z][a-z0-9_]*_test$/;
 
 class UnsafeTestDatabaseError extends Error {
   constructor(reason) {
-    super(`Refusing to run integration tests: ${reason}. See docs/production-readiness-phase-1a-security-remediation.md (Test isolation).`);
+    super(`Refusing to run integration tests: ${reason}. See docs/production-readiness-phase-1b-api-verification.md (isolated test database).`);
     this.name = 'UnsafeTestDatabaseError';
   }
 }

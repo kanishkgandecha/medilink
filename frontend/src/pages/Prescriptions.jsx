@@ -18,6 +18,7 @@ import { getUserRoleKey } from '../config/rolePolicy'
 import { getPrescriptionsCapability } from '../config/pageCapabilities'
 import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
+import { fetchAllPages } from '../services/pagination'
 
 const STATUS_BADGE = {
   Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -110,8 +111,8 @@ const Prescriptions = () => {
 
   useEffect(() => {
     if (isDoctor && showWrite) {
-      patientService.getAllPatients().then(r => setPatients(r.data || r.patients || [])).catch(() => {})
-      medicineService.getAllMedicines({ limit: 200 }).then(r => setMedicines(r.data || [])).catch(() => {})
+      fetchAllPages(patientService.getAllPatients).then(r => setPatients(r.data || [])).catch(() => {})
+      fetchAllPages(medicineService.getAllMedicines).then(r => setMedicines(r.data || [])).catch(() => {})
     }
   }, [isDoctor, showWrite])
 

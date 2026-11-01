@@ -120,7 +120,7 @@ exports.getStaff = asyncHandler(async (req, res) => {
   const where = { isActive: true, user: { isActive: true } };
   if (department) where.department = department;
   if (designation) where.designation = designation;
-  if (employmentType) where.employmentType = employmentType;
+  if (employmentType) where.employmentType = normalizeEmploymentType(employmentType);
   if (shift) where.shift = shift;
 
   const staff = await prisma.staff.findMany({

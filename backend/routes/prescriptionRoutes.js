@@ -4,6 +4,7 @@ const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
 const { requirePrescriptionAccess } = require('../middleware/prescriptionAccess');
+const { prescriptionListQuery } = require('../middleware/queryValidation');
 const {
   createPrescription,
   getPrescriptions,
@@ -16,7 +17,7 @@ const {
 router.use(protect);
 
 router.route('/')
-  .get(authorize('Admin', 'Doctor', 'Nurse', 'Patient', 'Pharmacist'), getPrescriptions)
+  .get(authorize('Admin', 'Doctor', 'Nurse', 'Patient', 'Pharmacist'), prescriptionListQuery, getPrescriptions)
   .post(authorize('Doctor'), [
     body('patient').notEmpty().withMessage('Patient ID is required'),
     body('medicines').isArray({ min: 1, max: 50 }).withMessage('Between 1 and 50 medicines are required'),

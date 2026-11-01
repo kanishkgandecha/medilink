@@ -5,8 +5,11 @@
 
 require('dotenv').config();
 process.env.NODE_ENV = 'test';
+// Never contact the external AI provider from tests (dotenv may have loaded a key).
+process.env.OPENROUTER_API_KEY = ''; // blank, not deleted: server.js re-runs dotenv, which would restore a deleted key
 
 const { useSafeTestDatabase } = require('./support/databaseGuard');
+require('./support/noExternalNetwork');
 const testDatabase = useSafeTestDatabase();
 
 const test = require('node:test');

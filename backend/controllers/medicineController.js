@@ -186,26 +186,44 @@ exports.deleteMedicine = asyncHandler(async (req, res) => {
     });
   }
 
+  // PrescriptionMedicine rows cascade on medicine delete, so a hard delete would
+  // erase historical prescriptions. Referenced medicines are deactivated instead.
+  const references = await prisma.prescriptionMedicine.count({ where: { medicineId: medicine.id } });
+  if (references > 0) {
+    await prisma.medicine.update({ where: { id: medicine.id }, data: { isActive: false } });
+    return res.status(200).json({
+      success: true,
+      deactivated: true,
+      message: 'Medicine is referenced by prescriptions, so it was deactivated and retained for prescription history',
+    });
+  }
+
   await prisma.medicine.delete({ where: { id: medicine.id } });
 
   res.status(200).json({
     success: true,
+    deactivated: false,
     message: 'Medicine deleted successfully',
   });
 });
 
 exports.updateStock = asyncHandler(async (req, res) => {
   const { quantity, operation, batchNumber, expiryDate } = req.body;
+  const qty = Number.parseInt(quantity, 10);
 
-  if (!quantity || !operation) {
+  if (!Number.isInteger(qty) || qty < 1 || !operation) {
     return res.status(400).json({
       success: false,
       message: 'Quantity and operation are required',
     });
   }
+  if (!['add', 'reduce', 'set'].includes(operation)) {
+    return res.status(400).json({ success: false, message: 'Invalid operation. Use: add, reduce, or set' });
+  }
 
   const medicine = await prisma.medicine.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
+    select: { id: true, stockQuantity: true },
   });
 
   if (!medicine) {
@@ -215,41 +233,37 @@ exports.updateStock = asyncHandler(async (req, res) => {
     });
   }
 
-  let newQty = medicine.stockQuantity;
-  const updateData = {};
-
+  // Atomic updates: concurrent "reduce" requests can never drive stock below zero.
   if (operation === 'add') {
-    newQty += parseInt(quantity);
-    updateData.lastRestocked = new Date();
-    if (batchNumber) updateData.batchNumber = batchNumber;
-    if (expiryDate) updateData.expiryDate = new Date(expiryDate);
+    await prisma.medicine.update({
+      where: { id: medicine.id },
+      data: {
+        stockQuantity: { increment: qty },
+        lastRestocked: new Date(),
+        ...(batchNumber ? { batchNumber } : {}),
+        ...(expiryDate ? { expiryDate: new Date(expiryDate) } : {}),
+      },
+    });
   } else if (operation === 'reduce') {
-    if (medicine.stockQuantity < parseInt(quantity)) {
+    const reduced = await prisma.medicine.updateMany({
+      where: { id: medicine.id, stockQuantity: { gte: qty } },
+      data: { stockQuantity: { decrement: qty } },
+    });
+    if (reduced.count !== 1) {
+      const current = await prisma.medicine.findUnique({ where: { id: medicine.id }, select: { stockQuantity: true } });
       return res.status(400).json({
         success: false,
-        message: `Insufficient stock. Available: ${medicine.stockQuantity}`,
+        message: `Insufficient stock. Available: ${current ? current.stockQuantity : 0}`,
       });
     }
-    newQty -= parseInt(quantity);
-  } else if (operation === 'set') {
-    newQty = parseInt(quantity);
   } else {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid operation. Use: add, reduce, or set',
-    });
+    await prisma.medicine.update({ where: { id: medicine.id }, data: { stockQuantity: qty } });
   }
 
-  updateData.stockQuantity = newQty;
-
-  const updated = await prisma.medicine.update({
-    where: { id: medicine.id },
-    data: updateData,
-  });
-
+  const updated = await prisma.medicine.findUnique({ where: { id: medicine.id } });
   res.status(200).json({
     success: true,
-    message: `Stock ${operation === 'add' ? 'added' : operation === 'reduce' ? 'reduced' : 'updated'} successfully`,
+    message: `Stock ${operation === 'add' ? 'added' : operation === 'reduce' ? 'reduced' : 'set'} successfully`,
     data: formatPopulatedMedicine(updated),
   });
 });

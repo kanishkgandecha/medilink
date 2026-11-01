@@ -2,12 +2,15 @@
 
 require('dotenv').config();
 process.env.NODE_ENV = 'test';
+// Never contact the external AI provider from tests (dotenv may have loaded a key).
+process.env.OPENROUTER_API_KEY = ''; // blank, not deleted: server.js re-runs dotenv, which would restore a deleted key
 process.env.AI_REQUESTS_PER_MINUTE = '3';
 
 // Must run before config/prisma is loaded: refuses unless TEST_DATABASE_URL is
 // an explicitly confirmed, *_test-named database distinct from DATABASE_URL,
 // then points this process at it.
 const { useSafeTestDatabase } = require('./support/databaseGuard');
+require('./support/noExternalNetwork');
 const testDatabase = useSafeTestDatabase();
 
 const test = require('node:test');
@@ -355,7 +358,11 @@ test('patient summaries enforce ownership and persist privacy-safe AI audits', a
   const ownResult = await api(`/api/ai/patient-summary/${ownerProfile.id}`, { token: owner.token });
   assert.equal(ownResult.response.status, 200);
   assert.equal(ownResult.json.success, true);
-  assert.equal(ownResult.json.data._source, 'records');
+  // Patients never receive provider/source/fallback metadata (Phase 1B); the
+  // audit row below still records the true source server-side.
+  for (const hidden of ['_source', '_degraded', '_fallbackReason', 'sourceType', 'providerUsed', 'modelUsed', 'fallbackUsed']) {
+    assert.equal(hidden in ownResult.json.data, false, `${hidden} must not be sent to a patient`);
+  }
 
   const forbidden = await api(`/api/ai/patient-summary/${otherProfile.id}`, { token: owner.token });
   assert.equal(forbidden.response.status, 403);
@@ -804,17 +811,26 @@ test('a partially paid bill accepts the hyphenated status filter the UI would se
 test('AI degrades safely, exposes admin-only reliability, and rate limits per user', async () => {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const patient = await createUser({ suffix: `ai-patient-${suffix}`, role: 'Patient' });
+  const clinician = await createUser({ suffix: `ai-clinician-${suffix}`, role: 'Doctor' });
   const admin = await createUser({ suffix: `ai-admin-${suffix}`, role: 'Admin' });
   const rateUser = await createUser({ suffix: `ai-rate-${suffix}`, role: 'Patient' });
   const previousKey = process.env.OPENROUTER_API_KEY;
-  delete process.env.OPENROUTER_API_KEY;
+  process.env.OPENROUTER_API_KEY = ''; // blank, not deleted: server.js re-runs dotenv, which would restore a deleted key
   try {
     const degraded = await api('/api/ai/symptom-analysis', {
       token: patient.token, method: 'POST', body: { symptoms: 'mild headache' },
     });
     assert.equal(degraded.response.status, 200);
-    assert.equal(degraded.json.data._source, 'rules');
-    assert.equal(degraded.json.data._degraded, true);
+    // The patient-facing response hides fallback metadata entirely.
+    assert.equal('_degraded' in degraded.json.data, false);
+    assert.equal('_source' in degraded.json.data, false);
+    // Clinicians still see that the deterministic fallback served the request.
+    const technical = await api('/api/ai/symptom-analysis', {
+      token: clinician.token, method: 'POST', body: { symptoms: 'mild headache' },
+    });
+    assert.equal(technical.response.status, 200);
+    assert.equal(technical.json.data._source, 'rules');
+    assert.equal(technical.json.data._degraded, true);
 
     const denied = await api('/api/ai/reliability', { token: patient.token });
     assert.equal(denied.response.status, 403);
@@ -839,7 +855,8 @@ test('AI degrades safely, exposes admin-only reliability, and rate limits per us
 
 test('remaining AI routes use live doctor, bed, operational, and pharmacy data safely', async () => {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const clinical = await createUser({ suffix: `ai-clinical-${suffix}`, role: 'Patient' });
+  // Technical source assertions use a clinician; patients receive no source metadata.
+  const clinical = await createUser({ suffix: `ai-clinical-${suffix}`, role: 'Doctor' });
   const orchestration = await createUser({ suffix: `ai-chain-${suffix}`, role: 'Patient' });
   const admin = await createUser({ suffix: `ai-ops-${suffix}`, role: 'Admin' });
   const doctorUser = await createUser({ suffix: `ai-live-doctor-${suffix}`, role: 'Doctor' });
@@ -856,7 +873,7 @@ test('remaining AI routes use live doctor, bed, operational, and pharmacy data s
   } });
   fixtureWardIds.push(ward.id);
   const previousKey = process.env.OPENROUTER_API_KEY;
-  delete process.env.OPENROUTER_API_KEY;
+  process.env.OPENROUTER_API_KEY = ''; // blank, not deleted: server.js re-runs dotenv, which would restore a deleted key
   try {
     const report = await api('/api/ai/report-analysis', {
       token: clinical.token, method: 'POST',

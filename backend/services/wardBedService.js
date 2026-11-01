@@ -4,8 +4,11 @@ const wardInclude = {
   nurseInCharge: { select: { id: true, name: true, phone: true } },
   beds: {
     include: {
+      // Bed occupants: identity only (no allergies, insurance, or emergency contact).
       patient: {
-        include: {
+        select: {
+          id: true,
+          patientId: true,
           user: { select: { id: true, name: true, dateOfBirth: true, gender: true, phone: true } },
         },
       },

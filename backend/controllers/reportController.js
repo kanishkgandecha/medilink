@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { normalizeBillingStatus } = require('../utils/stateMachines');
 const asyncHandler = require('../utils/asyncHandler');
 const { formatAppointment } = require('../utils/virtuals');
 
@@ -210,7 +211,7 @@ const getRevenueReport = async (req, res) => {
   if (startDate && endDate) {
     where.billDate = { gte: new Date(startDate), lte: new Date(endDate) };
   }
-  if (paymentStatus) where.paymentStatus = paymentStatus;
+  if (paymentStatus) where.paymentStatus = normalizeBillingStatus(paymentStatus);
 
   let bills = await prisma.billing.findMany({
     where,

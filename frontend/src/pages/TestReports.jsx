@@ -13,6 +13,7 @@ import { getUserRoleKey } from '../config/rolePolicy'
 import { getTestReportsCapability } from '../config/pageCapabilities'
 import ScopeBadge from '../components/common/ScopeBadge'
 import ErrorState from '../components/common/ErrorState'
+import { fetchAllPages } from '../services/pagination'
 
 const ATTACHMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
 const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024
@@ -78,7 +79,7 @@ const TestReports = () => {
       setFetchError(null)
       const res = isDiagnosticStaff
         ? await patientService.getDiagnosticWorkspace()
-        : await patientService.getAllPatients()
+        : await fetchAllPages(patientService.getAllPatients)
       const allPatients = isDiagnosticStaff
         ? (res.data?.patients || [])
         : (res.data || res.patients || [])

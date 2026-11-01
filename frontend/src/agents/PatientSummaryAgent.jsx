@@ -6,6 +6,7 @@ import { getPatientSummary } from '../services/aiService'
 import api from '../services/api'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
 import useModalA11y from '../hooks/useModalA11y'
+import { fetchAllPages } from '../services/pagination'
 
 const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTechnicalSource = true }) => {
   const [patientId, setPatientId] = useState(propPatientId || '')
@@ -21,7 +22,7 @@ const PatientSummaryAgent = ({ open, onClose, patientId: propPatientId, showTech
     if (patients.length) return
     setLoadingList(true)
     try {
-      const res = await api.get('/patients', { params: { limit: 100 } })
+      const res = await fetchAllPages((params) => api.get('/patients', { params }))
       const list = res?.data || res || []
       setPatients(list)
     } catch { /* non-critical */ }

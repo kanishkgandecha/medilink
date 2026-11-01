@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
+
+const BILLING_CATEGORIES = ['Consultation', 'Medicine', 'Lab_Test', 'Imaging', 'Surgery', 'Room_Charges', 'Emergency', 'Other'];
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
 const { requireBillAccess } = require('../middleware/billingAccess');
+const { billingListQuery, dateRangeQuery } = require('../middleware/queryValidation');
 const {
   createBill,
   getBills,
@@ -23,17 +26,21 @@ router.use(protect);
 router.get('/patient-users', authorize('Admin', 'Receptionist', 'Pharmacist', 'Billing Staff'), getPatientUsers);
 
 // Stats (Pharmacist sees pharmacy-only stats via controller-level filtering)
-router.get('/stats', authorize('Admin', 'Receptionist', 'Pharmacist', 'Billing Staff'), getBillingStats);
+router.get('/stats', authorize('Admin', 'Receptionist', 'Pharmacist', 'Billing Staff'), dateRangeQuery, getBillingStats);
 
 // Main billing routes
 router.route('/')
-  .get(authorize('Admin', 'Receptionist', 'Pharmacist', 'Patient', 'Billing Staff'), getBills)
+  .get(authorize('Admin', 'Receptionist', 'Pharmacist', 'Patient', 'Billing Staff'), billingListQuery, getBills)
   .post(authorize('Admin', 'Receptionist', 'Pharmacist', 'Billing Staff'), [
     body('patient').notEmpty().withMessage('Patient ID is required'),
     body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
     body('items.*.description').notEmpty().withMessage('Item description is required'),
     body('items.*.unitPrice').isFloat({ min: 0 }).withMessage('Valid unit price is required'),
     body('items.*.quantity').isInt({ min: 1 }).withMessage('Valid quantity is required'),
+    body('items.*.category').optional().isIn(BILLING_CATEGORIES).withMessage('Invalid item category'),
+    body('discount').optional().isFloat({ min: 0 }).withMessage('Discount must be a non-negative number'),
+    body('tax').optional().isFloat({ min: 0 }).withMessage('Tax must be a non-negative number'),
+    body('paymentMethod').optional().isIn(['Cash', 'Card', 'UPI', 'Net Banking', 'Insurance', 'Online', 'Other', 'Cheque']).withMessage('Invalid payment method'),
     validate
   ], createBill);
 

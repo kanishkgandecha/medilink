@@ -16,8 +16,10 @@ const { runAdminInsights }       = require('../services/ai/agents/adminInsights'
 const { runPharmacyAlerts }      = require('../services/ai/agents/pharmacyAlerts');
 const { runAuditedAi, getAiAuditSummary } = require('../services/ai/audit');
 const { aiRateLimiter, aiConcurrencyLimit } = require('../middleware/aiUsageLimits');
+const { reliabilityQuery } = require('../middleware/queryValidation');
 const logger = require('../utils/logger');
 const { logSafeError } = require('../utils/redact');
+const { patientSafeAiResponses } = require('../utils/aiPatientView');
 
 const audited = (req, agent, operation) => runAuditedAi({ agent, requesterId: req.user.id, operation });
 
@@ -25,8 +27,10 @@ const audited = (req, agent, operation) => runAuditedAi({ agent, requesterId: re
 router.use(protect);
 router.use(aiRateLimiter);
 router.use(aiConcurrencyLimit);
+// Patients never receive provider/model/fallback metadata (audit is unaffected).
+router.use(patientSafeAiResponses);
 
-router.get('/reliability', authorize('Admin'), async (req, res) => {
+router.get('/reliability', authorize('Admin'), reliabilityQuery, async (req, res) => {
   try {
     const data = await getAiAuditSummary(req.query.hours);
     res.json({ success: true, data });

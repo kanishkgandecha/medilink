@@ -1,5 +1,8 @@
 const prisma = require('../config/prisma');
 const { SAFE_USER_SELECT } = require('../utils/safeUser');
+
+// Prescription detail: identity plus allergies (dispensing safety) only.
+const RX_DETAIL_PATIENT_SELECT = { id: true, patientId: true, userId: true, allergies: true, user: { select: SAFE_USER_SELECT } };
 const { isNurseUser, nurseEncounterWhere } = require('../utils/careScope');
 
 // Dispensing needs identity and allergies; no other patient profile fields.
@@ -132,7 +135,7 @@ const createPrescription = async (req, res) => {
         },
       },
       include: {
-        patient: { include: { user: { select: SAFE_USER_SELECT } } },
+        patient: { select: RX_DETAIL_PATIENT_SELECT },
         doctor: { include: { user: { select: SAFE_USER_SELECT } } },
         medicines: { include: { medicine: true } },
       },
@@ -211,7 +214,7 @@ const getPrescription = async (req, res) => {
   const prescription = await prisma.prescription.findFirst({
     where: { OR: [{ id: req.params.id }, { legacyMongoId: req.params.id }] },
     include: {
-      patient: { include: { user: { select: SAFE_USER_SELECT } } },
+      patient: { select: RX_DETAIL_PATIENT_SELECT },
       doctor: { include: { user: { select: SAFE_USER_SELECT } } },
       medicines: { include: { medicine: true } },
       appointment: true,

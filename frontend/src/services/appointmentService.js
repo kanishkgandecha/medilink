@@ -40,16 +40,6 @@ export const updateAppointment = async (id, data) => {
   }
 }
 
-// Delete appointment
-export const deleteAppointment = async (id) => {
-  try {
-    return await api.delete(`/appointments/${id}`)
-  } catch (error) {
-    console.error('Error deleting appointment:', error)
-    throw error
-  }
-}
-
 // Cancel appointment
 export const cancelAppointment = async (id, reason) => {
   try {

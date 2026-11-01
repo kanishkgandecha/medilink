@@ -5,3 +5,4 @@ logs
 uploads/*
 !uploads/.gitkeep
 private-uploads
+.env.test
