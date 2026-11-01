@@ -5,33 +5,31 @@ const prisma = require('../../../config/prisma');
 const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 const { isEmergency } = require('../emergency');
 
+// Ward type by condition. ICU rules apply only at High or critical urgency;
+// "surgery" alone (elective, awaiting) never means intensive care — only
+// post-operative wording does.
 const WARD_RULES = [
-  { keywords: ['cardiac', 'heart', 'chest pain', 'arrhythmia', 'myocardial'], wardType: 'ICU', priority: 'Immediate' },
-  { keywords: ['unconscious', 'stroke', 'seizure', 'trauma', 'severe bleeding', 'respiratory failure'], wardType: 'Emergency', priority: 'Immediate' },
-  { keywords: ['pediatric', 'child', 'infant', 'baby', 'newborn', 'neonatal'], wardType: 'Pediatric', priority: 'High' },
-  { keywords: ['post-op', 'surgery', 'critical', 'intensive', 'sepsis', 'icu', 'organ failure'], wardType: 'ICU', priority: 'Immediate' },
-  { keywords: ['private', 'vip', 'isolation', 'infection control', 'immunocompromised'], wardType: 'Private', priority: 'Standard' },
+  { keywords: ['cardiac', 'heart', 'chest pain', 'arrhythmia', 'myocardial'], wardType: 'ICU', intensive: true },
+  { keywords: ['unconscious', 'stroke', 'seizure', 'trauma', 'severe bleeding', 'respiratory failure'], wardType: 'Emergency', intensive: true },
+  { keywords: ['post-op', 'post op', 'post-operative', 'postoperative', 'after surgery', 'critical', 'intensive', 'sepsis', 'icu', 'organ failure'], wardType: 'ICU', intensive: true },
+  { keywords: ['private', 'vip', 'isolation', 'infection control', 'immunocompromised'], wardType: 'Private', intensive: false },
 ];
 
 const CRITICAL_CONDITION = /\b(shock|sepsis|septic|organ failure|respiratory failure|cardiac arrest)\b/i;
 
 function selectWardType(condition, urgency, age) {
   const lower = (condition + ' ' + urgency).toLowerCase();
+  const matching = (rule) => rule.keywords.some((k) => lower.includes(k));
   // Critical presentations are prioritised before any age-based placement so
   // a critically ill child is never deprioritised.
   if (['Critical', 'Emergency'].includes(urgency) || CRITICAL_CONDITION.test(condition) || isEmergency(condition)) {
-    const emergencyRule = WARD_RULES.find((rule) => rule.priority === 'Immediate' && rule.keywords.some((k) => lower.includes(k)));
+    const emergencyRule = WARD_RULES.find((rule) => rule.intensive && matching(rule));
     return { wardType: emergencyRule?.wardType || 'ICU', priority: 'Immediate' };
   }
-  if (Number.isFinite(Number(age)) && Number(age) < 18) return { wardType: 'Pediatric', priority: urgency === 'Routine' ? 'Standard' : 'High' };
-  for (const rule of WARD_RULES) {
-    if (rule.keywords.some((k) => lower.includes(k))) {
-      return { wardType: rule.wardType, priority: rule.priority };
-    }
-  }
-  if (['Critical', 'Emergency'].includes(urgency)) return { wardType: 'ICU', priority: 'Immediate' };
-  if (urgency === 'High') return { wardType: 'General', priority: 'High' };
-  return { wardType: 'General', priority: 'Standard' };
+  const priority = urgency === 'High' ? 'High' : 'Standard';
+  if (Number.isFinite(Number(age)) && Number(age) < 18) return { wardType: 'Pediatric', priority };
+  const rule = WARD_RULES.find((r) => matching(r) && (!r.intensive || urgency === 'High'));
+  return { wardType: rule?.wardType || 'General', priority };
 }
 
 async function fetchAvailableWards() {

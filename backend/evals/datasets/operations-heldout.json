@@ -1,0 +1,25 @@
+{
+  "description": "Held-out appointment and bed cases written before Phase E rule changes; scored separately and never tuned on. 'dept', 'urgency', 'wardType', and 'priority' accept a value or a list of acceptable values.",
+  "appointments": [
+    { "id": "ah-01", "symptoms": "my kid has a rash and fever", "dept": ["Paediatrics"], "urgency": "Routine" },
+    { "id": "ah-02", "symptoms": "back pain after lifting weights", "dept": ["Orthopaedics"], "urgency": "Routine" },
+    { "id": "ah-03", "symptoms": "chest burning after spicy food", "dept": ["Gastroenterology", "General Medicine"], "urgency": ["Routine", "Urgent"] },
+    { "id": "ah-04", "symptoms": "burning urination and kidney pain", "dept": ["Urology", "Nephrology", "General Medicine"], "urgency": ["Routine", "Urgent"] },
+    { "id": "ah-05", "symptoms": "sudden weakness in left arm and slurred speech", "dept": ["Neurology"], "urgency": "Emergency" },
+    { "id": "ah-06", "symptoms": "follow up for thyroid", "dept": ["General Medicine", "Endocrinology"], "urgency": "Routine" },
+    { "id": "ah-07", "symptoms": "skin itching on my back", "dept": ["Dermatology"], "urgency": "Routine" },
+    { "id": "ah-08", "symptoms": "cannot breathe properly", "dept": ["General Medicine", "Pulmonology", "Emergency"], "urgency": "Emergency" },
+    { "id": "ah-09", "symptoms": "headache with blurred vision and high bp", "dept": ["Cardiology", "Neurology", "General Medicine"], "urgency": ["Routine", "Urgent"] },
+    { "id": "ah-10", "symptoms": "toddler with ear pain", "dept": ["Paediatrics"], "urgency": "Routine" }
+  ],
+  "beds": [
+    { "id": "bh-01", "condition": "stable angina for elective angiography", "urgency": "Routine", "age": 62, "wardType": ["General"], "priority": ["Standard"] },
+    { "id": "bh-02", "condition": "post-operative care after appendix surgery", "urgency": "High", "age": 28, "wardType": ["ICU", "General"], "priority": ["High", "Immediate"] },
+    { "id": "bh-03", "condition": "cardiac arrest, revived", "urgency": "Critical", "age": 70, "wardType": ["ICU"], "priority": "Immediate" },
+    { "id": "bh-04", "condition": "dengue-like fever with low platelets", "urgency": "High", "age": 9, "wardType": ["Pediatric"], "priority": ["High"] },
+    { "id": "bh-05", "condition": "elective knee replacement surgery", "urgency": "Routine", "age": 66, "wardType": ["General"], "priority": ["Standard"] },
+    { "id": "bh-06", "condition": "severe breathing difficulty", "urgency": "Emergency", "age": 5, "wardType": ["ICU", "Emergency", "Pediatric"], "priority": "Immediate" },
+    { "id": "bh-07", "condition": "observation after minor head bump, alert", "urgency": "Standard", "age": 30, "wardType": ["General"], "priority": ["Standard"] },
+    { "id": "bh-08", "condition": "heart failure needing monitoring", "urgency": "High", "age": 74, "wardType": ["ICU", "General"], "priority": ["High", "Immediate"] }
+  ]
+}

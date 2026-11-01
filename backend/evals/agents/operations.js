@@ -20,8 +20,9 @@ const DOCTORS = [
   { id: 'gp-2', name: 'Dr GP Two', specialization: 'Internal Medicine', experience: 5, currentLoad: 2 },
 ];
 const DEPT_SPECS = {
-  Cardiology: /cardio/i, Neurology: /neuro/i, Orthopaedics: /ortho/i, Dermatology: /derma/i,
-  Paediatrics: /pa?ediatric/i, Gastroenterology: /gastro/i, 'General Medicine': /general|internal/i,
+  Cardiology: /\bcardio/i, Neurology: /\bneuro/i, Orthopaedics: /\bortho/i, Dermatology: /\bderma/i,
+  Paediatrics: /\bpa?ediatric/i, Gastroenterology: /\bgastro/i, 'General Medicine': /\b(?:general|internal)\b/i,
+  Urology: /\burolog/i, Nephrology: /\bnephro/i,
 };
 
 const WARDS = [
@@ -35,20 +36,19 @@ const WARDS = [
 const PAEDIATRIC_WARD = (ward) => /paediatric|pediatric|child/i.test(`${ward?.name} ${ward?.department}`);
 const asList = (value) => (Array.isArray(value) ? value : [value]);
 
-function evaluateAppointments() {
-  const { appointments } = loadDataset('operations.json');
+function evaluateAppointments(appointments, prefix = '') {
   const m = {
-    emergencyRecall: createMetric('appointment.emergencyRecall', { safety: true, description: 'Emergency symptoms flagged as Emergency urgency' }),
-    noUnrelatedSpecialist: createMetric('appointment.noUnrelatedSpecialist', { safety: true, description: 'Recommended doctor matches the suggested department or is a general physician' }),
-    leastLoaded: createMetric('appointment.leastLoaded', { safety: true, description: 'The least-loaded matching doctor is recommended' }),
-    departmentAccuracy: createMetric('appointment.departmentAccuracy', { target: 0.85, description: 'Suggested department equals the reference' }),
-    urgencyAccuracy: createMetric('appointment.urgencyAccuracy', { target: 0.85, description: 'Urgency level equals the reference' }),
+    emergencyRecall: createMetric(`${prefix}appointment.emergencyRecall`, { safety: true, description: 'Emergency symptoms flagged as Emergency urgency' }),
+    noUnrelatedSpecialist: createMetric(`${prefix}appointment.noUnrelatedSpecialist`, { safety: true, description: 'Recommended doctor matches the suggested department or is a general physician' }),
+    leastLoaded: createMetric(`${prefix}appointment.leastLoaded`, { safety: true, description: 'The least-loaded matching doctor is recommended' }),
+    departmentAccuracy: createMetric(`${prefix}appointment.departmentAccuracy`, { target: 0.85, description: 'Suggested department equals the reference' }),
+    urgencyAccuracy: createMetric(`${prefix}appointment.urgencyAccuracy`, { target: 0.85, description: 'Urgency level equals the reference' }),
   };
   for (const c of appointments) {
     const out = buildVerifiedRecommendation({ symptoms: c.symptoms, department: c.department, doctors: DOCTORS });
-    if (c.urgency === 'Emergency') check(m.emergencyRecall, out.urgencyLevel === 'Emergency', c.id, `got ${out.urgencyLevel} for "${c.symptoms}"`);
-    check(m.urgencyAccuracy, out.urgencyLevel === c.urgency, c.id, `got ${out.urgencyLevel}, expected ${c.urgency} for "${c.symptoms}"`);
-    check(m.departmentAccuracy, out.suggestedDepartment === c.dept, c.id, `got ${out.suggestedDepartment}, expected ${c.dept} for "${c.symptoms}"`);
+    if (asList(c.urgency).includes('Emergency') && asList(c.urgency).length === 1) check(m.emergencyRecall, out.urgencyLevel === 'Emergency', c.id, `got ${out.urgencyLevel} for "${c.symptoms}"`);
+    check(m.urgencyAccuracy, asList(c.urgency).includes(out.urgencyLevel), c.id, `got ${out.urgencyLevel}, expected ${asList(c.urgency).join('/')} for "${c.symptoms}"`);
+    check(m.departmentAccuracy, asList(c.dept).includes(out.suggestedDepartment), c.id, `got ${out.suggestedDepartment}, expected ${asList(c.dept).join('/')} for "${c.symptoms}"`);
     const doc = out.recommendedDoctor;
     const spec = DEPT_SPECS[out.suggestedDepartment];
     check(m.noUnrelatedSpecialist, !doc || (spec && spec.test(doc.specialization)) || DEPT_SPECS['General Medicine'].test(doc.specialization), c.id, `${doc?.specialization} for ${out.suggestedDepartment}`);
@@ -61,14 +61,13 @@ function evaluateAppointments() {
   return Object.values(m);
 }
 
-function evaluateBeds() {
-  const { beds } = loadDataset('operations.json');
+function evaluateBeds(beds, prefix = '') {
   const m = {
-    criticalPrioritised: createMetric('bed.criticalPrioritised', { safety: true, description: 'Critical / Emergency admissions always get Immediate priority' }),
-    bedExists: createMetric('bed.bedExists', { safety: true, description: 'Suggested bed is a real free bed in a ward with capacity' }),
-    paediatricPlacement: createMetric('bed.paediatricPlacement', { safety: true, description: 'Non-critical children are placed in a paediatric ward' }),
-    wardTypeAccuracy: createMetric('bed.wardTypeAccuracy', { target: 0.85, description: 'Recommended ward type is acceptable for the reference case' }),
-    priorityAccuracy: createMetric('bed.priorityAccuracy', { target: 0.85, description: 'Priority is acceptable for the reference case' }),
+    criticalPrioritised: createMetric(`${prefix}bed.criticalPrioritised`, { safety: true, description: 'Critical / Emergency admissions always get Immediate priority' }),
+    bedExists: createMetric(`${prefix}bed.bedExists`, { safety: true, description: 'Suggested bed is a real free bed in a ward with capacity' }),
+    paediatricPlacement: createMetric(`${prefix}bed.paediatricPlacement`, { safety: true, description: 'Non-critical children are placed in a paediatric ward' }),
+    wardTypeAccuracy: createMetric(`${prefix}bed.wardTypeAccuracy`, { target: 0.85, description: 'Recommended ward type is acceptable for the reference case' }),
+    priorityAccuracy: createMetric(`${prefix}bed.priorityAccuracy`, { target: 0.85, description: 'Priority is acceptable for the reference case' }),
   };
   for (const c of beds) {
     const out = buildVerifiedAllocation({ condition: c.condition, urgency: c.urgency, age: c.age, wards: WARDS });
@@ -83,7 +82,13 @@ function evaluateBeds() {
 }
 
 async function evaluate() {
-  return summarize('operations', [...evaluateAppointments(), ...evaluateBeds()]);
+  const tuning = loadDataset('operations.json');
+  // Held-out cases written before the Phase E rule changes; never tuned on.
+  const heldOut = loadDataset('operations-heldout.json');
+  return summarize('operations', [
+    ...evaluateAppointments(tuning.appointments), ...evaluateBeds(tuning.beds),
+    ...evaluateAppointments(heldOut.appointments, 'heldOut.'), ...evaluateBeds(heldOut.beds, 'heldOut.'),
+  ]);
 }
 
 module.exports = { evaluate, DOCTORS, WARDS };

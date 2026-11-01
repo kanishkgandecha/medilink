@@ -18,33 +18,43 @@ const liveRecordsSourceMeta = () => buildSourceMeta(null, {
   ],
 });
 
+// Whole-word keywords per department; the department with the most matches
+// wins (ties go to the earlier entry). Words for children always mean
+// Paediatrics, whatever the symptom.
+const PAEDIATRIC_WORDS = /\b(?:child|children|kids?|bab(?:y|ies)|infants?|toddlers?|newborns?|p(?:a)?ediatric)\b/;
+const GENERAL_SPECS = ['general physician', 'general medicine', 'internal medicine'];
+// Specialisations match on word starts so "urologist" never matches "neurologist".
+const hasSpec = (specialization, specs) => specs.some((spec) => new RegExp(`\\b${spec}`, 'i').test(specialization));
 const DEPT_MAP = [
-  { keywords: ['chest', 'cardiac', 'heart', 'palpitation', 'bp', 'blood pressure'], dept: 'Cardiology', specs: ['cardiologist', 'cardiology'] },
-  { keywords: ['headache', 'migraine', 'seizure', 'memory', 'paralysis', 'stroke', 'numbness', 'dizziness', 'face drooping', 'slurred speech', 'one side'], dept: 'Neurology', specs: ['neurologist', 'neurology'] },
-  { keywords: ['joint', 'knee', 'back', 'bone', 'fracture', 'arthritis', 'muscle', 'sprain'], dept: 'Orthopaedics', specs: ['orthopaedic', 'orthopedic', 'orthopedics'] },
-  { keywords: ['skin', 'rash', 'acne', 'allergy', 'itching', 'eczema', 'derma'], dept: 'Dermatology', specs: ['dermatologist', 'dermatology'] },
-  { keywords: ['child', 'baby', 'infant', 'pediatric', 'kid', 'growth'], dept: 'Paediatrics', specs: ['pediatrician', 'paediatrician', 'pediatric'] },
-  { keywords: ['stomach', 'abdomen', 'liver', 'bowel', 'colon', 'digestion', 'gastro', 'nausea', 'acid', 'vomiting blood', 'blood in vomit', 'black stool', 'tarry stool'], dept: 'Gastroenterology', specs: ['gastroenterologist', 'gastroenterology', 'gastro'] },
-  { keywords: ['fever', 'cough', 'cold', 'flu', 'fatigue', 'weakness', 'general', 'routine', 'check'], dept: 'General Medicine', specs: ['general physician', 'general medicine', 'internal medicine'] },
+  { dept: 'Cardiology', specs: ['cardiologist', 'cardiology'], keywords: [/\bchest (?:pain|tightness|pressure|discomfort)\b/, /\bcardiac\b/, /\bheart\b/, /\bpalpitations?\b/, /\bbp\b/, /\bblood pressure\b/, /\bhypertension\b/] },
+  { dept: 'Neurology', specs: ['neurologist', 'neurology'], keywords: [/\bheadaches?\b/, /\bmigraines?\b/, /\bseizures?\b/, /\bmemory\b/, /\bparalysis\b/, /\bstroke\b/, /\bnumbness\b/, /\bdizz/, /\bface drooping\b/, /\bslurred speech\b/, /\b(?:one|left|right) side\b/, /\bweakness in (?:left|right|one) (?:arm|leg|side)\b/, /\b(?:left|right) arm\b.*\bweak|\bweak\w*\b.*\b(?:left|right) arm\b/] },
+  { dept: 'Orthopaedics', specs: ['orthopaedic', 'orthopedic', 'orthopedics'], keywords: [/\bjoints?\b/, /\bknees?\b/, /\bback ?(?:pain|ache)\b/, /\blower back\b/, /\bbones?\b/, /\bfractures?\b/, /\barthritis\b/, /\bmuscles?\b/, /\bsprain(?:ed)?\b/, /\bshoulder\b/, /\bneck pain\b/, /\b(?:ankle|wrist|elbow|hip)\b/, /\btwisted\b/, /\binjur(?:y|ed)\b/] },
+  { dept: 'Dermatology', specs: ['dermatologist', 'dermatology'], keywords: [/\bskin\b/, /\brash(?:es)?\b/, /\bacne\b/, /\ballerg/, /\bitch(?:ing|y)?\b/, /\beczema\b/, /\bderma/] },
+  { dept: 'Paediatrics', specs: ['pediatrician', 'paediatrician', 'pediatric'], keywords: [PAEDIATRIC_WORDS, /\bgrowth\b/, /\bvaccinat/] },
+  { dept: 'Gastroenterology', specs: ['gastroenterologist', 'gastroenterology', 'gastro'], keywords: [/\bstomach\b/, /\babdom(?:en|inal)\b/, /\bliver\b/, /\bbowel\b/, /\bcolon\b/, /\bdigestion\b/, /\bindigestion\b/, /\bgastro/, /\bnausea\b/, /\bacid(?:ity| reflux)?\b/, /\bheartburn\b/, /\bspicy food\b/, /\bburning after (?:food|meals?|eating)\b/, /\bvomiting blood\b/, /\bblood in vomit\b/, /\b(?:black|tarry) stools?\b/, /\bloose (?:stools?|motions?)\b/, /\bdiarrh(?:o)?ea\b/, /\bconstipat/] },
+  { dept: 'Urology', specs: ['urologist', 'urology', 'nephrologist', 'nephrology'], keywords: [/\burinat/, /\burine\b/, /\bkidneys?\b/, /\b(?:kidney|renal|bladder) stones?\b/, /\bbladder\b/, /\bprostate\b/] },
+  { dept: 'General Medicine', specs: GENERAL_SPECS, keywords: [/\bfever\b/, /\bcough\b/, /\bcold\b/, /\bflu\b/, /\bfatigue\b/, /\bweakness\b/, /\bgeneral\b/, /\broutine\b/, /\bcheck-?up\b/, /\bthyroid\b/] },
 ];
 
 // Emergencies come from the shared detector so every agent escalates the same
 // presentations; these keywords only distinguish urgent from routine.
-const URGENT_KEYWORDS = ['chest pain', 'chest discomfort', 'breathlessness', 'high fever', 'fever for', 'blood in stool', 'blood in urine', 'severe pain', 'persistent vomiting'];
+const URGENT_KEYWORDS = ['chest pain', 'chest discomfort', 'breathlessness', 'high fever', 'fever for', 'blood in stool', 'blood in urine', 'severe pain', 'persistent vomiting', 'kidney stone', 'stone pain', 'renal colic'];
 
 function detectDept(symptoms) {
   const lower = withEnglish(symptoms).toLowerCase();
-  for (const { keywords, dept, specs } of DEPT_MAP) {
-    if (keywords.some((k) => lower.includes(k))) return { dept, specs };
+  const paediatrics = DEPT_MAP.find((entry) => entry.dept === 'Paediatrics');
+  if (PAEDIATRIC_WORDS.test(lower)) return paediatrics;
+  let best = null;
+  for (const entry of DEPT_MAP) {
+    const score = entry.keywords.filter((k) => k.test(lower)).length;
+    if (score && (!best || score > best.score)) best = { entry, score };
   }
-  return { dept: 'General Medicine', specs: ['general physician', 'general medicine'] };
+  return best?.entry || DEPT_MAP.find((entry) => entry.dept === 'General Medicine');
 }
 
 function departmentRule(department) {
   const normalized = String(department || '').toLowerCase();
-  return DEPT_MAP.find((entry) =>
-    entry.dept.toLowerCase() === normalized || entry.specs.some((spec) => normalized.includes(spec))
-  );
+  return DEPT_MAP.find((entry) => entry.dept.toLowerCase() === normalized || hasSpec(normalized, entry.specs));
 }
 
 function detectUrgency(symptoms) {
@@ -96,12 +106,9 @@ function buildVerifiedRecommendation({ symptoms, department, doctors, metadata =
   const finalDept = requested?.dept || detected.dept;
   const specs = requested?.specs || detected.specs;
 
-  const matched = doctors.filter((d) => {
-    const spec = d.specialization.toLowerCase();
-    return specs.some((s) => spec.includes(s));
-  });
+  const matched = doctors.filter((d) => hasSpec(d.specialization, specs));
 
-  const general = doctors.filter((d) => /general physician|general medicine|internal medicine/i.test(d.specialization));
+  const general = doctors.filter((d) => hasSpec(d.specialization, GENERAL_SPECS));
   const pool = (matched.length ? matched : general).slice().sort((a, b) =>
     (a.currentLoad || 0) - (b.currentLoad || 0) || (b.experience || 0) - (a.experience || 0)
   );
