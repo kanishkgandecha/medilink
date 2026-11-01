@@ -10,11 +10,14 @@
 //   node evals/run.js --failures       also list each failing case
 
 process.env.OPENROUTER_API_KEY = '';
+// Fixed date outside every seasonal window, so results do not depend on the
+// month the suite runs in (seasonal cases set their own dates).
+require('../services/ai/seasonal').setEvaluationDate(new Date('2026-01-15T12:00:00+05:30'));
 
 const fs = require('fs');
 const path = require('path');
 
-const AGENTS = ['symptoms', 'chat', 'reports', 'healthRisk', 'operations', 'records', 'locations', 'languages', 'seasons'];
+const AGENTS = ['symptoms', 'chat', 'reports', 'healthRisk', 'operations', 'records', 'locations', 'languages', 'seasons', 'external'];
 const BASELINE = path.join(__dirname, 'baseline.json');
 const RESULTS = path.join(__dirname, 'results', 'latest.json');
 

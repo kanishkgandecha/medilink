@@ -1,0 +1,3278 @@
+{
+ "description": "Synthetic patients sampled from the DDXPlus test set and rendered as plain-English symptom messages by evals/scripts/derive-ddxplus.js. Severity is the DDXPlus pathology severity (1 = most severe, 5 = least). Pathology names are reference data only.",
+ "source": "DDXPlus Dataset, Fansi Tchango et al. (2022), https://figshare.com/articles/dataset/DDXPlus_Dataset/20043374",
+ "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: sampled, symptoms rendered as English text, antecedents removed.",
+ "perPathology": 10,
+ "skippedPerPathology": 10,
+ "cases": [
+  {
+   "id": "ddx-1",
+   "age": 66,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, cheek, occiput, significantly increased sweating, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), sore throat, diffuse (widespread) muscle pain, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-2",
+   "age": 42,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "severe pain in the cheek, temple, significantly increased sweating, fever (either felt or measured with a thermometer), sore throat, diffuse (widespread) muscle pain, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-3",
+   "age": 38,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, cheek, occiput, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-4",
+   "age": 33,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, forehead, cheek, significantly increased sweating, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-5",
+   "age": 18,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the forehead, cheek, occiput, cough that produces colored or more abundant sputum than usual, sore throat, diffuse (widespread) muscle pain"
+  },
+  {
+   "id": "ddx-6",
+   "age": 79,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, forehead, cheek, significantly increased sweating, cough that produces colored or more abundant sputum than usual, sore throat, diffuse (widespread) muscle pain, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-7",
+   "age": 32,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, palace, coughing up blood, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-8",
+   "age": 50,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, forehead, temple, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, do you constantly feel fatigued or do you have non-restful sleep, stools that were black (like coal), very abundant or very long menstruation periods, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-9",
+   "age": 60,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the side of the chest, upper chest, pharynx, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, nasal congestion or a clear runny nose, cough, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-10",
+   "age": 75,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, forehead, temple, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, do you constantly feel fatigued or do you have non-restful sleep, stools that were black (like coal), skin much paler than usual, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-11",
+   "age": 70,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, forehead, cheek, significantly increased sweating, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-12",
+   "age": 17,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, top of the head, forehead, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, stools that were black (like coal), light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-13",
+   "age": 67,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, forehead, cheek, significantly increased sweating, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), sore throat, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-14",
+   "age": 48,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, top of the head, temple, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, do you constantly feel fatigued or do you have non-restful sleep, skin much paler than usual, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-15",
+   "age": 22,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the side of the chest, breast, posterior chest wall, cough that produces colored or more abundant sputum than usual, cough, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-16",
+   "age": 26,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "pain in the top of the head, forehead, cheek, significantly increased sweating, cough that produces colored or more abundant sputum than usual, diffuse (widespread) muscle pain, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-17",
+   "age": 4,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the thyroid cartilage, palace, pharynx, coughing up blood, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-18",
+   "age": 46,
+   "severity": 5,
+   "pathology": "URTI",
+   "symptoms": "severe pain in the forehead, cheek, occiput, significantly increased sweating, fever (either felt or measured with a thermometer), sore throat, diffuse (widespread) muscle pain, cough"
+  },
+  {
+   "id": "ddx-19",
+   "age": 16,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "pain in the tonsil, thyroid cartilage, palace, coughing up blood, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-20",
+   "age": 25,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "severe pain in the back of head, cervical spine, temple, significantly increased sweating, fever (either felt or measured with a thermometer), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-21",
+   "age": 57,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the forehead, occiput, temple, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-22",
+   "age": 63,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, palace, coughing up blood, fever (either felt or measured with a thermometer)"
+  },
+  {
+   "id": "ddx-23",
+   "age": 29,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the back of head, back of the neck, top of the head, swollen or painful lymph nodes, significantly increased sweating, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-24",
+   "age": 51,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the back of head, top of the head, forehead, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-25",
+   "age": 61,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, pharynx, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-26",
+   "age": 53,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "pain in the tonsil, thyroid cartilage, palace, coughing up blood, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-27",
+   "age": 26,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the lower chest, hypochondrium, belly, have you recently thrown up blood or something resembling coffee beans, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-28",
+   "age": 43,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, your heart is beating very irregularly or in a disorganized pattern"
+  },
+  {
+   "id": "ddx-29",
+   "age": 16,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, top of the head, forehead, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, do you constantly feel fatigued or do you have non-restful sleep, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-30",
+   "age": 43,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, hard time opening/raising one or both eyelids, are you unable to control the direction of your eyes, that muscle spasms or soreness in your neck are keeping you from turning your head to one side, annoying muscle spasms in your face, neck or any other part of your body, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-31",
+   "age": 25,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the flank, iliac fossa, hypochondrium, significantly increased sweating, like you are (or were) choking or suffocating, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings"
+  },
+  {
+   "id": "ddx-32",
+   "age": 49,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, forehead, temple, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, do you constantly feel fatigued or do you have non-restful sleep"
+  },
+  {
+   "id": "ddx-33",
+   "age": 42,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the side of the chest, flank, iliac fossa, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, like you are dying or were you afraid that you were about do die, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-34",
+   "age": 71,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "pain in the thyroid cartilage, pharynx, under the jaw, coughing up blood, cough"
+  },
+  {
+   "id": "ddx-35",
+   "age": 9,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the lower chest, side of the chest, posterior chest wall, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, nasal congestion or a clear runny nose, cough, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-36",
+   "age": 3,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, palace, coughing up blood, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-37",
+   "age": 65,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, palace, coughing up blood, cough"
+  },
+  {
+   "id": "ddx-38",
+   "age": 41,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "severe pain in the side of the chest, scapula, breast, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, did you lose consciousness, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-39",
+   "age": 9,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, breast, coughing up blood, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-40",
+   "age": 68,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the top of the head, forehead, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, skin much paler than usual"
+  },
+  {
+   "id": "ddx-41",
+   "age": 21,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the flank, iliac fossa, hypochondrium, significantly increased sweating, like you are dying or were you afraid that you were about do die, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-42",
+   "age": 27,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, trouble keeping your tongue in your mouth, are you unable to control the direction of your eyes, that muscle spasms or soreness in your neck are keeping you from turning your head to one side, annoying muscle spasms in your face, neck or any other part of your body"
+  },
+  {
+   "id": "ddx-43",
+   "age": 56,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the back of head, top of the head, forehead, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, do you constantly feel fatigued or do you have non-restful sleep, stools that were black (like coal)"
+  },
+  {
+   "id": "ddx-44",
+   "age": 74,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, posterior chest wall, coughing up blood, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-45",
+   "age": 8,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "severe pain in the upper chest, hypochondrium, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-46",
+   "age": 30,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "severe pain in the side of the chest, scapula, posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-47",
+   "age": 66,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "severe pain in the flank, hypochondrium, pubis, in contact with or ate something that you have an allergy to, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, did you lose consciousness, high pitched sound when breathing in, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-48",
+   "age": 73,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, trouble keeping your tongue in your mouth, hard time opening/raising one or both eyelids, are you unable to control the direction of your eyes, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-49",
+   "age": 42,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-50",
+   "age": 45,
+   "severity": 4,
+   "pathology": "Viral pharyngitis",
+   "symptoms": "severe pain in the tonsil, pharynx, under the jaw, coughing up blood, cough"
+  },
+  {
+   "id": "ddx-51",
+   "age": 20,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "pain in the flank, iliac fossa, hypochondrium, in contact with or ate something that you have an allergy to, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-52",
+   "age": 29,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, breast, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, did you lose consciousness, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-53",
+   "age": 10,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "severe pain in the upper chest, hypochondrium, epigastric, stools that were black (like coal), burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, cough, symptoms that get worse after eating"
+  },
+  {
+   "id": "ddx-54",
+   "age": 15,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the side of the chest, pharynx, breast, cough that produces colored or more abundant sputum than usual, nasal congestion or a clear runny nose, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-55",
+   "age": 33,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the lower chest, side of the chest, pharynx, shortness of breath or difficulty breathing in a significant way, sore throat, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-56",
+   "age": 61,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "severe pain in the side of the chest, scapula, posterior chest wall, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-57",
+   "age": 56,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, posterior chest wall, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-58",
+   "age": 44,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-59",
+   "age": 8,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the top of the head, temple, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, stools that were black (like coal), skin much paler than usual, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-60",
+   "age": 16,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the top of the head, forehead, temple, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-61",
+   "age": 63,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the lower chest, hypochondrium, belly, burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, cough, have you recently thrown up blood or something resembling coffee beans, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-62",
+   "age": 48,
+   "severity": 4,
+   "pathology": "Anemia",
+   "symptoms": "pain in the top of the head, temple, slightly dizzy or lightheaded, do you constantly feel fatigued or do you have non-restful sleep, light red blood or blood clots in your stool"
+  },
+  {
+   "id": "ddx-63",
+   "age": 0,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the lower chest, side of the chest, breast, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), cough, wheezing sound when you exhale, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-64",
+   "age": 36,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the top of the head, forehead, temple, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain"
+  },
+  {
+   "id": "ddx-65",
+   "age": 2,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "severe pain in the iliac fossa, hypochondrium, belly, diarrhea or an increase in stool frequency, lightheaded and dizzy or do you feel like you are about to faint, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, did you lose consciousness, high pitched sound when breathing in, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-66",
+   "age": 65,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "severe pain in the ear, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-67",
+   "age": 23,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "severe pain in the back of the neck, cervical spine, temple, significantly increased sweating, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain"
+  },
+  {
+   "id": "ddx-68",
+   "age": 63,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "severe pain in the back of head, back of the neck, top of the head, significantly increased sweating, fever (either felt or measured with a thermometer), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-69",
+   "age": 0,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the side of the chest, upper chest, breast, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-70",
+   "age": 63,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, lateral side of the foot, thigh, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-71",
+   "age": 54,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the lower chest, iliac fossa, upper chest, significantly increased sweating, like you are (or were) choking or suffocating, lightheaded and dizzy or do you feel like you are about to faint, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-72",
+   "age": 10,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, nasal congestion or a clear runny nose, cough, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-73",
+   "age": 30,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the forehead, cheek, eye, have you lost your sense of smell, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-74",
+   "age": 17,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-75",
+   "age": 72,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "severe pain in the ear, cough"
+  },
+  {
+   "id": "ddx-76",
+   "age": 20,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, trouble keeping your tongue in your mouth, are you unable to control the direction of your eyes, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-77",
+   "age": 75,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, biceps, thoracic spine, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-78",
+   "age": 39,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, posterior chest wall, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, symptoms more prominent at night, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-79",
+   "age": 68,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, palace, under the jaw, fever (either felt or measured with a thermometer), cough"
+  },
+  {
+   "id": "ddx-80",
+   "age": 52,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, lateral side of the foot, calf, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-81",
+   "age": 10,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, trouble keeping your tongue in your mouth, are you unable to control the direction of your eyes, that muscle spasms or soreness in your neck are keeping you from turning your head to one side, annoying muscle spasms in your face, neck or any other part of your body, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-82",
+   "age": 70,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, nose, have you lost your sense of smell, nasal congestion or a clear runny nose, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-83",
+   "age": 26,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the lower chest, upper chest, hypochondrium, cough, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-84",
+   "age": 10,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, thyroid cartilage, under the jaw, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-85",
+   "age": 56,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the cervical spine, top of the head, forehead, swollen or painful lymph nodes, significantly increased sweating, diarrhea or an increase in stool frequency, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-86",
+   "age": 47,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, hard time opening/raising one or both eyelids, that muscle spasms or soreness in your neck are keeping you from turning your head to one side, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-87",
+   "age": 61,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the side of the chest, hypochondrium, breast, lightheaded and dizzy or do you feel like you are about to faint, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings"
+  },
+  {
+   "id": "ddx-88",
+   "age": 53,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "severe pain in the lateral side of the foot, thigh, dorsal aspect of the foot, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-89",
+   "age": 12,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "severe pain in the flank, iliac fossa, hypochondrium, significantly increased sweating, like you are (or were) choking or suffocating, lightheaded and dizzy or do you feel like you are about to faint, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, like you are detached from your own body or your surroundings, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-90",
+   "age": 15,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the side of the chest, flank, pubis, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-91",
+   "age": 44,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, weakness in your facial muscles and/or eyes, weakness or paralysis on one side of the face, which may still be present or completely resolved"
+  },
+  {
+   "id": "ddx-92",
+   "age": 63,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "severe pain in the ankle, lateral side of the foot, thigh, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-93",
+   "age": 61,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, trouble keeping your tongue in your mouth, are you unable to control the direction of your eyes, that muscle spasms or soreness in your neck are keeping you from turning your head to one side"
+  },
+  {
+   "id": "ddx-94",
+   "age": 16,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, upper chest, breast, coughing up blood, cough that produces colored or more abundant sputum than usual, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-95",
+   "age": 58,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, chest pain even at rest, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-96",
+   "age": 4,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the side of the chest, breast, out of breath with minimal physical effort, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-97",
+   "age": 44,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "pain in the upper chest, breast, epigastric, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-98",
+   "age": 16,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "pain in the flank, hypochondrium, pubis, in contact with or ate something that you have an allergy to, lightheaded and dizzy or do you feel like you are about to faint, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-99",
+   "age": 37,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the lateral side of the foot, thigh, dorsal aspect of the foot, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-100",
+   "age": 25,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "severe pain in the back of head, side of the neck, top of the head, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, chills or shivers, loss of appetite or do you get full more quickly then usually, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-101",
+   "age": 25,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, have you ever felt like you were suffocating for a very short time associated with inability to breathe or speak, trouble keeping your tongue in your mouth, hard time opening/raising one or both eyelids, annoying muscle spasms in your face, neck or any other part of your body, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-102",
+   "age": 55,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the lower chest, upper chest, hypochondrium, burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, cough, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-103",
+   "age": 35,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "pain in the lower chest, upper chest, epigastric, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-104",
+   "age": 34,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "pain in the biceps, side of the chest, upper chest, significantly increased sweating, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-105",
+   "age": 109,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "severe pain in the tonsil, side of the neck, palace, pain that improves when you lean forward, fever (either felt or measured with a thermometer), that you produce more saliva than usual, high pitched sound when breathing in"
+  },
+  {
+   "id": "ddx-106",
+   "age": 11,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, palace, pharynx, fever (either felt or measured with a thermometer), cough"
+  },
+  {
+   "id": "ddx-107",
+   "age": 77,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "pain in the flank, iliac fossa, epigastric, in contact with or ate something that you have an allergy to, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, did you lose consciousness, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-108",
+   "age": 21,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "weakness in your facial muscles and/or eyes, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, numbness, loss of sensation or tingling, in both arms and legs and around your mouth"
+  },
+  {
+   "id": "ddx-109",
+   "age": 69,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, chest pain even at rest, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-110",
+   "age": 30,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, pharynx, under the jaw, fever (either felt or measured with a thermometer), that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-111",
+   "age": 54,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "pain in the flank, iliac fossa, hypochondrium, in contact with or ate something that you have an allergy to, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-112",
+   "age": 20,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the cheek, eye, temple, that your eyes produce excessive tears, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-113",
+   "age": 56,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "severe pain in the finger (ring finger), finger (index), finger (middle), shortness of breath or difficulty breathing in a significant way, any vaginal discharge"
+  },
+  {
+   "id": "ddx-114",
+   "age": 67,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, out of breath with minimal physical effort, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-115",
+   "age": 21,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "severe pain in the lower chest, breast, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-116",
+   "age": 50,
+   "severity": 3,
+   "pathology": "HIV (initial infection)",
+   "symptoms": "pain in the cervical spine, forehead, temple, swollen or painful lymph nodes, significantly increased sweating, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-117",
+   "age": 27,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "severe pain in the flank, iliac fossa, hypochondrium, in contact with or ate something that you have an allergy to, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, swelling in one or more areas of your body, high pitched sound when breathing in, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-118",
+   "age": 73,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "severe pain in the scapula, breast, posterior chest wall, swelling in one or more areas of your body, did you lose consciousness, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-119",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, cough, symptoms more prominent at night, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-120",
+   "age": 31,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the hypochondrium, epigastric, diarrhea or an increase in stool frequency, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, pale stools and dark urine"
+  },
+  {
+   "id": "ddx-121",
+   "age": 57,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, eye, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-122",
+   "age": 59,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, eye, temple, that your eyes produce excessive tears"
+  },
+  {
+   "id": "ddx-123",
+   "age": 76,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "severe pain in the finger (ring finger), finger (index), finger (middle), swollen or painful lymph nodes, have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, any vaginal discharge"
+  },
+  {
+   "id": "ddx-124",
+   "age": 44,
+   "severity": 2,
+   "pathology": "Pulmonary embolism",
+   "symptoms": "pain in the side of the chest, scapula, posterior chest wall, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-125",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "pain in the ear, fever (either felt or measured with a thermometer), cough"
+  },
+  {
+   "id": "ddx-126",
+   "age": 37,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "pain in the flank, iliac fossa, hypochondrium, in contact with or ate something that you have an allergy to, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, swelling in one or more areas of your body, did you lose consciousness"
+  },
+  {
+   "id": "ddx-127",
+   "age": 82,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, upper chest, posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-128",
+   "age": 3,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, forehead, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, loss of appetite or do you get full more quickly then usually, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-129",
+   "age": 28,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, upper chest, breast, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-130",
+   "age": 19,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the breast, posterior chest wall, shortness of breath or difficulty breathing in a significant way, nasal congestion or a clear runny nose, cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-131",
+   "age": 54,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the lower chest, side of the chest, posterior chest wall, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), cough, wheezing sound when you exhale, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-132",
+   "age": 56,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the side of the chest, flank, iliac fossa, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, like you are detached from your own body or your surroundings, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-133",
+   "age": 19,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "severe pain in the thigh, dorsal aspect of the foot, sole, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-134",
+   "age": 25,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, testicle, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, intense coughing fits, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-135",
+   "age": 36,
+   "severity": 5,
+   "pathology": "Panic attack",
+   "symptoms": "pain in the side of the chest, iliac fossa, hypochondrium, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, like you are (or were) choking or suffocating, like you are dying or were you afraid that you were about do die, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, like you are detached from your own body or your surroundings"
+  },
+  {
+   "id": "ddx-136",
+   "age": 62,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "severe pain in the lower chest, biceps, side of the chest, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-137",
+   "age": 61,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "pain in the ear, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-138",
+   "age": 55,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the hypochondrium, epigastric, stools that were black (like coal), burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, cough, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-139",
+   "age": 28,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "severe pain in the lower chest, upper chest, hypochondrium, stools that were black (like coal), cough, symptoms that get worse after eating"
+  },
+  {
+   "id": "ddx-140",
+   "age": 5,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "pain in the hypochondrium, belly, epigastric, burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, have you recently thrown up blood or something resembling coffee beans, symptoms that get worse after eating, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-141",
+   "age": 33,
+   "severity": 4,
+   "pathology": "Bronchitis",
+   "symptoms": "pain in the lower chest, breast, posterior chest wall, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), sore throat, nasal congestion or a clear runny nose, cough, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-142",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "severe pain in the iliac fossa, hip, testicle, your abdomen is bloated or distended (swollen due to pressure from inside), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, able to pass stools or gas since your symptoms increased, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-143",
+   "age": 67,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the biceps, side of the chest, upper chest, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-144",
+   "age": 62,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "severe itching in one or both eyes, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-145",
+   "age": 57,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-146",
+   "age": 44,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, thyroid cartilage, palace, fever (either felt or measured with a thermometer), cough, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-147",
+   "age": 16,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, pharynx, under the jaw, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-148",
+   "age": 48,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "pain in the lower chest, breast, chest pain even at rest, shortness of breath or difficulty breathing in a significant way, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-149",
+   "age": 23,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, symptoms of muscle weakness increase with fatigue and/or stress"
+  },
+  {
+   "id": "ddx-150",
+   "age": 22,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, trouble keeping your tongue in your mouth, hard time opening/raising one or both eyelids, are you unable to control the direction of your eyes, annoying muscle spasms in your face, neck or any other part of your body, do you suddenly have difficulty or an inability to open your mouth or have jaw pain when opening it"
+  },
+  {
+   "id": "ddx-151",
+   "age": 28,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, side of the neck, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, chills or shivers, sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-152",
+   "age": 72,
+   "severity": 2,
+   "pathology": "Acute dystonic reactions",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, trouble keeping your tongue in your mouth, are you unable to control the direction of your eyes, that muscle spasms or soreness in your neck are keeping you from turning your head to one side"
+  },
+  {
+   "id": "ddx-153",
+   "age": 83,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "weakness in your facial muscles and/or eyes, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-154",
+   "age": 40,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "severe pain in the flank, iliac fossa, hypochondrium, in contact with or ate something that you have an allergy to, diarrhea or an increase in stool frequency, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, swelling in one or more areas of your body, did you lose consciousness, high pitched sound when breathing in"
+  },
+  {
+   "id": "ddx-155",
+   "age": 18,
+   "severity": 1,
+   "pathology": "Anaphylaxis",
+   "symptoms": "severe pain in the flank, iliac fossa, belly, in contact with or ate something that you have an allergy to, diarrhea or an increase in stool frequency, lightheaded and dizzy or do you feel like you are about to faint, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, swelling in one or more areas of your body, did you lose consciousness, high pitched sound when breathing in, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-156",
+   "age": 34,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (little finger), finger (index), dorsal aspect of the wrist, swollen or painful lymph nodes, shortness of breath or difficulty breathing in a significant way"
+  },
+  {
+   "id": "ddx-157",
+   "age": 27,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, cheek, temple, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-158",
+   "age": 27,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "severe pain in the back of head, top of the head, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-159",
+   "age": 72,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "pain in the thyroid cartilage, side of the chest, breast, significantly increased sweating, do you constantly feel fatigued or do you have non-restful sleep"
+  },
+  {
+   "id": "ddx-160",
+   "age": 23,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the side of the chest, breast, out of breath with minimal physical effort, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-161",
+   "age": 35,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, palace, trachea, cough, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-162",
+   "age": 27,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "pain in the tonsil, back of the neck, side of the neck, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, fever (either felt or measured with a thermometer), high pitched sound when breathing in, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-163",
+   "age": 26,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the lower chest, upper chest, breast, chest pain even at rest, symptoms that are increased with physical exertion but alleviated with rest, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-164",
+   "age": 45,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-165",
+   "age": 28,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "severe pain in the finger (ring finger), finger (little finger), finger (middle), swollen or painful lymph nodes, shortness of breath or difficulty breathing in a significant way"
+  },
+  {
+   "id": "ddx-166",
+   "age": 52,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the side of the chest, upper chest, breast, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-167",
+   "age": 60,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), difficulty articulating words/speaking, shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, symptoms of muscle weakness increase with fatigue and/or stress, hard time opening/raising one or both eyelids, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face"
+  },
+  {
+   "id": "ddx-168",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (little finger), finger (index), finger (middle), swollen or painful lymph nodes, have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, diffuse (widespread) redness in one or both eyes"
+  },
+  {
+   "id": "ddx-169",
+   "age": 28,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "severe pain in the thyroid cartilage, side of the chest, upper chest, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-170",
+   "age": 18,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "severe pain in the ear, fever (either felt or measured with a thermometer), are you more irritable or has your mood been very unstable recently, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-171",
+   "age": 19,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "pain in the tonsil, side of the neck, palace, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), high pitched sound when breathing in"
+  },
+  {
+   "id": "ddx-172",
+   "age": 59,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, cough"
+  },
+  {
+   "id": "ddx-173",
+   "age": 54,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "pain in the ankle, side of the chest, breast, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-174",
+   "age": 69,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, side of the neck, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), chills or shivers, sore throat, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, cough"
+  },
+  {
+   "id": "ddx-175",
+   "age": 28,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the ankle, side of the chest, calf, significantly increased sweating, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-176",
+   "age": 19,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "pain in the tonsil, back of the neck, side of the neck, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), that you produce more saliva than usual, high pitched sound when breathing in"
+  },
+  {
+   "id": "ddx-177",
+   "age": 34,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the lower chest, side of the chest, breast, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-178",
+   "age": 27,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-179",
+   "age": 19,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (ring finger), finger (little finger), finger (middle), have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, shortness of breath or difficulty breathing in a significant way, diffuse (widespread) redness in one or both eyes"
+  },
+  {
+   "id": "ddx-180",
+   "age": 13,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-181",
+   "age": 97,
+   "severity": 3,
+   "pathology": "GERD",
+   "symptoms": "severe pain in the lower chest, upper chest, stools that were black (like coal), burning sensation that starts in your stomach then goes up into your throat, and can be associated with a bitter taste in your mouth, cough"
+  },
+  {
+   "id": "ddx-182",
+   "age": 33,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, weakness or paralysis on one side of the face, which may still be present or completely resolved, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face"
+  },
+  {
+   "id": "ddx-183",
+   "age": 37,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, biceps, upper chest, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-184",
+   "age": 23,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the cheek, eye, temple, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-185",
+   "age": 86,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, upper chest, cough that produces colored or more abundant sputum than usual, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, nasal congestion or a clear runny nose, cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-186",
+   "age": 31,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "pain in the side of the chest, upper chest, scapula, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-187",
+   "age": 30,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the flank, hypochondrium, belly, diarrhea or an increase in stool frequency, nauseous or do you feel like vomiting, involuntary weight loss over the last 3 months, pale stools and dark urine"
+  },
+  {
+   "id": "ddx-188",
+   "age": 9,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (ring finger), finger (little finger), finger (index), swollen or painful lymph nodes"
+  },
+  {
+   "id": "ddx-189",
+   "age": 25,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, side of the neck, significantly increased sweating, fever (either felt or measured with a thermometer), chills or shivers, cough"
+  },
+  {
+   "id": "ddx-190",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, side of the neck, top of the head, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-191",
+   "age": 19,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "pain in the biceps, side of the chest, upper chest, significantly increased sweating, nauseous or do you feel like vomiting, loss of appetite or do you get full more quickly then usually"
+  },
+  {
+   "id": "ddx-192",
+   "age": 24,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "pain in the lower chest, breast, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-193",
+   "age": 24,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, symptoms that are increased with physical exertion but alleviated with rest, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-194",
+   "age": 73,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (ring finger), finger (little finger), finger (index), swollen or painful lymph nodes, have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, any vaginal discharge"
+  },
+  {
+   "id": "ddx-195",
+   "age": 37,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-196",
+   "age": 3,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), difficulty articulating words/speaking, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, symptoms of muscle weakness increase with fatigue and/or stress, hard time opening/raising one or both eyelids"
+  },
+  {
+   "id": "ddx-197",
+   "age": 51,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms more prominent at night, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-198",
+   "age": 27,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "diarrhea or an increase in stool frequency, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-199",
+   "age": 9,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-200",
+   "age": 18,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the lower chest, side of the chest, breast, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-201",
+   "age": 13,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the forehead, cheek, nose, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-202",
+   "age": 31,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "severe pain in the tonsil, back of the neck, palace, pain that improves when you lean forward, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, fever (either felt or measured with a thermometer), that you produce more saliva than usual, high pitched sound when breathing in, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-203",
+   "age": 33,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "severe pain in the side of the chest, breast, posterior chest wall, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, cough, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-204",
+   "age": 40,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "pain in the lower chest, breast, epigastric, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms worse when lying down and alleviated while sitting up, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-205",
+   "age": 93,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, significantly increased sweating"
+  },
+  {
+   "id": "ddx-206",
+   "age": 11,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the thyroid cartilage, palace, pharynx, cough, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-207",
+   "age": 67,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the lower chest, side of the chest, breast, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-208",
+   "age": 37,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-209",
+   "age": 22,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, chest pain even at rest, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-210",
+   "age": 21,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "pain in the tonsil, palace, under the jaw, fever (either felt or measured with a thermometer), cough, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-211",
+   "age": 78,
+   "severity": 4,
+   "pathology": "Acute laryngitis",
+   "symptoms": "severe pain in the tonsil, thyroid cartilage, palace, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-212",
+   "age": 47,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, weakness in your facial muscles and/or eyes, numbness, loss of sensation or tingling in the feet, weakness or paralysis on one side of the face, which may still be present or completely resolved, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-213",
+   "age": 23,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the lower chest, side of the chest, breast, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, chest pain even at rest, significantly increased sweating, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-214",
+   "age": 102,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "severe itching in one or both eyes, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-215",
+   "age": 76,
+   "severity": 3,
+   "pathology": "Pneumonia",
+   "symptoms": "pain in the side of the chest, posterior chest wall, cough that produces colored or more abundant sputum than usual, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-216",
+   "age": 32,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "difficulty articulating words/speaking, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, hard time opening/raising one or both eyelids"
+  },
+  {
+   "id": "ddx-217",
+   "age": 12,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "severe pain in the upper chest, breast, epigastric, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-218",
+   "age": 27,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the hypochondrium, belly, epigastric, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-219",
+   "age": 49,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, testicle, your abdomen is bloated or distended (swollen due to pressure from inside), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, able to pass stools or gas since your symptoms increased, intense coughing fits, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-220",
+   "age": 56,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "severe pain in the ear, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-221",
+   "age": 78,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough"
+  },
+  {
+   "id": "ddx-222",
+   "age": 22,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "pain in the ear, fever (either felt or measured with a thermometer), are you more irritable or has your mood been very unstable recently, cough"
+  },
+  {
+   "id": "ddx-223",
+   "age": 13,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "pain in the ear"
+  },
+  {
+   "id": "ddx-224",
+   "age": 53,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "pain in the upper chest, epigastric, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms worse when lying down and alleviated while sitting up, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-225",
+   "age": 40,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "severe pain in the lower chest, biceps, upper chest, chest pain even at rest, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-226",
+   "age": 42,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, biceps, upper chest, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep"
+  },
+  {
+   "id": "ddx-227",
+   "age": 55,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep"
+  },
+  {
+   "id": "ddx-228",
+   "age": 8,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "pain in the tonsil, side of the neck, pharynx, pain that improves when you lean forward, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), high pitched sound when breathing in, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-229",
+   "age": 5,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "severe pain in the hip, testicle, your abdomen is bloated or distended (swollen due to pressure from inside), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, intense coughing fits, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-230",
+   "age": 27,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "severe pain in the lower chest, side of the chest, upper chest, out of breath with minimal physical effort, shortness of breath or difficulty breathing in a significant way, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-231",
+   "age": 45,
+   "severity": 1,
+   "pathology": "Possible NSTEMI / STEMI",
+   "symptoms": "severe pain in the biceps, thyroid cartilage, breast, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-232",
+   "age": 1,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "pain in the ear, are you more irritable or has your mood been very unstable recently, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-233",
+   "age": 27,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-234",
+   "age": 51,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, lateral side of the foot, thigh, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-235",
+   "age": 12,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "pain in the back of the neck, side of the neck, palace, pain that improves when you lean forward, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, that you produce more saliva than usual, high pitched sound when breathing in"
+  },
+  {
+   "id": "ddx-236",
+   "age": 40,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, eye, have you lost your sense of smell, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-237",
+   "age": 48,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-238",
+   "age": 50,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, palmar face of the wrist, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-239",
+   "age": 56,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the flank, epigastric, diarrhea or an increase in stool frequency, pale stools and dark urine"
+  },
+  {
+   "id": "ddx-240",
+   "age": 19,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the forehead, cheek, nose, greenish or yellowish nasal discharge"
+  },
+  {
+   "id": "ddx-241",
+   "age": 53,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "severe pain in the temple, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-242",
+   "age": 45,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the flank, belly, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, pale stools and dark urine"
+  },
+  {
+   "id": "ddx-243",
+   "age": 60,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-244",
+   "age": 59,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, nose, have you lost your sense of smell, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-245",
+   "age": 12,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the side of the neck, top of the head, forehead, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain"
+  },
+  {
+   "id": "ddx-246",
+   "age": 51,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-247",
+   "age": 57,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, eye, temple, that your eyes produce excessive tears, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-248",
+   "age": 46,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, weakness or paralysis on one side of the face, which may still be present or completely resolved, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face"
+  },
+  {
+   "id": "ddx-249",
+   "age": 31,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the cheek, eye, temple, that your eyes produce excessive tears, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-250",
+   "age": 69,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, testicle, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, able to pass stools or gas since your symptoms increased, intense coughing fits, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-251",
+   "age": 81,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the flank, hypochondrium, belly, diarrhea or an increase in stool frequency, do you constantly feel fatigued or do you have non-restful sleep, nauseous or do you feel like vomiting, involuntary weight loss over the last 3 months, pale stools and dark urine"
+  },
+  {
+   "id": "ddx-252",
+   "age": 15,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, side of the neck, top of the head, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), chills or shivers, sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, diffuse (widespread) muscle pain, loss of appetite or do you get full more quickly then usually, cough"
+  },
+  {
+   "id": "ddx-253",
+   "age": 41,
+   "severity": 4,
+   "pathology": "Acute otitis media",
+   "symptoms": "severe pain in the ear, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-254",
+   "age": 59,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, forehead, cheek, have you lost your sense of smell, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-255",
+   "age": 19,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "weakness in both arms and/or both legs, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-256",
+   "age": 45,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep"
+  },
+  {
+   "id": "ddx-257",
+   "age": 18,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-258",
+   "age": 13,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, flank, hypochondrium, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-259",
+   "age": 24,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, chest pain even at rest, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-260",
+   "age": 50,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, nose, eye, have you lost your sense of smell, cough"
+  },
+  {
+   "id": "ddx-261",
+   "age": 50,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, out of breath with minimal physical effort, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-262",
+   "age": 76,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the side of the chest, upper chest, breast, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-263",
+   "age": 46,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, palmar face of the wrist, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-264",
+   "age": 55,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-265",
+   "age": 12,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-266",
+   "age": 63,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-267",
+   "age": 50,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "severe pain in the lower chest, biceps, side of the chest, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-268",
+   "age": 28,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "severe pain in the lower chest, biceps, side of the chest, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, chest pain even at rest, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-269",
+   "age": 90,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "difficulty articulating words/speaking, shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs"
+  },
+  {
+   "id": "ddx-270",
+   "age": 7,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the back of the neck, ankle, shoulder, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-271",
+   "age": 49,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, top of the head, significantly increased sweating, fever (either felt or measured with a thermometer), chills or shivers, sore throat, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, loss of appetite or do you get full more quickly then usually, cough"
+  },
+  {
+   "id": "ddx-272",
+   "age": 37,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the biceps, thyroid cartilage, scapula, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-273",
+   "age": 24,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "pain in the back of head, back of the neck, cervical spine, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), nauseous or do you feel like vomiting, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-274",
+   "age": 34,
+   "severity": 2,
+   "pathology": "Stable angina",
+   "symptoms": "pain in the lower chest, thoracic spine, breast, do you constantly feel fatigued or do you have non-restful sleep, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-275",
+   "age": 44,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (ring finger), finger (index), finger (middle), swollen or painful lymph nodes, have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, shortness of breath or difficulty breathing in a significant way, diffuse (widespread) redness in one or both eyes, any vaginal discharge"
+  },
+  {
+   "id": "ddx-276",
+   "age": 42,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-277",
+   "age": 65,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "severe pain in the iliac fossa, hip, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, intense coughing fits, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-278",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, symptoms of muscle weakness increase with fatigue and/or stress, hard time opening/raising one or both eyelids"
+  },
+  {
+   "id": "ddx-279",
+   "age": 20,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, difficulty articulating words/speaking, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, symptoms of muscle weakness increase with fatigue and/or stress, hard time opening/raising one or both eyelids, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face"
+  },
+  {
+   "id": "ddx-280",
+   "age": 107,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the ankle, side of the chest, posterior chest wall, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-281",
+   "age": 24,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "pain in the forehead, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-282",
+   "age": 47,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, dorsal aspect of the foot, sole, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-283",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "severe pain in the forehead, cheek, eye, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-284",
+   "age": 57,
+   "severity": 3,
+   "pathology": "Influenza",
+   "symptoms": "pain in the back of head, back of the neck, side of the neck, significantly increased sweating, so tired that you are unable to do your usual activities or are you stuck in your bed all day long, fever (either felt or measured with a thermometer), chills or shivers, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, loss of appetite or do you get full more quickly then usually, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-285",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, lateral side of the foot, thigh, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-286",
+   "age": 55,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, upper chest, hypochondrium, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-287",
+   "age": 71,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, testicle, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, able to pass stools or gas since your symptoms increased, are the symptoms or pain increased with coughing, with an effort like lifting a weight or from forcing a bowel movement"
+  },
+  {
+   "id": "ddx-288",
+   "age": 53,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-289",
+   "age": 17,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-290",
+   "age": 30,
+   "severity": 4,
+   "pathology": "Sarcoidosis",
+   "symptoms": "pain in the finger (ring finger), finger (index), finger (middle), have you lost consciousness associated with violent and sustained muscle contractions or had an absence episode, shortness of breath or difficulty breathing in a significant way"
+  },
+  {
+   "id": "ddx-291",
+   "age": 36,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "weakness in your facial muscles and/or eyes, weakness in both arms and/or both legs, numbness, loss of sensation or tingling in the feet, weakness or paralysis on one side of the face, which may still be present or completely resolved, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-292",
+   "age": 58,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, flank, belly, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you recently thrown up blood or something resembling coffee beans"
+  },
+  {
+   "id": "ddx-293",
+   "age": 46,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), difficulty articulating words/speaking, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, weakness in both arms and/or both legs, hard time opening/raising one or both eyelids, did you previously, or do you currently, have any weakness/paralysis in one or more of your limbs or in your face"
+  },
+  {
+   "id": "ddx-294",
+   "age": 45,
+   "severity": 4,
+   "pathology": "Localized edema",
+   "symptoms": "pain in the ankle, dorsal aspect of the foot, sole, have you gained weight recently, swelling in one or more areas of your body"
+  },
+  {
+   "id": "ddx-295",
+   "age": 7,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, the perception of seeing two images of a single object seen overlapping or adjacent to each other (double vision), difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, symptoms of muscle weakness increase with fatigue and/or stress, hard time opening/raising one or both eyelids"
+  },
+  {
+   "id": "ddx-296",
+   "age": 47,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "severe pain in the upper chest, breast, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-297",
+   "age": 39,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-298",
+   "age": 44,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "pain in the lower chest, ankle, calf, significantly increased sweating, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-299",
+   "age": 71,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "severe pain in the breast, epigastric, shortness of breath or difficulty breathing in a significant way, symptoms worse when lying down and alleviated while sitting up, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-300",
+   "age": 20,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "weakness in both arms and/or both legs, numbness, loss of sensation or tingling, in both arms and legs and around your mouth, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-301",
+   "age": 66,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "severe pain in the back of head, cervical spine, top of the head, fever (either felt or measured with a thermometer), nauseous or do you feel like vomiting, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-302",
+   "age": 41,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, your heart is beating very irregularly or in a disorganized pattern"
+  },
+  {
+   "id": "ddx-303",
+   "age": 43,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, forehead, cheek, have you lost your sense of smell, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-304",
+   "age": 40,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the side of the chest, upper chest, breast, out of breath with minimal physical effort, shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-305",
+   "age": 67,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, cough"
+  },
+  {
+   "id": "ddx-306",
+   "age": 35,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-307",
+   "age": 70,
+   "severity": 3,
+   "pathology": "Myasthenia gravis",
+   "symptoms": "pain or weakness in your jaw, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, weakness in both arms and/or both legs, hard time opening/raising one or both eyelids"
+  },
+  {
+   "id": "ddx-308",
+   "age": 71,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-309",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Pericarditis",
+   "symptoms": "severe pain in the breast, epigastric, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-310",
+   "age": 44,
+   "severity": 2,
+   "pathology": "Myocarditis",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-311",
+   "age": 62,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the side of the chest, upper chest, breast, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-312",
+   "age": 83,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, eye, have you lost your sense of smell, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-313",
+   "age": 29,
+   "severity": 2,
+   "pathology": "Guillain-Barré syndrome",
+   "symptoms": "numbness, loss of sensation or tingling in the feet, do you currently, or did you ever, have numbness, loss of sensitivity or tingling anywhere on your body"
+  },
+  {
+   "id": "ddx-314",
+   "age": 29,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the flank, hypochondrium, belly, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you recently thrown up blood or something resembling coffee beans, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-315",
+   "age": 74,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, eye, temple, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-316",
+   "age": 41,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the ankle, side of the chest, breast, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-317",
+   "age": 12,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "severe pain in the tonsil, side of the neck, palace, pain that improves when you lean forward, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), high pitched sound when breathing in, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-318",
+   "age": 55,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, upper chest, hypochondrium, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you recently thrown up blood or something resembling coffee beans, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-319",
+   "age": 48,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-320",
+   "age": 26,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, testicle, your abdomen is bloated or distended (swollen due to pressure from inside), any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, intense coughing fits"
+  },
+  {
+   "id": "ddx-321",
+   "age": 41,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-322",
+   "age": 39,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the cheek, eye, that your eyes produce excessive tears, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-323",
+   "age": 11,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "severe pain in the tonsil, side of the neck, pharynx, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), that you produce more saliva than usual, high pitched sound when breathing in, that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-324",
+   "age": 10,
+   "severity": 2,
+   "pathology": "Epiglottitis",
+   "symptoms": "severe pain in the tonsil, back of the neck, side of the neck, difficulty swallowing, or have a feeling of discomfort/blockage when swallowing, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), that the tone of your voice has become deeper, softer or hoarse"
+  },
+  {
+   "id": "ddx-325",
+   "age": 44,
+   "severity": 5,
+   "pathology": "Chronic rhinosinusitis",
+   "symptoms": "pain in the mouth, cheek, nose, have you lost your sense of smell, nasal congestion or a clear runny nose, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-326",
+   "age": 42,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-327",
+   "age": 76,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the lower chest, side of the chest, posterior chest wall, shortness of breath or difficulty breathing in a significant way, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-328",
+   "age": 69,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "pain in the lower chest, hypochondrium, belly, nauseous or do you feel like vomiting, have you recently thrown up blood or something resembling coffee beans, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-329",
+   "age": 25,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, shoulder, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-330",
+   "age": 68,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the belly, epigastric, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, involuntary weight loss over the last 3 months, pale stools and dark urine, cough"
+  },
+  {
+   "id": "ddx-331",
+   "age": 58,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-332",
+   "age": 38,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-333",
+   "age": 22,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, eye, temple, that your eyes produce excessive tears"
+  },
+  {
+   "id": "ddx-334",
+   "age": 57,
+   "severity": 3,
+   "pathology": "Inguinal hernia",
+   "symptoms": "pain in the iliac fossa, hip, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, able to pass stools or gas since your symptoms increased"
+  },
+  {
+   "id": "ddx-335",
+   "age": 30,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "pain in the ankle, side of the chest, calf, shortness of breath or difficulty breathing in a significant way, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-336",
+   "age": 11,
+   "severity": 3,
+   "pathology": "Cluster headache",
+   "symptoms": "severe pain in the forehead, eye, temple, that your eyes produce excessive tears, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-337",
+   "age": 57,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the hypochondrium, diarrhea or an increase in stool frequency, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-338",
+   "age": 10,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "severe pain in the back of the neck, ankle, dorsal aspect of the wrist, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-339",
+   "age": 0,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint"
+  },
+  {
+   "id": "ddx-340",
+   "age": 40,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the forehead, cheek, nose, have you lost your sense of smell, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-341",
+   "age": 29,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-342",
+   "age": 21,
+   "severity": 2,
+   "pathology": "Unstable angina",
+   "symptoms": "pain in the upper chest, breast, shoulder, do you find that your symptoms have worsened over the last 2 weeks and that progressively less effort is required to cause the symptoms, chest pain even at rest, nauseous or do you feel like vomiting, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-343",
+   "age": 53,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "pain in the back of head, back of the neck, cervical spine, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-344",
+   "age": 31,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "pain in the lower chest, upper chest, hypochondrium, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you recently thrown up blood or something resembling coffee beans"
+  },
+  {
+   "id": "ddx-345",
+   "age": 62,
+   "severity": 2,
+   "pathology": "Scombroid food poisoning",
+   "symptoms": "diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, did your cheeks suddenly turn red, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-346",
+   "age": 31,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the flank, belly, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, involuntary weight loss over the last 3 months, pale stools and dark urine, cough"
+  },
+  {
+   "id": "ddx-347",
+   "age": 20,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the ankle, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, swelling in one or more areas of your body, symptoms worse when lying down and alleviated while sitting up, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-348",
+   "age": 77,
+   "severity": 1,
+   "pathology": "Acute pulmonary edema",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, bouts of choking or shortness of breath that wake you up at night, swelling in one or more areas of your body, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today, symptoms worse when lying down and alleviated while sitting up"
+  },
+  {
+   "id": "ddx-349",
+   "age": 5,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "pain in the back of the neck, top of the head, forehead, shortness of breath or difficulty breathing in a significant way, unintentionally losing weight or have you lost your appetite, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-350",
+   "age": 71,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, shortness of breath or difficulty breathing in a significant way, loss of appetite or do you get full more quickly then usually, cough"
+  },
+  {
+   "id": "ddx-351",
+   "age": 18,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the flank, belly, epigastric, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-352",
+   "age": 45,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "severe pain in the back of the neck, dorsal aspect of the wrist, palmar face of the wrist, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-353",
+   "age": 23,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "severe pain in the temple, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-354",
+   "age": 10,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "severe pain in the back of the neck, top of the head, forehead, swollen or painful lymph nodes, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-355",
+   "age": 26,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-356",
+   "age": 39,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-357",
+   "age": 23,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, shoulder, shortness of breath or difficulty breathing in a significant way, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-358",
+   "age": 59,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-359",
+   "age": 50,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the lower chest, upper chest, breast, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-360",
+   "age": 21,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, cough"
+  },
+  {
+   "id": "ddx-361",
+   "age": 40,
+   "severity": 3,
+   "pathology": "Pancreatic neoplasm",
+   "symptoms": "pain in the hypochondrium, epigastric, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, pale stools and dark urine, cough"
+  },
+  {
+   "id": "ddx-362",
+   "age": 59,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, loss of appetite or do you get full more quickly then usually, involuntary weight loss over the last 3 months"
+  },
+  {
+   "id": "ddx-363",
+   "age": 77,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "severe pain in the mouth, forehead, cheek, greenish or yellowish nasal discharge"
+  },
+  {
+   "id": "ddx-364",
+   "age": 9,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the forehead, cheek, nose, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-365",
+   "age": 70,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, cough"
+  },
+  {
+   "id": "ddx-366",
+   "age": 11,
+   "severity": 4,
+   "pathology": "Allergic sinusitis",
+   "symptoms": "nose or the back of your throat itchy, severe itching in one or both eyes, nasal congestion or a clear runny nose"
+  },
+  {
+   "id": "ddx-367",
+   "age": 63,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "severe pain in the top of the head, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-368",
+   "age": 19,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, upper chest, hypochondrium, shortness of breath or difficulty breathing in a significant way, have you recently thrown up blood or something resembling coffee beans"
+  },
+  {
+   "id": "ddx-369",
+   "age": 42,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the side of the chest, breast, posterior chest wall, shortness of breath or difficulty breathing in a significant way, cough, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-370",
+   "age": 19,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, cough, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-371",
+   "age": 61,
+   "severity": 2,
+   "pathology": "Boerhaave",
+   "symptoms": "severe pain in the lower chest, flank, upper chest, shortness of breath or difficulty breathing in a significant way, nauseous or do you feel like vomiting, have you vomited several times or have you made several efforts to vomit"
+  },
+  {
+   "id": "ddx-372",
+   "age": 43,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, fever (either felt or measured with a thermometer), involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-373",
+   "age": 10,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, your heart is beating very irregularly or in a disorganized pattern, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-374",
+   "age": 64,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "pain in the top of the head, forehead, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, lightheaded and dizzy or do you feel like you are about to faint, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-375",
+   "age": 47,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "pain in the forehead, shortness of breath or difficulty breathing in a significant way, lightheaded and dizzy or do you feel like you are about to faint, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-376",
+   "age": 45,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, loss of appetite or do you get full more quickly then usually, cough"
+  },
+  {
+   "id": "ddx-377",
+   "age": 29,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the mouth, forehead, cheek, greenish or yellowish nasal discharge"
+  },
+  {
+   "id": "ddx-378",
+   "age": 3,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, your heart is beating very irregularly or in a disorganized pattern, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-379",
+   "age": 43,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the side of the chest, breast, posterior chest wall, cough, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-380",
+   "age": 20,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "severe pain in the mouth, forehead, nose, have you lost your sense of smell, nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-381",
+   "age": 59,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, shoulder, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-382",
+   "age": 37,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the back of the neck, ankle, dorsal aspect of the wrist, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for"
+  },
+  {
+   "id": "ddx-383",
+   "age": 56,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the breast, posterior chest wall, cough, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-384",
+   "age": 22,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "severe pain in the cheek, nose, have you lost your sense of smell, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-385",
+   "age": 24,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, your heart is beating very irregularly or in a disorganized pattern"
+  },
+  {
+   "id": "ddx-386",
+   "age": 55,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, your heart is beating very irregularly or in a disorganized pattern"
+  },
+  {
+   "id": "ddx-387",
+   "age": 55,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "severe pain in the side of the chest, upper chest, breast, chest pain even at rest, symptoms that are increased with physical exertion but alleviated with rest, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-388",
+   "age": 29,
+   "severity": 4,
+   "pathology": "Acute rhinosinusitis",
+   "symptoms": "pain in the mouth, forehead, cheek, fever (either felt or measured with a thermometer), have you lost your sense of smell, greenish or yellowish nasal discharge, cough"
+  },
+  {
+   "id": "ddx-389",
+   "age": 48,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-390",
+   "age": 68,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the lower chest, side of the chest, breast, cough, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-391",
+   "age": 62,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "pain in the lower chest, side of the chest, upper chest, shortness of breath or difficulty breathing in a significant way, cough, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-392",
+   "age": 44,
+   "severity": 2,
+   "pathology": "PSVT",
+   "symptoms": "pain in the temple, shortness of breath or difficulty breathing in a significant way, slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations"
+  },
+  {
+   "id": "ddx-393",
+   "age": 30,
+   "severity": 4,
+   "pathology": "SLE",
+   "symptoms": "pain in the ankle, dorsal aspect of the wrist, shoulder, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, any lesions, redness or problems on your skin that you believe are related to the condition you are consulting for, painful mouth ulcers or sores"
+  },
+  {
+   "id": "ddx-394",
+   "age": 66,
+   "severity": 3,
+   "pathology": "Pulmonary neoplasm",
+   "symptoms": "pain in the posterior chest wall, coughing up blood, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-395",
+   "age": 49,
+   "severity": 3,
+   "pathology": "Atrial fibrillation",
+   "symptoms": "slightly dizzy or lightheaded, your heart is beating fast (racing), irregularly (missing a beat) or do you feel palpitations, symptoms that are increased with physical exertion but alleviated with rest"
+  },
+  {
+   "id": "ddx-396",
+   "age": 28,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "pain in the breast, posterior chest wall, shortness of breath or difficulty breathing in a significant way, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-397",
+   "age": 37,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, fever (either felt or measured with a thermometer), involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-398",
+   "age": 109,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "severe pain in the back of head, back of the neck, top of the head, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), unintentionally losing weight or have you lost your appetite"
+  },
+  {
+   "id": "ddx-399",
+   "age": 32,
+   "severity": 2,
+   "pathology": "Spontaneous pneumothorax",
+   "symptoms": "pain in the side of the chest, upper chest, breast, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-400",
+   "age": 17,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "severe pain in the flank, occiput, temple, swollen or painful lymph nodes, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, unintentionally losing weight or have you lost your appetite"
+  },
+  {
+   "id": "ddx-401",
+   "age": 56,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-402",
+   "age": 49,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the side of the chest, breast, posterior chest wall, cough, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-403",
+   "age": 55,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, fever (either felt or measured with a thermometer), cough"
+  },
+  {
+   "id": "ddx-404",
+   "age": 47,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "severe pain in the upper chest, breast, shortness of breath or difficulty breathing in a significant way, intense coughing fits, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-405",
+   "age": 8,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-406",
+   "age": 43,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "severe pain in the back of head, flank, forehead, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nauseous or do you feel like vomiting"
+  },
+  {
+   "id": "ddx-407",
+   "age": 30,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "pain in the back of the neck, occiput, temple, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), unintentionally losing weight or have you lost your appetite, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-408",
+   "age": 67,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, cough"
+  },
+  {
+   "id": "ddx-409",
+   "age": 47,
+   "severity": 3,
+   "pathology": "Chagas",
+   "symptoms": "pain in the back of head, back of the neck, cervical spine, diarrhea or an increase in stool frequency, fever (either felt or measured with a thermometer), unintentionally losing weight or have you lost your appetite, any new fatigue, generalized and vague discomfort, diffuse (widespread) muscle aches or a change in your general well-being related to your consultation today"
+  },
+  {
+   "id": "ddx-410",
+   "age": 16,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-411",
+   "age": 2,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, nasal congestion or a clear runny nose, high pitched sound when breathing in, does the person have a whooping cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-412",
+   "age": 69,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-413",
+   "age": 53,
+   "severity": 3,
+   "pathology": "Spontaneous rib fracture",
+   "symptoms": "pain in the lower chest, side of the chest, breast, cough, pain that is increased with movement, pain that is increased when you breathe in deeply"
+  },
+  {
+   "id": "ddx-414",
+   "age": 64,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-415",
+   "age": 105,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-416",
+   "age": 15,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-417",
+   "age": 45,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-418",
+   "age": 59,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-419",
+   "age": 53,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-420",
+   "age": 23,
+   "severity": 3,
+   "pathology": "Tuberculosis",
+   "symptoms": "coughing up blood, fever (either felt or measured with a thermometer), involuntary weight loss over the last 3 months, cough"
+  },
+  {
+   "id": "ddx-421",
+   "age": 63,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-422",
+   "age": 25,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, cough"
+  },
+  {
+   "id": "ddx-423",
+   "age": 8,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, that you produce more saliva than usual, does the person have a whooping cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-424",
+   "age": 22,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-425",
+   "age": 9,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "fever (either felt or measured with a thermometer), high pitched sound when breathing in, does the person have a whooping cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-426",
+   "age": 33,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-427",
+   "age": 26,
+   "severity": 3,
+   "pathology": "Bronchiectasis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-428",
+   "age": 7,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, that you produce more saliva than usual, does the person have a whooping cough"
+  },
+  {
+   "id": "ddx-429",
+   "age": 73,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-430",
+   "age": 5,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "fever (either felt or measured with a thermometer), high pitched sound when breathing in, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-431",
+   "age": 1,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "nasal congestion or a clear runny nose, that you produce more saliva than usual"
+  },
+  {
+   "id": "ddx-432",
+   "age": 1,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, nasal congestion or a clear runny nose, does the person have a whooping cough"
+  },
+  {
+   "id": "ddx-433",
+   "age": 5,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "fever (either felt or measured with a thermometer), does the person have a whooping cough, symptoms more prominent at night"
+  },
+  {
+   "id": "ddx-434",
+   "age": 7,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, high pitched sound when breathing in, does the person have a whooping cough"
+  },
+  {
+   "id": "ddx-435",
+   "age": 5,
+   "severity": 2,
+   "pathology": "Croup",
+   "symptoms": "fever (either felt or measured with a thermometer), that you produce more saliva than usual, does the person have a whooping cough"
+  },
+  {
+   "id": "ddx-436",
+   "age": 59,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-437",
+   "age": 54,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-438",
+   "age": 34,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, cough that produces colored or more abundant sputum than usual"
+  },
+  {
+   "id": "ddx-439",
+   "age": 57,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-440",
+   "age": 70,
+   "severity": 3,
+   "pathology": "Acute COPD exacerbation / infection",
+   "symptoms": "cough that produces colored or more abundant sputum than usual, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-441",
+   "age": 32,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, fever (either felt or measured with a thermometer), sore throat, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-442",
+   "age": 52,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting, any unusual bleeding or bruising related to your consultation today, cough"
+  },
+  {
+   "id": "ddx-443",
+   "age": 4,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, fever (either felt or measured with a thermometer), sore throat, diffuse (widespread) muscle pain, any unusual bleeding or bruising related to your consultation today, cough"
+  },
+  {
+   "id": "ddx-444",
+   "age": 59,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, fever (either felt or measured with a thermometer), nauseous or do you feel like vomiting, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-445",
+   "age": 10,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), sore throat, diffuse (widespread) muscle pain, nauseous or do you feel like vomiting, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-446",
+   "age": 0,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, sore throat, nauseous or do you feel like vomiting, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-447",
+   "age": 38,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), diffuse (widespread) muscle pain, any unusual bleeding or bruising related to your consultation today, cough"
+  },
+  {
+   "id": "ddx-448",
+   "age": 8,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, diffuse (widespread) muscle pain, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-449",
+   "age": 49,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, do you constantly feel fatigued or do you have non-restful sleep, sore throat, diffuse (widespread) muscle pain, any unusual bleeding or bruising related to your consultation today, cough"
+  },
+  {
+   "id": "ddx-450",
+   "age": 13,
+   "severity": 1,
+   "pathology": "Ebola",
+   "symptoms": "have you felt confused or disorientated lately, diarrhea or an increase in stool frequency, shortness of breath or difficulty breathing in a significant way, sore throat, nauseous or do you feel like vomiting, any unusual bleeding or bruising related to your consultation today"
+  },
+  {
+   "id": "ddx-451",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-452",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-453",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-454",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-455",
+   "age": 64,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-456",
+   "age": 36,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-457",
+   "age": 14,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-458",
+   "age": 38,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-459",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "do you ever temporarily stop breathing while you’re asleep, decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-460",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-461",
+   "age": 32,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-462",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-463",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough, wheezing sound when you exhale"
+  },
+  {
+   "id": "ddx-464",
+   "age": 0,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-465",
+   "age": 1,
+   "severity": 3,
+   "pathology": "Bronchiolitis",
+   "symptoms": "do you ever temporarily stop breathing while you’re asleep, decrease in appetite, shortness of breath or difficulty breathing in a significant way, fever (either felt or measured with a thermometer), nasal congestion or a clear runny nose, cough"
+  },
+  {
+   "id": "ddx-466",
+   "age": 34,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  },
+  {
+   "id": "ddx-467",
+   "age": 51,
+   "severity": 4,
+   "pathology": "Whooping cough",
+   "symptoms": "do you wheeze while inhaling or is your breathing noisy after coughing spells, intense coughing fits"
+  }
+ ]
+}

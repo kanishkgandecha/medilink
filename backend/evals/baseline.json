@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-11-01T11:18:26.998Z",
+  "savedAt": "2026-11-01T12:22:51.738Z",
   "scores": {
     "symptomAnalysis.emergencyRecall": 1,
     "symptomAnalysis.noUnderTriage": 1,
@@ -81,6 +81,16 @@
     "seasons.coolingAdvice": 1,
     "seasons.onlyInSeasonAndPlace": 1,
     "seasons.neverLowers": 1,
-    "seasons.noDiseaseNames": 1
+    "seasons.noDiseaseNames": 1,
+    "external.ddxplus.severity1Escalated": 0.92,
+    "external.ddxplus.severe12AtLeastHigh": 0.9471,
+    "external.ddxplus.mildNotCritical": 0.6533,
+    "external.ddxplus.noDiseaseNames": 1,
+    "external.ddxplus.noMedicationAdvice": 1,
+    "external.ddxplusHeldOut.severity1Escalated": 0.9,
+    "external.ddxplusHeldOut.severe12AtLeastHigh": 0.9063,
+    "external.ddxplusHeldOut.mildNotCritical": 0.6463,
+    "external.ddxplusHeldOut.noDiseaseNames": 1,
+    "external.ddxplusHeldOut.noMedicationAdvice": 1
   }
 }

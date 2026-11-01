@@ -43,8 +43,13 @@ const SEASON_RULES = {
 // Month (1–12) in India time, so a late-evening request falls in the right month.
 const monthInIndia = (date) => Number(new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', month: 'numeric' }).format(date));
 
+// The offline evaluation fixes the date so its results do not change with
+// the calendar month; it is never set in the running application.
+let evaluationDate = null;
+const setEvaluationDate = (date) => { evaluationDate = date; };
+
 function activeSeasons(locale, now = new Date()) {
-  const month = monthInIndia(locale?.asOf || now);
+  const month = monthInIndia(locale?.asOf || evaluationDate || now);
   return (locale?.seasons || []).filter((season) => SEASON_RULES[season.id] && season.months.includes(month));
 }
 
@@ -67,4 +72,4 @@ function seasonalGuidance(symptoms, locale, now) {
 
 const raiseTo = (urgency, floor) => (floor && URGENCY_RANK[floor] > URGENCY_RANK[urgency] ? floor : urgency);
 
-module.exports = { SEASON_RULES, activeSeasons, seasonalGuidance, raiseTo, monthInIndia };
+module.exports = { SEASON_RULES, activeSeasons, seasonalGuidance, raiseTo, monthInIndia, setEvaluationDate };

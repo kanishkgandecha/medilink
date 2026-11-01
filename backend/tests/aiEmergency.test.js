@@ -39,3 +39,18 @@ test('a critically ill child gets Immediate priority; emergencies get Emergency 
   assert.equal(buildVerifiedAllocation({ condition: 'septic shock', urgency: 'Critical', age: 10, wards }).priority, 'Immediate');
   assert.equal(buildVerifiedRecommendation({ symptoms: 'I want to kill myself', doctors: [] }).urgencyLevel, 'Emergency');
 });
+
+test('red flags found with the DDXPlus outside test set are recognised in everyday wording', () => {
+  for (const text of [
+    'high pitched sound when breathing in', 'pain in my lower chest and sweating', 'severe pain in the chest',
+    'ate something I am allergic to and feel lightheaded', 'my father seems confused and drowsy',
+    'weakness or paralysis on one side of the face', 'threw up blood that looked like coffee grounds',
+    'my heart is racing and I feel faint',
+  ]) assert.equal(detectEmergency(text).emergency, true, text);
+});
+
+test('everyday uses of the same words are not emergencies', () => {
+  for (const text of ['I am very confused about my bill', 'sorry for the confusion', 'sleep paralysis at night', 'I have a peanut allergy, what should I avoid']) {
+    assert.equal(detectEmergency(text).emergency, false, text);
+  }
+});

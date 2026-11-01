@@ -6,7 +6,9 @@ const { withEnglish } = require('./language');
 const { resolveLocale, emergencyContacts, emergencyInstruction } = require('./locale');
 const { seasonalGuidance, raiseTo } = require('./seasonal');
 
-const CHEST_DISCOMFORT_PATTERN = /\b(chest pain|chest discomfort|chest tightness)\b/i;
+const CHEST_DISCOMFORT_PATTERN = /\b(chest pain|chest discomfort|chest tightness|pain in (?:my |the )?(?:\w+ )?chest)\b/i;
+// Fever with unusual bleeding or bruising needs same-day care in any season.
+const HIGH_FLOOR_PATTERN = /\bfever\b.*\b(unusual bleeding|bleeding gums|bruising|nose ?bleed)|\b(unusual bleeding|bleeding gums|bruising|nose ?bleed)\b.*\bfever\b/i;
 // Presentations that need same-day care: they raise urgency to at least
 // Moderate but are not emergencies on their own.
 const URGENT_PATTERN = /\b(cannot bear weight|can'?t bear weight|unable to walk|high fever|fever (?:for|since) (?:\d+|two|three|four|five|several) days|(?:for|since) (?:\d+|three|four|five|several) days\b.*\b(?:diarrh|vomit|very weak)|very weak|persistent vomiting|blood in (?:my )?urine|severe pain|dehydrat|fever with (?:back|flank) pain|urinat\w*\b.*\bfever|fever\b.*\burinat)/i;
@@ -80,9 +82,9 @@ function enforceSymptomSafety(result, symptoms, locale) {
     _model: result?._model,
     overallUrgency: emergency
       ? 'Critical'
-      : raiseTo(chestDiscomfort
+      : raiseTo(raiseTo(chestDiscomfort
         ? 'High'
-        : (urgentFloor && modelUrgency === 'Low' ? 'Moderate' : modelUrgency), seasonal.floor),
+        : (urgentFloor && modelUrgency === 'Low' ? 'Moderate' : modelUrgency), seasonal.floor), HIGH_FLOOR_PATTERN.test(symptomText) ? 'High' : null),
     department: emergency ? 'Emergency' : text(result?.department || primary?.department, 'General Medicine', 100),
     recommendedSpeciality: emergency
       ? 'Emergency Medicine'

@@ -14,15 +14,17 @@
 
 const { withEnglish } = require('./language');
 
-const CAN_NOT = "(?:can'?t|cannot|can not|unable to|could ?n'?t)";
+const CAN_NOT = "(?:can'?t|cannot|can not|unable to|inability to|could ?n'?t)";
+// "pain in the lower chest", "pain in my chest"
+const CHEST_PAIN = '(?:chest (?:pain|tightness|discomfort|hurts?|ache)|pain in (?:my |the |his |her )?(?:\\w+ )?chest)';
 
 const SIGNS = [
-  { category: 'cardiac', pattern: /\b(severe chest pain|chest pressure|crushing (?:chest|pressure|pain)|chest (?:is )?squeezing|squeezing (?:in|of) (?:my |the )?chest|heart attack)\b/ },
-  { category: 'breathing', pattern: new RegExp(`\\b(${CAN_NOT} (?:breathe|catch (?:my |his |her )?breath)|difficulty (?:in )?breathing|struggling to breathe|not breathing|stopped breathing|gasping|choking|blue lips|lips (?:are |turning |look )?blue|turning blue|looks? bluish|bluish (?:lips|skin|face)|breathless(?:ness)? (?:at rest|even (?:when|while) (?:sitting|resting|lying)))\\b`) },
-  { category: 'stroke', pattern: new RegExp(`\\b(stroke|face (?:is )?drooping|drooping (?:of )?(?:the )?face|facial droop|slurred speech|${CAN_NOT} speak (?:clearly|properly)|sudden (?:numbness|weakness)|(?:one|left|right) side of (?:my |his |her |the )?(?:body|face) (?:went |is |feels |became )?(?:numb|weak)|weakness (?:on|in) one side|sudden confusion)\\b`) },
-  { category: 'neurological', pattern: /\b(unconscious|unresponsive|not responding|seizures?|convulsions?|(?:having|had|getting) (?:a )?fits?|fainting|fainted|passed out|collapsed|worst headache (?:of my life|ever)|thunderclap headache|sudden severe headache)\b/ },
+  { category: 'cardiac', pattern: /\b(severe chest pain|severe pain in (?:my |the )?(?:\w+ )?chest|chest pressure|crushing (?:chest|pressure|pain)|chest (?:is )?squeezing|squeezing (?:in|of) (?:my |the )?chest|heart attack)\b/ },
+  { category: 'breathing', pattern: new RegExp(`\\b(${CAN_NOT} (?:breathe|catch (?:my |his |her )?breath)|difficulty (?:in )?breathing|struggling to breathe|not breathing|stopped breathing|gasping|choking|suffocat\\w*|stridor|high[- ]pitched (?:sound|noise) when breathing|noisy breathing|blue lips|lips (?:are |turning |look )?blue|turning blue|looks? bluish|bluish (?:lips|skin|face)|breathless(?:ness)? (?:at rest|even (?:when|while) (?:sitting|resting|lying)))\\b`) },
+  { category: 'stroke', pattern: new RegExp(`\\b(stroke|face (?:is )?drooping|drooping (?:of )?(?:the )?face|facial droop|slurred speech|${CAN_NOT} speak (?:clearly|properly)|sudden (?:numbness|weakness)|(?:one|left|right) side of (?:my |his |her |the )?(?:body|face) (?:went |is |feels |became )?(?:numb|weak)|weakness (?:on|in) one side|sudden confusion|(?:paralysis|weakness) (?:on|of) one side of (?:the |my |his |her )?face|facial (?:paralysis|weakness)|weakness in both (?:arms|legs)|(?<!sleep )paraly(?:sis|sed))\\b`) },
+  { category: 'neurological', pattern: /\b(unconscious|unresponsive|not responding|seizures?|convulsions?|(?:having|had|getting) (?:a )?fits?|fainting|fainted|passed out|collapsed|worst headache (?:of my life|ever)|thunderclap headache|sudden severe headache|(?:feel|felt|feeling|is|seems|seem|became|been|got|getting) (?:very |so |more )?(?:confused|disoriented|disorientated)\b(?! (?:about|by|with|regarding|on|over))|(?:new|sudden) confusion)\b/ },
   { category: 'anaphylaxis', pattern: /\b(anaphylaxis|throat (?:is )?swelling|swelling (?:of|in) (?:my |the )?throat|(?:lips|tongue|face) (?:and (?:lips|tongue|face) )?(?:are |is )?swelling\b.*\b(?:wheez|breath|sting|bite|ate|eating|allerg))/ },
-  { category: 'bleeding', pattern: /\b(heavy bleeding|bleeding heavily|bleeding (?:that )?(?:will not|won'?t|wont|does not|doesn'?t) stop|vomiting blood|blood in (?:my )?vomit|coughing (?:up )?blood|black (?:tarry )?stools?|tarry stools?)\b/ },
+  { category: 'bleeding', pattern: /\b(heavy bleeding|bleeding heavily|bleeding (?:that )?(?:will not|won'?t|wont|does not|doesn'?t) stop|vomiting blood|vomited blood|(?:threw|thrown) up blood|coffee[- ](?:ground|bean)s?|blood in (?:my )?vomit|coughing (?:up )?blood|black (?:tarry )?stools?|tarry stools?)\b/ },
   { category: 'abdominal', pattern: /\b(severe (?:abdominal|belly|stomach|tummy) pain)\b/ },
   { category: 'self-harm', pattern: /\b(suicid(?:e|al)|self[- ]?harm|kill (?:my ?self|himself|herself)|end (?:my|his|her) life|want to die|(?:don'?t|do not) want to live|took (?:too many|an overdose|a lot of)\b|overdose)/ },
   { category: 'poisoning', pattern: /\b(swallowed|drank|drunk|ingested)\b.*\b(bleach|poison|acid|kerosene|pesticide|insecticide|phenyl|rat poison|battery|cleaner)\b|\bpoison(?:ed|ing)\b|\bsnake ?bite\b|\bbitten by a snake\b/ },
@@ -30,7 +32,10 @@ const SIGNS = [
 
 // Presentations that are emergencies only in combination.
 const COMBINATIONS = [
-  { category: 'cardiac', all: [/\bchest (?:pain|tightness|discomfort|hurts?|ache)\b/, /\b(shortness of breath|breathless|sweat(?:ing|y)?|cold sweat|faint|lightheaded|jaw pain|arm pain|back pain)/] },
+  { category: 'cardiac', all: [new RegExp(`\\b${CHEST_PAIN}\\b`), /\b(shortness of breath|breathless|out of breath|sweat(?:ing|y)?|cold sweat|faint|lightheaded|jaw pain|arm pain|back pain|nause|vomit)/] },
+  { category: 'cardiac', all: [/\b(palpitations?|heart (?:is )?(?:beating fast|racing|pounding)|racing heart)\b/, /\b(faint|lightheaded|light-headed|passed out|chest pain|pain in (?:my |the )?(?:\w+ )?chest)/] },
+  { category: 'anaphylaxis', all: [/\ballerg(?:y|ic)\b/, /\b(faint|lightheaded|light-headed|dizz|breath|wheez|swell|throat|tongue|lips)/] },
+  { category: 'airway', all: [/\bswallow/, /\b(drool|more saliva|can'?t swallow (?:my )?saliva)/] },
   { category: 'meningitis', all: [/\bfever\b/, /\b(stiff neck|neck stiffness|rash (?:that )?(?:does not|doesn'?t|won'?t) fade|non[- ]?blanching rash)\b/] },
   { category: 'head-injury', all: [/\b(hit|banged|injured|hurt|fell on) (?:my |his |her |the )?head\b|\bhead injury\b/, /\b(vomit|drowsy|confus|unconscious|seizure)/] },
   { category: 'pregnancy-bleeding', all: [/\bpregnan/, /\bbleed/] },
