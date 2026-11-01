@@ -1,0 +1,360 @@
+{
+  "code": "hi",
+  "name": "Hindi",
+  "scripts": [
+    "Deva",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing (MediLink, 2026-11-01); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "लू लग गई",
+        "लू लगी",
+        "धूप में",
+        "तेज धूप",
+        "loo lag gayi",
+        "loo lagi",
+        "dhoop mein",
+        "dhup me kaam",
+        "garmi mein"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "सीने में दर्द",
+        "छाती में दर्द",
+        "सीने में जलन और दर्द",
+        "seene mein dard",
+        "sine me dard",
+        "chhati mein dard",
+        "chaati me dard",
+        "seena dukh raha"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "पसीना",
+        "pasina",
+        "paseena"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "सांस नहीं आ रही",
+        "सांस लेने में तकलीफ",
+        "सांस लेने में दिक्कत",
+        "saans nahi aa rahi",
+        "saans lene mein taklif",
+        "saans lene me dikkat",
+        "sans nahi le pa raha",
+        "sans nahi le pa rahi"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "सांस फूल रही",
+        "सांस फूलना",
+        "saans phool rahi",
+        "sans fool rahi",
+        "saans phoolna"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "बेहोश",
+        "होश नहीं",
+        "behosh",
+        "hosh nahi"
+      ]
+    },
+    {
+      "en": "fainting",
+      "phrases": [
+        "बेहोशी",
+        "चक्कर खाकर गिर",
+        "behoshi",
+        "chakkar khakar gir"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "दौरा पड़ा",
+        "मिर्गी",
+        "daura pada",
+        "daura padna",
+        "mirgi"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "लकवा",
+        "मुंह टेढ़ा",
+        "lakwa",
+        "muh tedha",
+        "munh tedha"
+      ]
+    },
+    {
+      "en": "face drooping",
+      "phrases": [
+        "चेहरा टेढ़ा",
+        "chehra tedha"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "खून की उल्टी",
+        "khoon ki ulti",
+        "khun ki ulti"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "बहुत खून बह रहा",
+        "खून नहीं रुक रहा",
+        "bahut khoon beh raha",
+        "khoon nahi ruk raha"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "आत्महत्या",
+        "खुदकुशी",
+        "khudkushi",
+        "aatmahatya",
+        "atmahatya"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "मरना चाहता",
+        "मरना चाहती",
+        "जीना नहीं चाहता",
+        "जीना नहीं चाहती",
+        "marna chahta",
+        "marna chahti",
+        "jeena nahi chahta",
+        "jeena nahi chahti",
+        "jina nahi chahta",
+        "मर जाना चाहता",
+        "मर जाना चाहती",
+        "mar jaana chahta",
+        "mar jana chahti",
+        "marna hai mujhe"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "जहर खा लिया",
+        "जहर पी लिया",
+        "zeher kha liya",
+        "zehar kha liya",
+        "jahar pi liya"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "सांप ने काटा",
+        "saanp ne kaata",
+        "sanp ne kata"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "तेज बुखार",
+        "tez bukhar",
+        "tej bukhar"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "बुखार",
+        "bukhar",
+        "bukhaar"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "सिर दर्द",
+        "सिरदर्द",
+        "sir dard",
+        "sar dard"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "पेट दर्द",
+        "पेट में दर्द",
+        "pet dard",
+        "pet mein dard"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "उल्टी",
+        "ulti",
+        "ultee"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "दस्त",
+        "dast",
+        "loose motion",
+        "loose motions"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "खांसी",
+        "khansi",
+        "khaansi"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "जुकाम",
+        "zukam",
+        "jukaam"
+      ]
+    },
+    {
+      "en": "sore throat",
+      "phrases": [
+        "गले में दर्द",
+        "गला खराब",
+        "gale mein dard",
+        "gala kharab"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "चक्कर",
+        "chakkar"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "कमजोरी",
+        "kamzori",
+        "kamjori"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "खुजली",
+        "khujli"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "कमर दर्द",
+        "kamar dard"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "जोड़ों में दर्द",
+        "jodon mein dard",
+        "jodo me dard"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "पेशाब में जलन",
+        "peshab mein jalan",
+        "peshab me jalan"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "अपॉइंटमेंट",
+        "डॉक्टर से मिलना",
+        "doctor se milna",
+        "appointment chahiye"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "भुगतान",
+        "कितने पैसे",
+        "kitne paise",
+        "kitna paisa"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "दवाई",
+        "दवा",
+        "dawai",
+        "dawa"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "जांच रिपोर्ट",
+        "रिपोर्ट",
+        "jaanch report",
+        "test ka result"
+      ]
+    },
+    {
+      "en": "ambulance",
+      "phrases": [
+        "एम्बुलेंस",
+        "ambulance bulao"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "नमस्ते",
+        "namaste",
+        "namaskar"
+      ]
+    }
+  ]
+}

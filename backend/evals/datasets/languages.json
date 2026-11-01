@@ -1,0 +1,345 @@
+{
+  "description": "Synthetic Hindi, Marathi, and Gujarati messages (native script and romanised). Written by MediLink for regression measurement; pending native-speaker review. 'emergency' must escalate; 'notEmergency' must not; 'department' is the acceptable symptom department; 'intent' is the expected chat intent. 'english' cases are ordinary English that must not trigger any language rule.",
+  "cases": [
+    {
+      "id": "hi-em-01",
+      "lang": "hi",
+      "text": "seene mein tez dard aur pasina",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-02",
+      "lang": "hi",
+      "text": "मुझे सीने में दर्द है और साँस नहीं आ रही",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-03",
+      "lang": "hi",
+      "text": "papa behosh ho gaye hain",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-04",
+      "lang": "hi",
+      "text": "मैं जीना नहीं चाहता",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-05",
+      "lang": "hi",
+      "text": "bete ne zehar kha liya",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-06",
+      "lang": "hi",
+      "text": "khoon ki ulti ho rahi hai",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-07",
+      "lang": "hi",
+      "text": "dadi ka muh tedha ho gaya aur lakwa jaisa lag raha",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-08",
+      "lang": "hi",
+      "text": "khet mein saanp ne kaata",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-09",
+      "lang": "hi",
+      "text": "बच्चे को मिर्गी का दौरा पड़ा",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-01",
+      "lang": "mr",
+      "text": "छातीत दुखत आहे आणि घाम येतोय",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-02",
+      "lang": "mr",
+      "text": "आजोबा बेशुद्ध झाले",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-03",
+      "lang": "mr",
+      "text": "shwas gheta yet nahi",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-04",
+      "lang": "mr",
+      "text": "मला जगायचे नाही",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-05",
+      "lang": "mr",
+      "text": "शेतात साप चावला",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-01",
+      "lang": "gu",
+      "text": "મને છાતીમાં દુખાવો અને પરસેવો થાય છે",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-02",
+      "lang": "gu",
+      "text": "દાદા બેભાન થઈ ગયા",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-03",
+      "lang": "gu",
+      "text": "zer pi lidhu che",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-04",
+      "lang": "gu",
+      "text": "મારે જીવવું નથી",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-05",
+      "lang": "gu",
+      "text": "shvas leva ma taklif thay che",
+      "emergency": true
+    },
+    {
+      "id": "mr-em-06",
+      "lang": "mr",
+      "text": "मला श्वास घ्यायला त्रास होतोय",
+      "emergency": true
+    },
+    {
+      "id": "gu-em-06",
+      "lang": "gu",
+      "text": "બાળકને ખેંચ આવે છે",
+      "emergency": true
+    },
+    {
+      "id": "hi-em-10",
+      "lang": "hi",
+      "text": "main mar jaana chahta hoon",
+      "emergency": true
+    },
+    {
+      "id": "hi-ok-06",
+      "lang": "hi",
+      "text": "आज बहुत गर्मी है और पसीना आ रहा है",
+      "notEmergency": true
+    },
+    {
+      "id": "hi-ok-07",
+      "lang": "hi",
+      "text": "mujhe chakkar aa raha hai",
+      "notEmergency": true
+    },
+    {
+      "id": "hi-ok-01",
+      "lang": "hi",
+      "text": "do din se bukhar aur badan dard",
+      "notEmergency": true,
+      "departments": [
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "hi-ok-02",
+      "lang": "hi",
+      "text": "पेट में दर्द और दस्त",
+      "notEmergency": true,
+      "departments": [
+        "Gastroenterology",
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "hi-ok-03",
+      "lang": "hi",
+      "text": "khansi aur zukam",
+      "notEmergency": true,
+      "departments": [
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "hi-ok-04",
+      "lang": "hi",
+      "text": "kamar dard rehta hai",
+      "notEmergency": true,
+      "departments": [
+        "Orthopaedics",
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "hi-ok-05",
+      "lang": "hi",
+      "text": "हाथों में खुजली",
+      "notEmergency": true,
+      "departments": [
+        "Dermatology"
+      ]
+    },
+    {
+      "id": "mr-ok-01",
+      "lang": "mr",
+      "text": "मला ताप आणि खोकला आहे",
+      "notEmergency": true,
+      "departments": [
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "mr-ok-02",
+      "lang": "mr",
+      "text": "pot dukhat aahe",
+      "notEmergency": true,
+      "departments": [
+        "Gastroenterology",
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "mr-ok-03",
+      "lang": "mr",
+      "text": "सांधेदुखी खूप आहे",
+      "notEmergency": true,
+      "departments": [
+        "Orthopaedics",
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "gu-ok-01",
+      "lang": "gu",
+      "text": "તાવ અને શરદી છે",
+      "notEmergency": true,
+      "departments": [
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "gu-ok-02",
+      "lang": "gu",
+      "text": "pet ma dukhe che ane jhada",
+      "notEmergency": true,
+      "departments": [
+        "Gastroenterology",
+        "General Medicine"
+      ]
+    },
+    {
+      "id": "gu-ok-03",
+      "lang": "gu",
+      "text": "માથું દુખે છે",
+      "notEmergency": true,
+      "departments": [
+        "Neurology",
+        "General Medicine",
+        "Cardiology"
+      ]
+    },
+    {
+      "id": "hi-chat-01",
+      "lang": "hi",
+      "text": "doctor se milna hai",
+      "intent": "appointment"
+    },
+    {
+      "id": "hi-chat-02",
+      "lang": "hi",
+      "text": "kitne paise baaki hain",
+      "intent": "billing"
+    },
+    {
+      "id": "hi-chat-03",
+      "lang": "hi",
+      "text": "मेरी दवाई कहाँ दिखेगी",
+      "intent": "prescription"
+    },
+    {
+      "id": "hi-chat-04",
+      "lang": "hi",
+      "text": "namaste",
+      "intent": "general"
+    },
+    {
+      "id": "mr-chat-01",
+      "lang": "mr",
+      "text": "मला डॉक्टरांना भेटायचे आहे",
+      "intent": "appointment"
+    },
+    {
+      "id": "mr-chat-02",
+      "lang": "mr",
+      "text": "औषध कुठे पाहायचे",
+      "intent": "prescription"
+    },
+    {
+      "id": "gu-chat-01",
+      "lang": "gu",
+      "text": "મારે ડૉક્ટરને મળવું છે",
+      "intent": "appointment"
+    },
+    {
+      "id": "gu-chat-02",
+      "lang": "gu",
+      "text": "bill ketlu thayu",
+      "intent": "billing"
+    },
+    {
+      "id": "gu-chat-03",
+      "lang": "gu",
+      "text": "kem cho",
+      "intent": "general"
+    },
+    {
+      "id": "en-01",
+      "lang": "en",
+      "text": "I tapped my knee on the table, sir",
+      "english": true
+    },
+    {
+      "id": "en-02",
+      "lang": "en",
+      "text": "there is dust in my room and I sneeze",
+      "english": true
+    },
+    {
+      "id": "en-03",
+      "lang": "en",
+      "text": "please call me back about my java course",
+      "english": true
+    },
+    {
+      "id": "en-04",
+      "lang": "en",
+      "text": "the fit of my shoes hurts",
+      "english": true
+    },
+    {
+      "id": "en-05",
+      "lang": "en",
+      "text": "I feel gloomy and sad today",
+      "english": true
+    },
+    {
+      "id": "en-06",
+      "lang": "en",
+      "text": "my brother Ali visited the bazaar",
+      "english": true
+    }
+  ]
+}

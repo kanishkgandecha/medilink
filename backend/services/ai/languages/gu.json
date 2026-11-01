@@ -1,0 +1,277 @@
+{
+  "code": "gu",
+  "name": "Gujarati",
+  "scripts": [
+    "Gujr",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing (MediLink, 2026-11-01); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "લૂ લાગી",
+        "તડકામાં",
+        "tadka ma",
+        "lu lagi"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "છાતીમાં દુખાવો",
+        "છાતીમાં દુખે",
+        "chhati ma dukhavo",
+        "chhatima dukhe",
+        "chati ma dukhe"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "પરસેવો",
+        "parsevo",
+        "parsevo vale"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "શ્વાસ લેવામાં તકલીફ",
+        "શ્વાસ નથી આવતો",
+        "shvas leva ma taklif",
+        "swas nathi aavto"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "હાંફ ચડે",
+        "hamf chade"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "બેભાન",
+        "bebhan"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "આંચકી",
+        "ખેંચ આવી",
+        "aanchki",
+        "khench aavi",
+        "ખેંચ આવે",
+        "khench aave"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "લકવો",
+        "lakvo"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "લોહીની ઉલટી",
+        "lohi ni ulti"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "ખૂબ લોહી વહે",
+        "લોહી બંધ નથી થતું",
+        "khub lohi vahe",
+        "lohi bandh nathi thatu"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "આત્મહત્યા",
+        "આપઘાત",
+        "aapghat",
+        "atmahatya"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "મરવું છે",
+        "જીવવું નથી",
+        "marvu che",
+        "jivvu nathi"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "ઝેર પી લીધું",
+        "ઝેર ખાધું",
+        "zer pi lidhu",
+        "jher khadhu"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "સાપ કરડ્યો",
+        "saap kardyo"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "ખૂબ તાવ",
+        "khub taav"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "તાવ",
+        "taav",
+        "tav aave"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "માથું દુખે",
+        "માથાનો દુખાવો",
+        "mathu dukhe",
+        "matha no dukhavo"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "પેટમાં દુખાવો",
+        "પેટમાં દુખે",
+        "pet ma dukhavo",
+        "pet ma dukhe"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "ઉલટી",
+        "ulti thay"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "ઝાડા",
+        "jhada",
+        "zada"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "ઉધરસ",
+        "udhras"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "શરદી",
+        "shardi"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "ચક્કર આવે",
+        "chakkar aave"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "નબળાઈ",
+        "nablai"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "ખંજવાળ",
+        "khanjval"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "કમરનો દુખાવો",
+        "kamar no dukhavo"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "સાંધાનો દુખાવો",
+        "sandha no dukhavo"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "પેશાબમાં બળતરા",
+        "peshab ma baltara"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "ડૉક્ટરને મળવું",
+        "doctor ne malvu"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "બિલ કેટલું",
+        "bill ketlu"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "દવા",
+        "dava"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "રિપોર્ટ"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "નમસ્તે",
+        "kem cho"
+      ]
+    }
+  ]
+}

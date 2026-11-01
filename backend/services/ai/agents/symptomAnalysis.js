@@ -3,6 +3,7 @@ const { callLLM } = require('../llmClient');
 const { SYMPTOM_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
 const { enforceSymptomSafety } = require('../safety');
 const { buildSourceMeta } = require('../sourceClassification');
+const { withEnglish } = require('../language');
 
 const CONDITIONS = [
   { name: 'Viral Fever / Flu', keywords: ['fever', 'chill', 'body ache', 'cold', 'runny nose', 'fatigue', 'weakness', 'sore throat'], urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Rest and stay hydrated (8+ glasses of water)', 'Paracetamol for fever > 38.5°C', 'Monitor temperature every 6 hours', 'Warm saline gargles for throat'], redFlags: ['Fever above 40°C', 'Difficulty breathing', 'Persistent vomiting'] },
@@ -18,7 +19,7 @@ const CONDITIONS = [
 ];
 
 function mockAnalyze(symptoms, age) {
-  const tokens = (Array.isArray(symptoms) ? symptoms.join(' ') : symptoms).toLowerCase();
+  const tokens = withEnglish(symptoms).toLowerCase();
 
   const scored = CONDITIONS.map(c => {
     const matches = c.keywords.filter(kw => tokens.includes(kw));

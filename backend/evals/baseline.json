@@ -1,7 +1,7 @@
 {
-  "savedAt": "2026-11-01T10:52:27.733Z",
+  "savedAt": "2026-11-01T11:04:15.385Z",
   "scores": {
-    "symptomAnalysis.emergencyRecall": 0.9643,
+    "symptomAnalysis.emergencyRecall": 1,
     "symptomAnalysis.noUnderTriage": 1,
     "symptomAnalysis.emergencyPrecision": 1,
     "symptomAnalysis.urgencyAccuracy": 0.9091,
@@ -50,6 +50,19 @@
     "locations.contactsCorrect": 1,
     "locations.alwaysInstructs": 1,
     "locations.chatUsesLocation": 1,
-    "locations.neverChangesUrgency": 1
+    "locations.neverChangesUrgency": 1,
+    "languages.packsValid": 1,
+    "languages.emergencyRecall": 1,
+    "languages.emergencyPrecision": 1,
+    "languages.chatEmergencyRecall": 1,
+    "languages.departmentAccuracy": 1,
+    "languages.intentAccuracy": 1,
+    "languages.noEnglishFalseMatches": 1,
+    "seasons.seasonalFlagsShown": 1,
+    "seasons.raisesWithWarningSigns": 1,
+    "seasons.coolingAdvice": 1,
+    "seasons.onlyInSeasonAndPlace": 1,
+    "seasons.neverLowers": 1,
+    "seasons.noDiseaseNames": 1
   }
 }

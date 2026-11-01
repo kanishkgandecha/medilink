@@ -7,3 +7,4 @@ private-uploads/
 .env.test
 .test-postgres/
 evals/results/
+evals/external/

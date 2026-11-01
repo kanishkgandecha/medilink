@@ -64,7 +64,7 @@ const clinicalConfirmBody = (amendRequired) => s.obj({
   amendmentNote: s.str({ minLength: amendRequired ? 3 : 0, maxLength: 500 }),
 }, amendRequired ? ['confirmed', 'content', 'amendmentNote'] : ['confirmed', 'content']);
 const AI_COMMON = { tag: 'AI', limiter: 'ai', audit: 'AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)' };
-const AI_VIS = 'Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.';
+const AI_VIS = 'Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider. Symptom guidance may add seasonal warning signs or raise urgency for the location and month (never lower it) and never names a disease.';
 
 const e = (method, path, def) => ({ method, path, auth: 'jwt', state: method === 'get' ? 'read' : 'write', limiter: 'api', errors: [], ...def });
 

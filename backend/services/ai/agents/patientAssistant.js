@@ -3,6 +3,7 @@ const { callLLM } = require('../llmClient');
 const { PATIENT_ASSISTANT, DISCLAIMER } = require('../promptTemplates');
 const { enforceAssistantSafety } = require('../safety');
 const { buildSourceMeta } = require('../sourceClassification');
+const { withEnglish } = require('../language');
 
 const INTENT_MAP = [
   { intent: 'emergency',    patterns: ['emergency', 'ambulance', 'dying', 'heart attack', 'stroke', 'unconscious', 'can\'t breathe', 'severe chest pain', 'bleeding heavily', '112'] },
@@ -68,7 +69,7 @@ const FALLBACK_REPLIES = [
 ];
 
 function detectIntent(message) {
-  const lower = message.toLowerCase();
+  const lower = withEnglish(message).toLowerCase();
   for (const { intent, patterns } of INTENT_MAP) {
     if (patterns.some(p => lower.includes(p))) return intent;
   }

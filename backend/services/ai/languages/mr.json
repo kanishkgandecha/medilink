@@ -1,0 +1,285 @@
+{
+  "code": "mr",
+  "name": "Marathi",
+  "scripts": [
+    "Deva",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing (MediLink, 2026-11-01); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "उन्हात",
+        "ऊन लागले",
+        "unhat kam",
+        "unhat"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "छातीत दुखत",
+        "छातीत दुखणे",
+        "छातीत वेदना",
+        "chhatit dukhat",
+        "chatit dukhte",
+        "chhatit dukhtay"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "घाम येतोय",
+        "घाम",
+        "gham yetoy"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "श्वास घेता येत नाही",
+        "श्वास घेण्यास त्रास",
+        "shwas gheta yet nahi",
+        "shwas ghenyas tras",
+        "श्वास घ्यायला त्रास",
+        "shwas ghyayla tras",
+        "shwas ghyayla tras hotoy"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "धाप लागते",
+        "धाप लागणे",
+        "dhap lagte",
+        "dhap lagtey"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "बेशुद्ध",
+        "beshuddh",
+        "beshudh"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "फिट आली",
+        "फिट येणे",
+        "आकडी",
+        "fit aali",
+        "fit ali",
+        "aakdi"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "अर्धांगवायू",
+        "लकवा",
+        "ardhangvayu",
+        "lakwa"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "रक्ताची उलटी",
+        "raktachi ulti"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "खूप रक्तस्त्राव",
+        "रक्त थांबत नाही",
+        "khup raktasrav",
+        "rakta thambat nahi"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "आत्महत्या",
+        "aatmahatya"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "मरायचे आहे",
+        "जगायचे नाही",
+        "marayche aahe",
+        "jagayche nahi"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "विष प्यायले",
+        "विष खाल्ले",
+        "vish pyayle",
+        "vish khalle"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "साप चावला",
+        "saap chavla",
+        "sap chavla"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "खूप ताप",
+        "khup taap"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "ताप आला",
+        "ताप",
+        "taap aala",
+        "tap ala"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "डोके दुखत",
+        "डोकेदुखी",
+        "doke dukhat",
+        "dokedukhi"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "पोट दुखत",
+        "पोटदुखी",
+        "pot dukhat",
+        "potdukhi"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "उलटी",
+        "ulti hotey"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "जुलाब",
+        "julab"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "खोकला",
+        "khokla"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "सर्दी",
+        "sardi"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "चक्कर येते",
+        "chakkar yete"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "अशक्तपणा",
+        "ashaktpana"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "खाज",
+        "khaj yete"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "पाठदुखी",
+        "pathdukhi"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "सांधेदुखी",
+        "sandhedukhi"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "लघवीला जळजळ",
+        "laghvila jaljal"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "डॉक्टरांना भेटायचे",
+        "doctorana bhetayche"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "बिल किती",
+        "bill kiti"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "औषध",
+        "aushadh",
+        "aushadh pahije"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "रिपोर्ट"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "नमस्कार"
+      ]
+    }
+  ]
+}

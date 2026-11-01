@@ -142,6 +142,24 @@ test('emergency contacts follow the patient profile state, and the location is n
   assert.deepEqual(staff.json.data.emergencyContacts.map((c) => c.number), ['112']);
 });
 
+test('a Hindi emergency escalates even when the model says Low, and the model receives the original text', async () => {
+  providerPayload = { overallUrgency: 'Low', guidanceSummary: 'Rest at home.' };
+  const before = mockedRequests.length;
+  const res = await h.request('/api/ai/symptom-analysis', { token: P.patient.token, method: 'POST', body: { symptoms: 'मुझे सीने में दर्द है और साँस नहीं आ रही' } });
+  assert.equal(res.status, 200);
+  assert.equal(res.json.data.overallUrgency, 'Critical');
+  const sent = mockedRequests.slice(before).map((r) => JSON.stringify(r.body)).join('\n');
+  assert.match(sent, /सीने में दर्द/, 'original wording is sent');
+  assert.doesNotMatch(sent, /difficulty breathing/, 'the English rule terms are not added to the prompt');
+});
+
+test('a disease named by the model is removed before the patient sees the guidance', async () => {
+  providerPayload = { overallUrgency: 'Moderate', guidanceSummary: 'This is probably dengue.', selfCare: ['Rest', 'Common with malaria in monsoon'], redFlags: ['Bleeding gums'] };
+  const res = await h.request('/api/ai/symptom-analysis', { token: P.patient.token, method: 'POST', body: { symptoms: 'fever for two days' } });
+  assert.equal(res.status, 200);
+  assert.doesNotMatch(JSON.stringify(res.json.data), /dengue|malaria/i);
+});
+
 test('every provider call in this suite was answered by the in-process mock; nothing left the machine', () => {
   assert.ok(mockedRequests.length >= 6, `mocked provider calls: ${mockedRequests.length}`);
   assert.ok(mockedRequests.every((r) => r.host === PROVIDER_HOST));

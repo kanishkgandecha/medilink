@@ -12,8 +12,9 @@ const prisma = require('./config/prisma');
 const { validateEnvironment } = require('./config/env');
 
 validateEnvironment();
-// Fail fast on an invalid AI location pack or an unknown hospital location.
+// Fail fast on an invalid AI location or language pack, or an unknown hospital location.
 require('./services/ai/locale').assertHospitalLocation();
+require('./services/ai/language').loadLanguagePacks();
 
 // Routes
 const authRoutes = require('./routes/authRoutes');

@@ -4,6 +4,7 @@ const { APPOINTMENT_OPTIMIZER, DISCLAIMER } = require('../promptTemplates');
 const prisma = require('../../../config/prisma');
 const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 const { isEmergency } = require('../emergency');
+const { withEnglish } = require('../language');
 
 // The recommended doctor is always recomputed from a live query of doctor
 // availability and today's load, never taken from the LLM's own answer (see
@@ -32,7 +33,7 @@ const DEPT_MAP = [
 const URGENT_KEYWORDS = ['chest pain', 'chest discomfort', 'breathlessness', 'high fever', 'fever for', 'blood in stool', 'blood in urine', 'severe pain', 'persistent vomiting'];
 
 function detectDept(symptoms) {
-  const lower = symptoms.toLowerCase();
+  const lower = withEnglish(symptoms).toLowerCase();
   for (const { keywords, dept, specs } of DEPT_MAP) {
     if (keywords.some((k) => lower.includes(k))) return { dept, specs };
   }
@@ -48,7 +49,7 @@ function departmentRule(department) {
 
 function detectUrgency(symptoms) {
   if (isEmergency(symptoms)) return 'Emergency';
-  const lower = symptoms.toLowerCase();
+  const lower = withEnglish(symptoms).toLowerCase();
   return URGENT_KEYWORDS.some((k) => lower.includes(k)) ? 'Urgent' : 'Routine';
 }
 

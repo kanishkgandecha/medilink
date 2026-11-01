@@ -47,5 +47,26 @@
         "18008914416"
       ]
     }
-  }
+  },
+  "seasons": [
+    {
+      "id": "monsoon-fever",
+      "months": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "source": {
+        "title": "Rajya Sabha answer: vector-borne disease transmission peaks in the monsoon and post-monsoon period",
+        "url": "https://rsdebate.nic.in/bitstream/123456789/737361/1/PQ_259_21032023_U2327_p274_p275.pdf",
+        "retrievedAt": "2026-11-01",
+        "note": "National window; peak months differ between states (e.g. RTI analysis of NCVBDC data for South India). Refine per state from IDSP weekly outbreak reports when available."
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  ]
 }

@@ -13,6 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { SEASON_RULES } = require('./seasonal');
 
 const LOCALES_DIR = path.join(__dirname, 'locales');
 const REVIEW_STATUSES = new Set(['pending_clinician_review', 'approved']);
@@ -38,6 +39,15 @@ function validatePack(pack, file = pack?.code) {
     if (!REVIEW_STATUSES.has(contact.reviewStatus)) at('needs reviewStatus pending_clinician_review or approved');
     if (contact.reviewStatus === 'approved' && !contact.reviewedBy) at('is approved but has no reviewedBy');
     if (contact.reviewStatus !== 'approved' && contact.reviewedBy) at('names a reviewer but is not approved');
+  }
+  for (const [i, season] of (pack.seasons || []).entries()) {
+    const at = (msg) => where(`seasons[${i}] ${msg}`);
+    if (!SEASON_RULES[season.id]) at(`has unknown id ${season.id}`);
+    if (!Array.isArray(season.months) || !season.months.length || !season.months.every((mo) => Number.isInteger(mo) && mo >= 1 && mo <= 12)) at('months must be 1–12');
+    if (!season.source?.title || !season.source?.retrievedAt) at('needs source.title and source.retrievedAt');
+    if (!REVIEW_STATUSES.has(season.reviewStatus)) at('needs reviewStatus pending_clinician_review or approved');
+    if (season.reviewStatus === 'approved' && !season.reviewedBy) at('is approved but has no reviewedBy');
+    if (season.reviewStatus !== 'approved' && season.reviewedBy) at('names a reviewer but is not approved');
   }
   return problems;
 }
@@ -69,7 +79,8 @@ const findPack = (packs, value, parent) => {
   return Object.values(packs).find((p) => p.parent === parent && (clean(p.name) === wanted || p.aliases.map(clean).includes(wanted))) || null;
 };
 
-function resolveLocale({ country, state } = {}, env = process.env) {
+// `asOf` fixes the date used for seasonal rules (evaluation and tests).
+function resolveLocale({ country, state } = {}, env = process.env, { asOf } = {}) {
   const packs = loadPacks();
   const countryPack = findPack(packs, country, 'GLOBAL')
     || (!clean(country) && findPack(packs, env.HOSPITAL_COUNTRY || 'IN', 'GLOBAL'))
@@ -93,6 +104,9 @@ function resolveLocale({ country, state } = {}, env = process.env) {
     languages: leaf.languages,
     formats: Object.assign({}, ...chain.map((p) => p.formats || {})),
     contacts: Object.assign({}, ...chain.map((p) => p.contacts || {})),
+    // A state's season replaces the national season with the same id.
+    seasons: Object.values(Object.assign({}, ...chain.map((p) => Object.fromEntries((p.seasons || []).map((season) => [season.id, season]))))),
+    asOf,
   };
 }
 

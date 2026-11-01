@@ -10,6 +10,9 @@
 // common misspellings) before matching. A statement is treated as history,
 // not a current emergency, only when it carries both a past-time marker and
 // a resolved marker ("last year ... now fine"); self-harm is never discounted.
+// Hindi, Marathi, and Gujarati phrases are recognised through the language packs.
+
+const { withEnglish } = require('./language');
 
 const CAN_NOT = "(?:can'?t|cannot|can not|unable to|could ?n'?t)";
 
@@ -32,6 +35,7 @@ const COMBINATIONS = [
   { category: 'head-injury', all: [/\b(hit|banged|injured|hurt|fell on) (?:my |his |her |the )?head\b|\bhead injury\b/, /\b(vomit|drowsy|confus|unconscious|seizure)/] },
   { category: 'pregnancy-bleeding', all: [/\bpregnan/, /\bbleed/] },
   { category: 'gi-bleed', all: [/\b(black|tarry|bloody) stool/, /\b(dizz|faint|weak)/] },
+  { category: 'heat', all: [/\b(heat exposure|in the sun|in the heat|under the sun|heat ?wave|very hot (?:day|weather)|work(?:ing|ed) outside)\b/, /\b(hot dry skin|hot and dry skin|stopped sweating|not sweating|very high (?:body )?temperature)\b/] },
 ];
 
 // Common misspellings of words that matter for escalation. Kept explicit
@@ -63,7 +67,7 @@ function normalize(value) {
 
 // Returns { emergency, categories } for any free text or list of symptoms.
 function detectEmergency(value) {
-  const text = normalize(value);
+  const text = normalize(withEnglish(value));
   if (!text) return { emergency: false, categories: [] };
   const categories = new Set();
   for (const { category, pattern } of SIGNS) if (pattern.test(text)) categories.add(category);

@@ -1,0 +1,28 @@
+{
+  "description": "Seasonal rule cases. 'date' fixes the month; 'expect' lists checks: seasonalFlags (seasonal warning signs shown), minUrgency, cooling (heat self-care shown), none (no seasonal additions at all).",
+  "cases": [
+    { "id": "s-01", "symptoms": "fever since two days", "state": "Maharashtra", "date": "2026-08-15", "expect": { "seasonalFlags": true } },
+    { "id": "s-02", "symptoms": "fever and bleeding gums", "state": "Maharashtra", "date": "2026-08-15", "expect": { "seasonalFlags": true, "minUrgency": "High" } },
+    { "id": "s-03", "symptoms": "fever with persistent vomiting", "state": "Gujarat", "date": "2026-09-20", "expect": { "seasonalFlags": true, "minUrgency": "High" } },
+    { "id": "s-04", "symptoms": "fever and very drowsy child", "state": "Goa", "date": "2026-07-05", "expect": { "seasonalFlags": true, "minUrgency": "High" } },
+    { "id": "s-05", "symptoms": "bukhar aur nose se khoon, red spots", "state": "Madhya Pradesh", "date": "2026-10-01", "expect": { "seasonalFlags": true, "minUrgency": "High" } },
+    { "id": "s-06", "symptoms": "तेज बुखार और उल्टी बार बार", "state": "Rajasthan", "date": "2026-09-01", "expect": { "seasonalFlags": true } },
+    { "id": "s-07", "symptoms": "fever since two days", "state": "Karnataka", "date": "2026-11-20", "expect": { "seasonalFlags": true } },
+    { "id": "s-08", "symptoms": "fever since two days", "state": "Maharashtra", "date": "2026-02-10", "expect": { "none": true } },
+    { "id": "s-09", "symptoms": "fever and bleeding gums", "state": "Telangana", "date": "2026-01-10", "expect": { "none": true } },
+    { "id": "s-10", "symptoms": "itchy rash", "state": "Maharashtra", "date": "2026-08-15", "expect": { "none": true } },
+    { "id": "s-11", "symptoms": "fever since two days", "country": "United Kingdom", "date": "2026-08-15", "expect": { "none": true } },
+
+    { "id": "h-01", "symptoms": "worked outside in the sun, now dizzy with headache", "state": "Rajasthan", "date": "2026-05-12", "expect": { "cooling": true, "minUrgency": "Moderate" } },
+    { "id": "h-02", "symptoms": "in the heat all day and muscle cramps", "state": "Gujarat", "date": "2026-04-20", "expect": { "cooling": true, "minUrgency": "Moderate" } },
+    { "id": "h-03", "symptoms": "dhoop mein kaam kiya, chakkar aa raha", "state": "Gujarat", "date": "2026-05-02", "expect": { "cooling": true, "minUrgency": "Moderate" } },
+    { "id": "h-04", "symptoms": "उन्हात काम केले आणि उलटी", "state": "Maharashtra", "date": "2026-05-02", "expect": { "cooling": true, "minUrgency": "Moderate" } },
+    { "id": "h-05", "symptoms": "તડકામાં કામ કર્યું, ચક્કર આવે", "state": "Gujarat", "date": "2026-06-01", "expect": { "cooling": true, "minUrgency": "Moderate" } },
+    { "id": "h-06", "symptoms": "worked outside in the sun, now dizzy with headache", "state": "Telangana", "date": "2026-03-25", "expect": { "cooling": true } },
+    { "id": "h-07", "symptoms": "worked outside in the sun, now dizzy with headache", "state": "Goa", "date": "2026-05-12", "expect": { "none": true }, "note": "Goa is not in the listed core heat-wave zone" },
+    { "id": "h-08", "symptoms": "worked outside in the sun, now dizzy with headache", "state": "Karnataka", "date": "2026-05-12", "expect": { "none": true } },
+    { "id": "h-09", "symptoms": "worked outside in the sun, now dizzy with headache", "state": "Rajasthan", "date": "2026-12-12", "expect": { "none": true } },
+    { "id": "h-10", "symptoms": "headache and dizziness", "state": "Rajasthan", "date": "2026-05-12", "expect": { "none": true }, "note": "no heat exposure mentioned" },
+    { "id": "h-11", "symptoms": "in the heat all day, now hot dry skin and stopped sweating", "state": "Karnataka", "date": "2026-01-12", "expect": { "minUrgency": "Critical" }, "note": "overheating emergency is detected in any place and month" }
+  ]
+}

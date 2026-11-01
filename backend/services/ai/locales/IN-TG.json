@@ -26,5 +26,24 @@
       "reviewStatus": "pending_clinician_review",
       "reviewedBy": null
     }
-  }
+  },
+  "seasons": [
+    {
+      "id": "summer-heat",
+      "months": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "source": {
+        "title": "IMD core heat-wave zone (pre-monsoon outlooks, March–May with heat waves into June)",
+        "url": "https://www.business-standard.com/article/pti-stories/mar-may-period-likely-to-be-warmer-than-normal-imd-120022800674_1.html",
+        "retrievedAt": "2026-11-01",
+        "note": "State is in IMD's listed core heat-wave zone (2018/2020 outlooks); check the current IMD seasonal bulletin and the NCDC National Action Plan on Heat-Related Illnesses."
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  ]
 }
