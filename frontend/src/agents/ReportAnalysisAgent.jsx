@@ -1,6 +1,6 @@
 import React, { useState, useRef, useId } from 'react'
 import { createPortal } from 'react-dom'
-import { FlaskConical, Sparkles, Loader2, X, CheckCircle2, AlertTriangle, Clock, RotateCcw, FileText, Share2, ChevronDown } from 'lucide-react'
+import { FlaskConical, Sparkles, Loader2, X, CheckCircle2, AlertTriangle, Clock, RotateCcw, FileText, Share2, ChevronDown, HelpCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { analyzeReport } from '../services/aiService'
 import SourceDisclosure from '../components/ai/SourceDisclosure'
@@ -12,6 +12,8 @@ const STATUS_STYLE = {
   Normal:     { text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', icon: CheckCircle2 },
   Borderline: { text: 'text-amber-700 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-900/20',    icon: Clock        },
   Abnormal:   { text: 'text-red-700 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-900/20',        icon: AlertTriangle },
+  // No usable printed range: shown neutrally, never as Normal.
+  'Not assessed': { text: 'text-slate-600 dark:text-slate-300', bg: 'bg-slate-100 dark:bg-slate-800/60', icon: HelpCircle },
 }
 
 const URGENCY_BADGE = {

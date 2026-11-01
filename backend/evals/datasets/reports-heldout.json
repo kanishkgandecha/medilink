@@ -1,0 +1,27 @@
+{
+  "description": "Held-out report cases written before Phase D parser changes and not used for tuning. Scored separately to estimate performance on unseen layouts. 'notAssessed' lists values printed without a reference range, which must be reported as 'Range not printed' (decision D-19).",
+  "cases": [
+    { "id": "rh-01", "reportType": "Complete Blood Count (CBC)", "text": "Haemoglobin (Hb)      11.2    g/dL     13.0 - 17.0\nPlatelet Count        1.2     Lakhs/cumm   1.5 - 4.5\nESR                   38      mm/hr    0 - 20   H", "expected": [
+      { "parameter": "haemoglobin", "status": "Abnormal" }, { "parameter": "platelet", "status": "Abnormal" }, { "parameter": "esr", "status": "Abnormal" } ] },
+    { "id": "rh-02", "reportType": "Lipid Profile", "text": "Serum Cholesterol : 245 mg/dl   Desirable : < 200\nHDL Cholesterol 52 mg/dL >40", "expected": [
+      { "parameter": "cholesterol", "status": "Abnormal" }, { "parameter": "hdl", "status": "Normal" } ] },
+    { "id": "rh-03", "reportType": "General Medical Report", "text": "Vitamin D (25-OH)   14.2  ng/mL   30 - 100\nVitamin B12   180  pg/mL  (211-911)", "expected": [
+      { "parameter": "vitamin d", "status": "Abnormal" }, { "parameter": "vitamin b12", "status": "Abnormal" } ] },
+    { "id": "rh-04", "reportType": "Liver Function Test (LFT)", "text": "LIVER FUNCTION TEST\nSGPT/ALT   32  U/L   Up to 40\nSGOT/AST   55  U/L   Up to 40", "expected": [
+      { "parameter": "sgpt", "status": "Normal" }, { "parameter": "sgot", "status": "Abnormal" } ] },
+    { "id": "rh-05", "reportType": "Kidney Function Test (KFT)", "text": "Creatinine, Serum   1.4  mg/dL   0.6 - 1.2\nUric Acid   6.9  mg/dL   3.5-7.2\nPotassium  5.8 H  mmol/L  3.5-5.1\nSodium  138  mEq/L  [136 – 145]", "expected": [
+      { "parameter": "creatinine", "status": "Abnormal" }, { "parameter": "uric acid", "status": "Normal" }, { "parameter": "potassium", "status": "Abnormal" }, { "parameter": "sodium", "status": "Normal" } ] },
+    { "id": "rh-06", "reportType": "Blood Sugar / Diabetes Panel", "text": "HbA1c (Glycated Haemoglobin)   6.1  %   4.0 - 5.6\nEstimated Average Glucose  128  mg/dL", "expected": [
+      { "parameter": "hba1c", "status": "Abnormal" } ], "notAssessed": ["estimated average glucose"] },
+    { "id": "rh-07", "reportType": "Ultrasound Report", "text": "USG ABDOMEN AND PELVIS\nLiver: mildly enlarged with grade I fatty changes.\nGall bladder: no calculi.\nImpression: Grade I fatty liver.", "expected": [] },
+    { "id": "rh-08", "reportType": "Thyroid Function Test (TFT)", "text": "Free T3: 3.1 pg/mL (Ref: 2.0-4.4)\nFree T4: 0.7 ng/dL (Ref: 0.9-1.7)\nTSH: 2.5 uIU/mL (Ref: 0.27-4.2)", "expected": [
+      { "parameter": "free t3", "status": "Normal" }, { "parameter": "free t4", "status": "Abnormal" }, { "parameter": "tsh", "status": "Normal" } ] },
+    { "id": "rh-09", "reportType": "General Medical Report", "text": "Patient Name: Synthetic Patient   Age: 45 Years   Sex: M\nSample collected: 12-05-2026 10:30\nC-Reactive Protein (CRP)   <0.5   mg/L   0 - 5", "expected": [
+      { "parameter": "c-reactive protein", "status": "Normal" } ] },
+    { "id": "rh-10", "reportType": "Complete Blood Count (CBC)", "text": "Total WBC Count  4,000  /cumm  4,000 - 11,000\nNeutrophils  72  %  40 - 75\nLymphocytes  18  %  20 - 45", "expected": [
+      { "parameter": "wbc", "status": "Borderline" }, { "parameter": "neutrophils", "status": "Normal" }, { "parameter": "lymphocytes", "status": "Abnormal" } ] },
+    { "id": "rh-11", "reportType": "ECG Report", "text": "12 LEAD ECG\nRate: 96 bpm. Rhythm: sinus. Axis normal.\nImpression: Within normal limits.", "expected": [], "notAssessed": [] },
+    { "id": "rh-12", "reportType": "Lipid Profile", "text": "Triglycerides   210   mg/dL   Normal: <150, Borderline: 150-199, High: 200-499\nLDL Cholesterol  98  mg/dL  Optimal <100", "expected": [
+      { "parameter": "triglycerides", "status": "Abnormal" }, { "parameter": "ldl", "status": "Normal" } ] }
+  ]
+}

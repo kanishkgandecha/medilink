@@ -5,18 +5,21 @@ const { enforceReportSafety } = require('../safety');
 const { parseReportMeasurements } = require('../reportParser');
 const { buildSourceMeta } = require('../sourceClassification');
 
+// Whole-word keys per report type. Imaging and ECG headers ("CT ABDOMEN",
+// "USG", "ECG") weigh more than organ words that appear in many reports.
 const REPORT_TYPES = [
-  { keys: ['haemoglobin', 'hemoglobin', 'hb', 'wbc', 'rbc', 'platelet', 'hba1c', 'blood count', 'cbc'], type: 'Complete Blood Count (CBC)' },
-  { keys: ['cholesterol', 'ldl', 'hdl', 'triglyceride', 'lipid', 'vldl'], type: 'Lipid Profile' },
-  { keys: ['tsh', 'thyroid', 't3', 't4', 'triiodothyronine', 'thyroxine'], type: 'Thyroid Function Test (TFT)' },
-  { keys: ['creatinine', 'urea', 'bun', 'egfr', 'kidney', 'renal'], type: 'Kidney Function Test (KFT)' },
-  { keys: ['sgpt', 'sgot', 'alt', 'ast', 'bilirubin', 'liver', 'hepatic', 'albumin'], type: 'Liver Function Test (LFT)' },
-  { keys: ['glucose', 'sugar', 'diabetes', 'insulin', 'fasting blood', 'postprandial'], type: 'Blood Sugar / Diabetes Panel' },
-  { keys: ['urine', 'urea', 'protein', 'ketone', 'urinalysis', 'uric acid'], type: 'Urine Analysis' },
-  { keys: ['x-ray', 'xray', 'chest x', 'fracture', 'opacity', 'radiology'], type: 'X-Ray Report' },
-  { keys: ['mri', 'magnetic resonance', 'brain', 'spine', 'lesion'], type: 'MRI Report' },
-  { keys: ['ct', 'computed tomography', 'scan', 'pulmonary', 'abdomen'], type: 'CT Scan Report' },
-  { keys: ['ecg', 'electrocardiogram', 'cardiac', 'rhythm', 'sinus', 'qrs', 'arrhythmia'], type: 'ECG Report' },
+  { type: 'X-Ray Report', heading: /\b(?:x-?ray|radiograph)\b/, keys: [/\bopacity\b/, /\bfracture\b/, /\bpa view\b/, /\bcostophrenic\b/] },
+  { type: 'MRI Report', heading: /\b(?:mri|magnetic resonance)\b/, keys: [/\blesion\b/, /\binfarct\b/, /\bt2\b/] },
+  { type: 'CT Scan Report', heading: /\b(?:ct|hrct|cect|ncct|computed tomography)\b/, keys: [/\bcontrast\b/, /\bhounsfield\b/] },
+  { type: 'Ultrasound Report', heading: /\b(?:usg|ultrasound|ultrasonography|sonography|doppler)\b/, keys: [/\bechotexture\b/, /\bcalculi\b/, /\bgall ?bladder\b/] },
+  { type: 'ECG Report', heading: /\b(?:ecg|ekg|electrocardiogram)\b/, keys: [/\bsinus\b/, /\bqrs\b/, /\bst (?:changes|segment)\b/, /\baxis\b/, /\barrhythmia\b/] },
+  { type: 'Blood Sugar / Diabetes Panel', keys: [/\bhba1c\b/, /\bglycated\b/, /\bglucose\b/, /\bblood sugar\b/, /\bfasting\b/, /\bpost ?prandial\b/, /\bppbs\b/, /\bfbs\b/, /\binsulin\b/] },
+  { type: 'Lipid Profile', keys: [/\bcholesterol\b/, /\bldl\b/, /\bhdl\b/, /\bvldl\b/, /\btriglycerides?\b/, /\blipid\b/] },
+  { type: 'Thyroid Function Test (TFT)', keys: [/\btsh\b/, /\bthyroid\b/, /\b(?:free )?t3\b/, /\b(?:free )?t4\b/, /\bthyroxine\b/] },
+  { type: 'Kidney Function Test (KFT)', keys: [/\bcreatinine\b/, /\burea\b/, /\bbun\b/, /\begfr\b/, /\buric acid\b/, /\bsodium\b/, /\bpotassium\b/, /\b(?:kidney|renal) (?:function|panel)\b/] },
+  { type: 'Liver Function Test (LFT)', keys: [/\bsgpt\b/, /\bsgot\b/, /\balt\b/, /\bast\b/, /\bbilirubin\b/, /\balkaline phosphatase\b/, /\bggt\b/, /\bliver function\b/] },
+  { type: 'Urine Analysis', keys: [/\burine\b/, /\burinalysis\b/, /\bspecific gravity\b/, /\bpus cells\b/, /\bketones?\b/] },
+  { type: 'Complete Blood Count (CBC)', keys: [/\bha?emoglobin\b/, /\bhb\b/, /\bwbc\b/, /\brbc\b/, /\bplatelets?\b/, /\bcbc\b/, /\bblood count\b/, /\bleucocytes?\b/, /\bneutrophils\b/, /\blymphocytes\b/, /\besr\b/, /\bmcv\b/] },
 ];
 
 const MOCK_FINDINGS = {
@@ -72,10 +75,15 @@ const MOCK_FINDINGS = {
 function detectReportType(text, hint) {
   if (hint && hint !== 'Medical Report') return hint;
   const lower = text.toLowerCase();
+  const firstLines = lower.split(/\r?\n/).slice(0, 3).join(' ');
+  let best = null;
   for (const rt of REPORT_TYPES) {
-    if (rt.keys.some(k => lower.includes(k))) return rt.type;
+    // An imaging/ECG heading in the first lines decides the type outright.
+    if (rt.heading && rt.heading.test(firstLines)) return rt.type;
+    const score = rt.keys.filter((key) => key.test(lower)).length + (rt.heading && rt.heading.test(lower) ? 2 : 0);
+    if (score && (!best || score > best.score)) best = { type: rt.type, score };
   }
-  return 'General Medical Report';
+  return best?.type || 'General Medical Report';
 }
 
 function mockAnalyze(reportText, reportType) {
@@ -108,11 +116,13 @@ async function runReportAnalysis({ reportText, reportType }) {
   );
   const safeNarrative = enforceReportSafety(result.data, reportText);
   const abnormal = parsedFindings.filter((finding) => finding.status === 'Abnormal').length;
+  const assessed = parsedFindings.filter((finding) => finding.status !== 'Not assessed').length;
+  const unassessed = parsedFindings.length - assessed;
   const combined = {
     ...safeNarrative,
     keyFindings: parsedFindings,
     summary: parsedFindings.length
-      ? `${parsedFindings.length} measurement(s) with explicit reference ranges were extracted from the submitted text. ${abnormal} value(s) fall outside those printed ranges.`
+      ? `${assessed} measurement(s) with printed reference ranges were extracted from the submitted text; ${abnormal} fall outside those ranges.${unassessed ? ` ${unassessed} value(s) have no printed range and were not assessed.` : ''}`
       : 'No measurements with explicit numeric reference ranges could be reliably extracted. No clinical conclusions were generated.',
     insights: parsedFindings.length ? [`Statuses were calculated only against reference ranges printed in the submitted report.`] : [],
     recommendations: abnormal > 0
