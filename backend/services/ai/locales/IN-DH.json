@@ -1,0 +1,35 @@
+{
+  "code": "IN-DH",
+  "parent": "IN",
+  "name": "Dadra and Nagar Haveli and Daman and Diu",
+  "aliases": [
+    "dadra and nagar haveli and daman and diu",
+    "dadra and nagar haveli",
+    "daman and diu",
+    "dnh",
+    "dnhdd",
+    "daman",
+    "diu",
+    "silvassa"
+  ],
+  "languages": [
+    "gu",
+    "hi",
+    "mr",
+    "en"
+  ],
+  "contacts": {
+    "ambulance": {
+      "number": "108",
+      "label": "Ambulance (108)",
+      "purpose": "ambulance",
+      "source": {
+        "title": "Department of Telecommunications allotment of short code 108 for Daman & Diu and Dadra & Nagar Haveli (2011)",
+        "url": "https://dot.gov.in/sites/default/files/DOC191211-002.pdfdated19-12-2011_0.pdf",
+        "retrievedAt": "2026-11-01"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  }
+}

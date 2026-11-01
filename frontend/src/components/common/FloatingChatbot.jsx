@@ -49,8 +49,9 @@ const SAFE_AI_ROUTES = new Set([
   '/settings', '/profile', '/ai-agents', '/symptom-checker', '/report-analyzer', '/health-risk',
 ])
 
-// Emergency (112) and Tele-MANAS mental-health (14416) call actions.
-const SAFE_CALL_ROUTES = new Set(['tel:112', 'tel:14416'])
+// Emergency (112), ambulance (108), and Tele-MANAS mental-health (14416) call
+// actions, which the server chooses from the patient's location pack.
+const SAFE_CALL_ROUTES = new Set(['tel:112', 'tel:108', 'tel:14416'])
 
 const safeAiActions = (actions, urgent = false) => (Array.isArray(actions) ? actions : [])
   .slice(0, 5)

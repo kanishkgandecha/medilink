@@ -77,10 +77,4 @@ function detectEmergency(value) {
 
 const isEmergency = (value) => detectEmergency(value).emergency;
 
-// India defaults; per-state contacts move to locale packs in phase L1.
-const EMERGENCY_CONTACTS = Object.freeze({
-  emergency: { label: 'Call Emergency (112)', number: '112' },
-  mentalHealth: { label: 'Tele-MANAS (14416)', number: '14416' },
-});
-
-module.exports = { detectEmergency, isEmergency, normalize, EMERGENCY_CONTACTS };
+module.exports = { detectEmergency, isEmergency, normalize };

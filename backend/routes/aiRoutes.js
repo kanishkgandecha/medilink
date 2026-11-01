@@ -21,8 +21,25 @@ const { reliabilityQuery } = require('../middleware/queryValidation');
 const logger = require('../utils/logger');
 const { logSafeError } = require('../utils/redact');
 const { patientSafeAiResponses } = require('../utils/aiPatientView');
+const { resolveLocale } = require('../services/ai/locale');
+const prisma = require('../config/prisma');
 
 const audited = (req, agent, operation) => runAuditedAi({ agent, requesterId: req.user.id, operation });
+
+// Patients get contacts for the state on their profile; staff act from the
+// hospital, so they get the hospital's location. The location stays on the
+// server and is never sent to the AI provider. A lookup failure falls back to
+// the hospital default rather than blocking care.
+const localeFor = async (req) => {
+  if (req.user.role !== 'Patient') return resolveLocale();
+  try {
+    const place = await prisma.user.findUnique({ where: { id: req.user.id }, select: { state: true, country: true } });
+    return resolveLocale(place || {});
+  } catch (err) {
+    logSafeError(logger, 'ai_locale_lookup_failed', err, { requestId: req.id });
+    return resolveLocale();
+  }
+};
 
 // All AI routes require authentication
 router.use(protect);
@@ -52,8 +69,9 @@ router.post('/chat', authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Reception
   try {
     const { message, history } = req.body;
     if (!message?.trim()) return res.status(400).json({ success: false, message: 'message is required' });
+    const locale = await localeFor(req);
     const data = await audited(req, 'patient_assistant', () => runPatientAssistant({
-      message, history, userData: { role: req.user.role },
+      message, history, userData: { role: req.user.role }, locale,
     }));
     res.json({ success: true, data });
   } catch (err) {
@@ -72,7 +90,8 @@ router.post('/symptom-analysis', authorize('Admin', 'Doctor', 'Patient', 'Nurse'
   try {
     const { symptoms, age, gender } = req.body;
     if (!symptoms) return res.status(400).json({ success: false, message: 'symptoms is required' });
-    const data = await audited(req, 'symptom_analysis', () => runSymptomAnalysis({ symptoms, age, gender }));
+    const locale = await localeFor(req);
+    const data = await audited(req, 'symptom_analysis', () => runSymptomAnalysis({ symptoms, age, gender, locale }));
     res.json({ success: true, data });
   } catch (err) {
     logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/symptom-analysis' });
@@ -110,7 +129,8 @@ router.post('/health-risk', authorize('Admin', 'Doctor', 'Patient'), [
   try {
     const { age, gender, chronicConditions, acuteSymptoms } = req.body;
     if (!age) return res.status(400).json({ success: false, message: 'age is required' });
-    const data = await audited(req, 'health_risk', () => runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }));
+    const locale = await localeFor(req);
+    const data = await audited(req, 'health_risk', () => runHealthRisk({ age, gender, chronicConditions, acuteSymptoms, locale }));
     res.json({ success: true, data });
   } catch (err) {
     logSafeError(logger, 'ai_request_failed', err, { requestId: req.id, agentRoute: '/health-risk' });
@@ -177,9 +197,10 @@ router.post('/symptom-to-appointment', authorize('Admin', 'Doctor', 'Patient', '
     if (!symptoms) return res.status(400).json({ success: false, message: 'symptoms is required' });
 
     // Chain: analyze symptoms → use detected department for appointment optimizer
+    const locale = await localeFor(req);
     const chained = await audited(req, 'symptom_to_appointment', async () => {
-      const symptomResult = await runSymptomAnalysis({ symptoms, age, gender });
-      const detectedDept = symptomResult?.conditions?.[0]?.department || null;
+      const symptomResult = await runSymptomAnalysis({ symptoms, age, gender, locale });
+      const detectedDept = symptomResult?.department || null;
       const appointmentOptimizer = await runAppointmentOptimizer({ symptoms, department: detectedDept });
       return { symptomAnalysis: symptomResult, appointmentOptimizer, detectedDepartment: detectedDept,
         _source: symptomResult._source === 'llm' && appointmentOptimizer._source === 'llm' ? 'llm' : 'rules',

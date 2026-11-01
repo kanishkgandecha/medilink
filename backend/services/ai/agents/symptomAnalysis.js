@@ -54,13 +54,13 @@ function mockAnalyze(symptoms, age) {
   };
 }
 
-async function runSymptomAnalysis({ symptoms, age, gender }) {
+async function runSymptomAnalysis({ symptoms, age, gender, locale }) {
   const result = await callLLM(
     SYMPTOM_ANALYSIS.system,
     SYMPTOM_ANALYSIS.user({ symptoms, age, gender }),
     () => mockAnalyze(symptoms, age),
   );
-  const safe = enforceSymptomSafety(result.data, symptoms);
+  const safe = enforceSymptomSafety(result.data, symptoms, locale);
   return {
     ...safe,
     ...buildSourceMeta(safe, {

@@ -83,7 +83,7 @@ function mockAssess({ age, gender, chronicConditions = [], acuteSymptoms = [] })
   };
 }
 
-async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }) {
+async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms, locale }) {
   const deterministic = mockAssess({ age, gender, chronicConditions, acuteSymptoms });
   const safe = enforceHealthRiskSafety({
     ...deterministic,
@@ -92,7 +92,7 @@ async function runHealthRisk({ age, gender, chronicConditions, acuteSymptoms }) 
     scoringMethod: 'deterministic_additive_rules_v1',
     scoringFormula: 'min(100, age points + recorded condition points + selected acute symptom points)',
     modelRole: 'not_used_for_scoring',
-  }, acuteSymptoms);
+  }, acuteSymptoms, locale);
   return {
     ...safe,
     ...buildSourceMeta(safe, {

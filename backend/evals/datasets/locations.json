@@ -1,0 +1,25 @@
+{
+  "description": "Location resolution cases for the AI location packs. 'numbers' is the exact ordered list of call numbers shown for an emergency; 'selfHarm' adds mental-health support. 'env' simulates the hospital location settings.",
+  "cases": [
+    { "id": "loc-01", "user": { "state": "Maharashtra", "country": "India" }, "numbers": ["112", "108"] },
+    { "id": "loc-02", "user": { "state": "maharashtra " }, "numbers": ["112", "108"] },
+    { "id": "loc-03", "user": { "state": "MH" }, "numbers": ["112", "108"] },
+    { "id": "loc-04", "user": { "state": "Gujrat" }, "numbers": ["112", "108"] },
+    { "id": "loc-05", "user": { "state": "Goa" }, "numbers": ["112", "108"] },
+    { "id": "loc-06", "user": { "state": "Madhya Pradesh" }, "numbers": ["112", "108"] },
+    { "id": "loc-07", "user": { "state": "Rajasthan" }, "numbers": ["112", "108"] },
+    { "id": "loc-08", "user": { "state": "Karnataka" }, "numbers": ["112", "108"] },
+    { "id": "loc-09", "user": { "state": "Telangana" }, "numbers": ["112", "108"] },
+    { "id": "loc-10", "user": { "state": "Chhattisgarh" }, "numbers": ["112", "108"] },
+    { "id": "loc-11", "user": { "state": "Daman and Diu" }, "numbers": ["112", "108"] },
+    { "id": "loc-12", "user": { "state": "Maharashtra" }, "selfHarm": true, "numbers": ["112", "108", "14416"] },
+    { "id": "loc-13", "user": { "state": "Kerala" }, "env": { "HOSPITAL_STATE": "Maharashtra" }, "numbers": ["112"], "note": "patient state without a pack uses the national pack, never the hospital's state" },
+    { "id": "loc-14", "user": {}, "env": { "HOSPITAL_STATE": "Gujarat" }, "numbers": ["112", "108"], "note": "no patient address: hospital location" },
+    { "id": "loc-15", "user": {}, "env": {}, "numbers": ["112"], "note": "nothing configured: India national default" },
+    { "id": "loc-16", "user": { "country": "United Kingdom" }, "numbers": [], "note": "no pack: generic local-emergency instruction, no number" },
+    { "id": "loc-17", "user": { "country": "United Kingdom" }, "selfHarm": true, "numbers": [] },
+    { "id": "loc-18", "user": { "state": "<script>alert(1)</script>" }, "numbers": ["112"] },
+    { "id": "loc-19", "user": { "state": "", "country": "" }, "env": { "HOSPITAL_STATE": "Goa" }, "numbers": ["112", "108"] },
+    { "id": "loc-20", "user": { "state": "Telangana", "country": "Bharat" }, "selfHarm": true, "numbers": ["112", "108", "14416"] }
+  ]
+}

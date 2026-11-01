@@ -93,13 +93,13 @@ function mockRespond({ message }) {
   };
 }
 
-async function runPatientAssistant({ message, history, userData }) {
+async function runPatientAssistant({ message, history, userData, locale }) {
   const result = await callLLM(
     PATIENT_ASSISTANT.system,
     PATIENT_ASSISTANT.user({ message, history, userData }),
     () => mockRespond({ message }),
   );
-  const safe = enforceAssistantSafety(result.data, message);
+  const safe = enforceAssistantSafety(result.data, message, locale);
   return {
     ...safe,
     ...buildSourceMeta(safe, {

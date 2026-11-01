@@ -1,0 +1,51 @@
+{
+  "code": "IN",
+  "parent": "GLOBAL",
+  "name": "India",
+  "aliases": [
+    "india",
+    "in",
+    "ind",
+    "bharat",
+    "republic of india"
+  ],
+  "languages": [
+    "en",
+    "hi"
+  ],
+  "formats": {
+    "currency": "INR",
+    "date": "dd/mm/yyyy",
+    "glucoseUnit": "mg/dL"
+  },
+  "contacts": {
+    "emergency": {
+      "number": "112",
+      "label": "Call Emergency (112)",
+      "purpose": "emergency",
+      "source": {
+        "title": "Government of India helpline directory (112 single emergency number)",
+        "url": "https://india.gov.in/directory/helpline",
+        "retrievedAt": "2026-11-01"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    },
+    "mentalHealth": {
+      "number": "14416",
+      "label": "Tele-MANAS (14416)",
+      "purpose": "mental-health",
+      "source": {
+        "title": "PIB release on Tele-MANAS launch (14416 / 1-800-891-4416, 24x7)",
+        "url": "https://pib.gov.in/PressReleasePage.aspx?PRID=1866498",
+        "retrievedAt": "2026-11-01",
+        "note": "Numbers confirmed across several secondary sources; PIB page not opened directly"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null,
+      "alternateNumbers": [
+        "18008914416"
+      ]
+    }
+  }
+}

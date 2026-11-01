@@ -1,0 +1,30 @@
+{
+  "code": "IN-MH",
+  "parent": "IN",
+  "name": "Maharashtra",
+  "aliases": [
+    "maharashtra",
+    "mh",
+    "maharastra",
+    "maharashtr"
+  ],
+  "languages": [
+    "mr",
+    "hi",
+    "en"
+  ],
+  "contacts": {
+    "ambulance": {
+      "number": "108",
+      "label": "Ambulance (108)",
+      "purpose": "ambulance",
+      "source": {
+        "title": "Maharashtra Emergency Medical Services (MEMS) Dial 108",
+        "url": "https://medicaldialogues.in/maharashtra-government-to-totally-fund-phone-an-ambulance-service",
+        "retrievedAt": "2026-11-01"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  }
+}

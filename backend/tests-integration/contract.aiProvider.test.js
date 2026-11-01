@@ -125,6 +125,23 @@ test('live-record agents recompute answers from the database even when the model
   assert.ok(chained.json.data.symptomAnalysis && chained.json.data.appointmentOptimizer);
 });
 
+test('emergency contacts follow the patient profile state, and the location is never sent to the provider', async () => {
+  providerPayload = { reply: 'Please seek care.', actions: [] };
+  const gujarat = await h.createUser('ai-gujarat', 'Patient', null, { state: 'Gujarat', city: 'Synthetic City Vadnagar' });
+  const before = mockedRequests.length;
+  const chat = await h.request('/api/ai/chat', { token: gujarat.token, method: 'POST', body: { message: "I don't want to live anymore" } });
+  assert.equal(chat.status, 200);
+  assert.deepEqual(chat.json.data.actions.map((a) => a.route), ['tel:112', 'tel:108', 'tel:14416']);
+  const symptoms = await h.request('/api/ai/symptom-analysis', { token: gujarat.token, method: 'POST', body: { symptoms: 'severe chest pain' } });
+  assert.deepEqual(symptoms.json.data.emergencyContacts.map((c) => c.number), ['112', '108']);
+  const sent = mockedRequests.slice(before).map((r) => JSON.stringify(r.body)).join('\n');
+  assert.equal(/Gujarat|Vadnagar/.test(sent), false, 'location stays on the server');
+
+  // Staff act from the hospital, so they get the hospital location (default: national).
+  const staff = await h.request('/api/ai/symptom-analysis', { token: P.doctor.token, method: 'POST', body: { symptoms: 'severe chest pain' } });
+  assert.deepEqual(staff.json.data.emergencyContacts.map((c) => c.number), ['112']);
+});
+
 test('every provider call in this suite was answered by the in-process mock; nothing left the machine', () => {
   assert.ok(mockedRequests.length >= 6, `mocked provider calls: ${mockedRequests.length}`);
   assert.ok(mockedRequests.every((r) => r.host === PROVIDER_HOST));

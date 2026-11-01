@@ -1,0 +1,28 @@
+{
+  "code": "IN-RJ",
+  "parent": "IN",
+  "name": "Rajasthan",
+  "aliases": [
+    "rajasthan",
+    "rj"
+  ],
+  "languages": [
+    "hi",
+    "en"
+  ],
+  "contacts": {
+    "ambulance": {
+      "number": "108",
+      "label": "Ambulance (108)",
+      "purpose": "ambulance",
+      "source": {
+        "title": "108 (emergency telephone number) — list of states operating the service",
+        "url": "https://en.wikipedia.org/wiki/1-0-8",
+        "retrievedAt": "2026-11-01",
+        "note": "Secondary source; confirm with the state health department"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  }
+}

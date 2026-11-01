@@ -14,7 +14,7 @@ process.env.OPENROUTER_API_KEY = '';
 const fs = require('fs');
 const path = require('path');
 
-const AGENTS = ['symptoms', 'chat', 'reports', 'healthRisk', 'operations', 'records'];
+const AGENTS = ['symptoms', 'chat', 'reports', 'healthRisk', 'operations', 'records', 'locations'];
 const BASELINE = path.join(__dirname, 'baseline.json');
 const RESULTS = path.join(__dirname, 'results', 'latest.json');
 

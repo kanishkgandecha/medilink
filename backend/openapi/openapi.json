@@ -16050,7 +16050,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {
@@ -16203,7 +16203,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {
@@ -16348,7 +16348,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {
@@ -16482,7 +16482,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {
@@ -16791,7 +16791,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {
@@ -16925,7 +16925,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content); AuditEvent AI_PATIENT_SUMMARY_VIEWED (success; 403 recorded as denied)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [
           {
@@ -17037,7 +17037,7 @@
         "x-record-access": null,
         "x-state-changing": false,
         "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
-        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
+        "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis. Emergency responses include emergencyContacts (and tel: actions in chat) chosen from location packs: patients by their profile state, staff by the hospital location (HOSPITAL_COUNTRY / HOSPITAL_STATE). The location is never sent to the AI provider.",
         "x-rate-limit": "ai",
         "parameters": [],
         "responses": {

@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-11-01T10:43:57.339Z",
+  "savedAt": "2026-11-01T10:52:27.733Z",
   "scores": {
     "symptomAnalysis.emergencyRecall": 0.9643,
     "symptomAnalysis.noUnderTriage": 1,
@@ -45,6 +45,11 @@
     "recordAgents.pharmacy.counts": 1,
     "recordAgents.pharmacy.severity": 1,
     "recordAgents.admin.correct": 1,
-    "recordAgents.admin.noFabricatedTrends": 1
+    "recordAgents.admin.noFabricatedTrends": 1,
+    "locations.packsValid": 1,
+    "locations.contactsCorrect": 1,
+    "locations.alwaysInstructs": 1,
+    "locations.chatUsesLocation": 1,
+    "locations.neverChangesUrgency": 1
   }
 }

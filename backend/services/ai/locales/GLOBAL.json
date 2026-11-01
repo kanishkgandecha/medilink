@@ -1,0 +1,22 @@
+{
+  "code": "GLOBAL",
+  "name": "Default (location unknown)",
+  "aliases": [],
+  "languages": [
+    "en"
+  ],
+  "contacts": {
+    "emergency": {
+      "number": null,
+      "label": "Local emergency services",
+      "purpose": "emergency",
+      "source": {
+        "title": "Fallback when no location pack applies",
+        "url": null,
+        "retrievedAt": "2026-11-01"
+      },
+      "reviewStatus": "pending_clinician_review",
+      "reviewedBy": null
+    }
+  }
+}

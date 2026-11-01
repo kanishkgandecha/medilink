@@ -1,7 +1,8 @@
 'use strict';
 
 const { DISCLAIMER } = require('./promptTemplates');
-const { detectEmergency, EMERGENCY_CONTACTS } = require('./emergency');
+const { detectEmergency } = require('./emergency');
+const { resolveLocale, emergencyContacts, emergencyInstruction } = require('./locale');
 
 const CHEST_DISCOMFORT_PATTERN = /\b(chest pain|chest discomfort|chest tightness)\b/i;
 // Presentations that need same-day care: they raise urgency to at least
@@ -23,7 +24,12 @@ function isEmergencyInput(value) {
 }
 
 const isSelfHarm = (value) => detectEmergency(value).categories.includes('self-harm');
-const MENTAL_HEALTH_LINE = `For thoughts of suicide or self-harm you can also call ${EMERGENCY_CONTACTS.mentalHealth.label}, free and available 24×7.`;
+const mentalHealthLine = (locale) => {
+  const line = locale.contacts.mentalHealth;
+  return line?.number ? `For thoughts of suicide or self-harm you can also call ${line.label}, free and available 24×7.` : null;
+};
+// Location never changes urgency; it only chooses which numbers to show.
+const localeOrDefault = (locale) => locale || resolveLocale();
 
 function safeAdvice(items) {
   return list(items, 8).map((item) => {
@@ -34,7 +40,8 @@ function safeAdvice(items) {
   }).filter(Boolean);
 }
 
-function enforceSymptomSafety(result, symptoms) {
+function enforceSymptomSafety(result, symptoms, locale) {
+  const place = localeOrDefault(locale);
   const emergency = isEmergencyInput(symptoms);
   const symptomText = Array.isArray(symptoms) ? symptoms.join(' ') : String(symptoms || '');
   const chestDiscomfort = CHEST_DISCOMFORT_PATTERN.test(symptomText);
@@ -79,10 +86,11 @@ function enforceSymptomSafety(result, symptoms) {
         ? 'Chest discomfort can have different causes and cannot be safely identified here. Arrange a same-day medical assessment; seek emergency care immediately if warning signs appear.'
         : text(result?.guidanceSummary, 'These symptoms cannot be diagnosed here. Use the guidance below and consult a qualified clinician if they persist, worsen, or concern you.', 1000)),
     selfCare: emergency
-      ? ['Call emergency services (112 in India) or go to the nearest emergency department now.', 'Do not drive yourself; ask someone to accompany you.', ...(isSelfHarm(symptoms) ? [MENTAL_HEALTH_LINE] : [])]
+      ? [emergencyInstruction(place), 'Do not drive yourself; ask someone to accompany you.', ...(isSelfHarm(symptoms) && mentalHealthLine(place) ? [mentalHealthLine(place)] : [])]
       : (chestDiscomfort
-        ? ['Stop strenuous activity and rest while arranging a same-day medical assessment.', 'If discomfort becomes severe, persistent, or occurs with breathlessness, sweating, fainting, or arm/jaw/back pain, call emergency services (112 in India).']
+        ? ['Stop strenuous activity and rest while arranging a same-day medical assessment.', `If discomfort becomes severe, persistent, or occurs with breathlessness, sweating, fainting, or arm/jaw/back pain: ${emergencyInstruction(place)}`]
         : (selfCare.length ? selfCare : ['Rest, stay hydrated if appropriate, and monitor how your symptoms change.', 'Arrange a clinical consultation if symptoms persist or worsen.'])),
+    emergencyContacts: emergency ? emergencyContacts(place, { selfHarm: isSelfHarm(symptoms) }) : undefined,
     redFlags: emergency
       ? ['The reported symptoms include an emergency warning sign.']
       : redFlags,
@@ -119,18 +127,20 @@ function enforceReportSafety(result, reportText) {
   };
 }
 
-function enforceHealthRiskSafety(result, acuteSymptoms) {
+function enforceHealthRiskSafety(result, acuteSymptoms, locale) {
+  const place = localeOrDefault(locale);
   const emergency = isEmergencyInput(acuteSymptoms) || list(acuteSymptoms).some((s) => ['chest_pain', 'breathlessness', 'confusion', 'numbness'].includes(s));
   const score = Math.max(0, Math.min(100, Number(result?.riskScore) || 0));
   return {
     ...result, riskScore: emergency ? Math.max(score, 70) : score,
     riskLevel: emergency ? 'Critical' : (URGENCIES.includes(result?.riskLevel) ? result.riskLevel : 'Moderate'),
-    urgentActions: emergency ? ['Seek immediate in-person medical evaluation or call emergency services (112 in India).'] : list(result?.urgentActions, 8),
+    urgentActions: emergency ? [`Seek immediate in-person medical evaluation. ${emergencyInstruction(place)}`] : list(result?.urgentActions, 8),
     disclaimer: DISCLAIMER,
   };
 }
 
-function enforceAssistantSafety(result, message) {
+function enforceAssistantSafety(result, message, locale) {
+  const place = localeOrDefault(locale);
   // Escalation from either the shared detector or the agent itself (rules or
   // model) wins; neither can remove the other's emergency response.
   const emergency = isEmergencyInput(message) || result?.urgent === true || result?.intent === 'emergency';
@@ -141,13 +151,12 @@ function enforceAssistantSafety(result, message) {
     disclaimer: DISCLAIMER,
   };
   const selfHarm = isSelfHarm(message);
+  const contacts = emergencyContacts(place, { selfHarm });
   return {
     ...result, intent: 'emergency', urgent: true,
-    reply: `This may be a medical emergency. Call 112 now or go to the nearest emergency department. Do not rely on this chat or wait for another response.${selfHarm ? ` ${MENTAL_HEALTH_LINE}` : ''}`,
-    actions: [
-      { label: EMERGENCY_CONTACTS.emergency.label, route: `tel:${EMERGENCY_CONTACTS.emergency.number}`, type: 'external' },
-      ...(selfHarm ? [{ label: EMERGENCY_CONTACTS.mentalHealth.label, route: `tel:${EMERGENCY_CONTACTS.mentalHealth.number}`, type: 'external' }] : []),
-    ],
+    reply: `This may be a medical emergency. ${emergencyInstruction(place)} Do not rely on this chat or wait for another response.${selfHarm && mentalHealthLine(place) ? ` ${mentalHealthLine(place)}` : ''}`,
+    actions: contacts.map((c) => ({ label: c.label, route: `tel:${c.number}`, type: 'external' })),
+    emergencyContacts: contacts,
     followUpQuestions: [], disclaimer: DISCLAIMER,
   };
 }

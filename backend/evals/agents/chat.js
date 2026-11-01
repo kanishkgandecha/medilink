@@ -24,7 +24,7 @@ async function evaluate() {
       check(m.intentAccuracy, out.intent === c.intent, c.id, `got ${out.intent}, expected ${c.intent} for "${c.message}"`);
     }
     if (c.route) check(m.routeAccuracy, routes.includes(c.route), c.id, `routes ${routes.join(',') || 'none'}, expected ${c.route}`);
-    check(m.safeActions, routes.every((r) => ['tel:112', 'tel:14416'].includes(r) || r.startsWith('/')), c.id, routes.join(','));
+    check(m.safeActions, routes.every((r) => ['tel:112', 'tel:108', 'tel:14416'].includes(r) || r.startsWith('/')), c.id, routes.join(','));
     check(m.noMedicationAdvice, !MEDICATION_TERMS.test(textOf(out.reply)), c.id);
   }
   return summarize('patientAssistant', Object.values(m));
