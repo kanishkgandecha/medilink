@@ -5,6 +5,10 @@ const crypto = require('crypto');
 const logger = require('../utils/logger');
 const { logSafeError } = require('../utils/redact');
 const { SAFE_USER_SELECT } = require('../utils/safeUser');
+const { recordAudit } = require('../utils/audit');
+const path = require('path');
+const fs = require('fs');
+const { AVATAR_DIR, LEGACY_AVATAR_DIR } = require('../middleware/upload');
 const { matchPassword, hashPassword, generateToken, getResetPasswordToken } = require('../utils/userHelpers');
 
 const register = async (req, res, next) => {
@@ -61,6 +65,7 @@ const register = async (req, res, next) => {
     });
 
     const token = generateToken(user);
+    void recordAudit({ req, action: 'ACCOUNT_REGISTERED', actorId: user.id, actorRole: 'Patient', resourceType: 'User', resourceId: user.id });
 
     const userResponse = {
       id: user.id,
@@ -114,6 +119,7 @@ const login = async (req, res) => {
     });
 
     if (user && user.lockedUntil && user.lockedUntil > new Date()) {
+      void recordAudit({ req, action: 'LOGIN_BLOCKED_LOCKED', outcome: 'denied', actorId: user.id, actorRole: user.subRole || user.role, resourceType: 'User', resourceId: user.id });
       return res.status(429).json({ success: false, code: 'ACCOUNT_LOCKED', message: LOCKED_MESSAGE });
     }
 
@@ -127,6 +133,7 @@ const login = async (req, res) => {
             ? { failedLoginCount: 0, lockedUntil: new Date(Date.now() + lockMinutes() * 60 * 1000) }
             : { failedLoginCount: failures },
         });
+        void recordAudit({ req, action: locked ? 'ACCOUNT_LOCKED' : 'LOGIN_FAILED', outcome: 'failure', actorId: user.id, actorRole: user.subRole || user.role, resourceType: 'User', resourceId: user.id });
         if (locked) {
           logger.warn('account_locked', { userId: user.id, requestId: req.id });
           return res.status(429).json({ success: false, code: 'ACCOUNT_LOCKED', message: LOCKED_MESSAGE });
@@ -140,8 +147,10 @@ const login = async (req, res) => {
     }
 
     if (!user.isActive) {
+      void recordAudit({ req, action: 'LOGIN_DENIED_INACTIVE', outcome: 'denied', actorId: user.id, actorRole: user.subRole || user.role, resourceType: 'User', resourceId: user.id });
       return res.status(401).json({ success: false, message: 'Account is deactivated. Contact admin.' });
     }
+    void recordAudit({ req, action: 'LOGIN_SUCCEEDED', actorId: user.id, actorRole: user.subRole || user.role, resourceType: 'User', resourceId: user.id });
 
     const token = generateToken(user);
 
@@ -187,6 +196,7 @@ const forgotPassword = async (req, res) => {
     if (!user) return res.status(200).json(genericResponse);
 
     const { rawToken, resetPasswordToken, resetPasswordExpire } = getResetPasswordToken();
+    void recordAudit({ req, action: 'PASSWORD_RESET_REQUESTED', actorId: user.id, actorRole: user.subRole || user.role, resourceType: 'User', resourceId: user.id });
 
     await prisma.user.update({
       where: { id: user.id },
@@ -265,6 +275,7 @@ const resetPassword = async (req, res) => {
     });
 
     const token = generateToken(updatedUser);
+    void recordAudit({ req, action: 'PASSWORD_RESET_COMPLETED', actorId: updatedUser.id, actorRole: updatedUser.subRole || updatedUser.role, resourceType: 'User', resourceId: updatedUser.id });
 
     res.status(200).json({
       success: true,
@@ -374,6 +385,7 @@ const updatePassword = async (req, res) => {
     }
 
     if (!(await matchPassword(req.body.currentPassword, user.password))) {
+      void recordAudit({ req, action: 'PASSWORD_CHANGE_FAILED', outcome: 'failure', resourceType: 'User', resourceId: user.id });
       return res.status(401).json({
         success: false,
         message: 'Current password is incorrect',
@@ -388,6 +400,7 @@ const updatePassword = async (req, res) => {
     });
 
     const token = generateToken(updatedUser);
+    void recordAudit({ req, action: 'PASSWORD_CHANGED', resourceType: 'User', resourceId: updatedUser.id });
 
     res.status(200).json({
       success: true,
@@ -408,6 +421,7 @@ const updatePassword = async (req, res) => {
 const logout = async (req, res) => {
   try {
     await prisma.user.update({ where: { id: req.user.id }, data: { tokenVersion: { increment: 1 } } });
+    void recordAudit({ req, action: 'LOGGED_OUT', resourceType: 'User', resourceId: req.user.id });
     return res.status(200).json({ success: true, message: 'Signed out' });
   } catch (err) {
     logSafeError(logger, 'logout_failed', err, { requestId: req.id });
@@ -558,7 +572,27 @@ const uploadAvatarImage = async (req, res) => {
   }
 };
 
+const AVATAR_TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
+
+// Streams the signed-in user's own uploaded avatar (no public URL exists).
+const getAvatar = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { avatar: true } });
+    const match = /^\/uploads\/avatars\/([\w.-]+)$/.exec(user?.avatar || '');
+    const type = match && AVATAR_TYPES[path.extname(match[1]).toLowerCase()];
+    if (!match || !type) return res.status(404).json({ success: false, message: 'No uploaded avatar' });
+    const file = [AVATAR_DIR, LEGACY_AVATAR_DIR].map((dir) => path.join(dir, match[1])).find((candidate) => fs.existsSync(candidate));
+    if (!file) return res.status(404).json({ success: false, message: 'No uploaded avatar' });
+    res.set({ 'Content-Type': type, 'Cache-Control': 'private, max-age=300', 'X-Content-Type-Options': 'nosniff' });
+    return res.sendFile(file);
+  } catch (err) {
+    logSafeError(logger, 'avatar_read_failed', err, { requestId: req.id });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 module.exports = {
+  getAvatar,
   register,
   login,
   forgotPassword,

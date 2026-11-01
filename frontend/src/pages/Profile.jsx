@@ -129,6 +129,29 @@ const Profile = () => {
   const avatarPreset  = AVATAR_PRESETS.find(p => p.key === avatarKey) || AVATAR_PRESETS[0]
   const initials      = getInitials(profileData?.name || user?.name)
 
+  // Uploaded avatars are not publicly served: load the signed-in user's own
+  // avatar through the authenticated API and show it as an object URL.
+  const [avatarSrc, setAvatarSrc] = useState(null)
+  useEffect(() => {
+    let objectUrl = null
+    let cancelled = false
+    if (form.avatar?.startsWith('/uploads/')) {
+      authService.getAvatarBlob()
+        .then((blob) => {
+          if (cancelled) return
+          objectUrl = URL.createObjectURL(blob)
+          setAvatarSrc(objectUrl)
+        })
+        .catch(() => { if (!cancelled) setAvatarSrc(null) })
+    } else {
+      setAvatarSrc(form.avatar?.startsWith('http') ? form.avatar : null)
+    }
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [form.avatar])
+
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -425,9 +448,9 @@ const Profile = () => {
 
             {/* Avatar circle */}
             <div className="relative mb-4">
-              {isImageAvatar || imagePreview ? (
+              {(isImageAvatar && avatarSrc) || imagePreview ? (
                 <img
-                  src={imagePreview || form.avatar}
+                  src={imagePreview || avatarSrc}
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover"
                   style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}

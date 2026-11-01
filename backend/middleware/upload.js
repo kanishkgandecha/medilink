@@ -4,12 +4,18 @@ const crypto = require('crypto');
 const fs = require('fs/promises');
 const fsSync = require('fs');
 
+// Avatars are private (served only via GET /api/auth/avatar to the signed-in
+// owner). Filenames are random — they no longer embed the user ID.
+// LEGACY_AVATAR_DIR holds avatars uploaded before Phase 3 (read-only fallback).
+const AVATAR_DIR = path.join(__dirname, '../private-uploads/avatars');
+const LEGACY_AVATAR_DIR = path.join(__dirname, '../uploads/avatars');
+fsSync.mkdirSync(AVATAR_DIR, { recursive: true });
+
 const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, '../uploads/avatars')),
+  destination: (req, file, cb) => cb(null, AVATAR_DIR),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    const name = `${req.user._id}-${crypto.randomBytes(6).toString('hex')}${ext}`;
-    cb(null, name);
+    cb(null, `${crypto.randomBytes(16).toString('hex')}${ext}`);
   }
 });
 
@@ -120,6 +126,8 @@ const validateReportAttachmentSignature = async (req, res, next) => {
 };
 
 module.exports = {
+  AVATAR_DIR,
+  LEGACY_AVATAR_DIR,
   uploadAvatar,
   validateAvatarSignature,
   hasValidImageSignature,

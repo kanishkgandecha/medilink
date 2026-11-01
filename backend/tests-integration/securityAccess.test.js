@@ -17,6 +17,7 @@ const assert = require('node:assert/strict');
 const path = require('path');
 const fs = require('fs/promises');
 const prisma = require('../config/prisma');
+const { flushAudits } = require('../utils/audit');
 const { generateToken } = require('../utils/userHelpers');
 const { REPORT_ATTACHMENT_DIR } = require('../middleware/upload');
 const { findSensitiveFieldPaths } = require('../utils/safeUser');
@@ -113,6 +114,12 @@ test.before(async () => {
 });
 
 test.after(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  await flushAudits();
+  const auditPatients = await prisma.patient.findMany({ where: { userId: { in: fixtureUserIds } }, select: { id: true } });
+  await prisma.auditEvent.deleteMany({ where: { OR: [
+    { actorId: { in: fixtureUserIds } }, { patientId: { in: auditPatients.map((p) => p.id) } }, { resourceId: { in: fixtureUserIds } },
+  ] } });
   await Promise.all(fixtureFiles.map((name) => fs.unlink(path.join(REPORT_ATTACHMENT_DIR, name)).catch(() => {})));
   const reports = await prisma.labReport.findMany({
     where: { patient: { userId: { in: fixtureUserIds } }, attachmentStoredName: { not: null } },

@@ -37,3 +37,18 @@ test('patientSafeAiResponses only rewrites responses for the Patient role', () =
   assert.deepEqual(run('Patient').data, { answer: 'ok' });
   assert.deepEqual(run('Doctor').data, { _source: 'rules', answer: 'ok' });
 });
+
+const { sanitizeMetadata, auditRoute } = require('../utils/audit');
+
+test('audit metadata keeps only allow-listed short scalar fields', () => {
+  const clean = sanitizeMetadata({
+    status: 'Confirmed', amount: 50, replayed: false, fields: ['allergies', 'insuranceInfo', 42],
+    symptoms: 'synthetic chest pain', password: 'x', notes: 'free text', email: 'a@b.invalid', reason: 'free text',
+  });
+  assert.deepEqual(clean, { status: 'Confirmed', amount: 50, replayed: false, fields: ['allergies', 'insuranceInfo'] });
+  assert.equal(sanitizeMetadata({ symptoms: 'x' }), undefined);
+});
+
+test('audit route middleware is tagged with its action for contract checks', () => {
+  assert.equal(auditRoute('PATIENT_VIEWED').auditAction, 'PATIENT_VIEWED');
+});

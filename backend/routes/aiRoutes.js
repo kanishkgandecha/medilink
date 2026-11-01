@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
+const { auditRoute, fromParam, patientFromResource, idOf } = require('../utils/audit');
 const { protect, authorize } = require('../middleware/auth');
 const { requirePatientAccess } = require('../middleware/patientAccess');
 const { body } = require('express-validator');
@@ -52,7 +53,7 @@ router.post('/chat', authorize('Admin', 'Doctor', 'Patient', 'Nurse', 'Reception
     const { message, history } = req.body;
     if (!message?.trim()) return res.status(400).json({ success: false, message: 'message is required' });
     const data = await audited(req, 'patient_assistant', () => runPatientAssistant({
-      message, history, userData: { name: req.user.name, role: req.user.role },
+      message, history, userData: { role: req.user.role },
     }));
     res.json({ success: true, data });
   } catch (err) {
@@ -154,7 +155,7 @@ router.post('/appointment-optimizer', authorize('Admin', 'Doctor', 'Patient', 'R
 });
 
 // ── Patient Summary — accessible to Patient (own), Doctor, Admin, Nurse ─────
-router.get('/patient-summary/:patientId', requirePatientAccess('Admin', 'Doctor', 'Nurse'), async (req, res) => {
+router.get('/patient-summary/:patientId', auditRoute('AI_PATIENT_SUMMARY_VIEWED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource }), requirePatientAccess('Admin', 'Doctor', 'Nurse'), async (req, res) => {
   try {
     const data = await audited(req, 'patient_summary', () => runPatientSummary({ patientId: req.patientResource.id }));
     res.json({ success: true, data });

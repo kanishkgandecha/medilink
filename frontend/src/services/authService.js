@@ -37,6 +37,11 @@ export const getMyProfile = async () => {
   return await api.get('/auth/my-profile')
 }
 
+// Uploaded avatars are private; fetch the signed-in user's own avatar as a blob.
+export const getAvatarBlob = async () => {
+  return await api.get('/auth/avatar', { responseType: 'blob' })
+}
+
 export const uploadAvatar = async (file) => {
   const formData = new FormData()
   formData.append('avatar', file)

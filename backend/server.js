@@ -26,6 +26,7 @@ const staffRoutes = require('./routes/staffRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -103,8 +104,8 @@ if (require.main === module) {
     .catch((err) => logger.error('postgres_connection_failed', safeErrorMeta(err)));
 }
 
-// ── Static uploads ──────────────────────────────────────────
-app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
+// No public static file mount: avatars and report attachments are served only
+// through authenticated routes (GET /api/auth/avatar, attachment download).
 
 // ── API Routes ───────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -119,6 +120,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboards', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/audit-events', auditRoutes);
 
 // ── Health & Root ────────────────────────────────────────────
 app.get('/', (_req, res) => res.status(200).json({ message: 'MediLink API is running', health: '/health' }));
@@ -159,6 +161,7 @@ const shutdown = (exitCode, signal) => {
 
   server.close(async () => {
     try {
+      await require('./utils/audit').flushAudits();
       await prisma.$disconnect();
     } finally {
       clearTimeout(forceExit);

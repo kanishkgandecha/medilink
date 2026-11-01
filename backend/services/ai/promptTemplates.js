@@ -118,7 +118,8 @@ Return this exact JSON schema:
 }`,
 
   user: ({ message, history, userData }) =>
-    `Patient: ${userData?.name || 'Patient'} (Role: ${userData?.role || 'Patient'})
+    // Only the role is shared with the provider — never the user's name or other identifiers.
+    `User role: ${userData?.role || 'Patient'}
 Recent context: ${JSON.stringify((history || []).slice(-3))}
 Message: "${message}"
 Respond helpfully and return JSON.`,

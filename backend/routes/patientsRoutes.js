@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { auditRoute, fromParam, patientFromResource, idOf } = require('../utils/audit');
 const { body, query } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
@@ -42,7 +43,7 @@ router.get('/available-users', authorize('Admin', 'Receptionist'), getAvailableP
 
 // Privacy-reduced diagnostic queues for laboratory and radiology staff.
 router.get('/diagnostic-workspace', authorize('Lab Technician', 'Radiology Technician'), getDiagnosticWorkspace);
-router.get('/diagnostic-workspace/:id', authorize('Lab Technician', 'Radiology Technician'), getDiagnosticRecords);
+router.get('/diagnostic-workspace/:id', auditRoute('DIAGNOSTIC_RECORDS_VIEWED', { resourceType: 'Patient', resourceId: fromParam(), patientId: fromParam() }), authorize('Lab Technician', 'Radiology Technician'), getDiagnosticRecords);
 
 // Heal orphaned patient users — create missing profiles (Admin only)
 router.post('/heal-orphans', authorize('Admin'), async (req, res) => {
@@ -145,6 +146,7 @@ router
     getPatients
   )
   .post(
+    auditRoute('PATIENT_CREATED', { resourceType: 'Patient', resourceId: (req, body) => idOf(body.data), patientId: (req, body) => idOf(body.data) }),
     authorize('Admin', 'Receptionist'),
     [
       body('email').optional().isEmail().withMessage('Valid email is required'),
@@ -160,8 +162,8 @@ router
 
 router
   .route('/:id')
-  .get(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager', 'Pharmacist'), getPatient)
-  .put(requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), [
+  .get(auditRoute('PATIENT_VIEWED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource }), requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist', 'Ward Manager', 'Pharmacist'), getPatient)
+  .put(auditRoute('PATIENT_UPDATED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource, metadata: (req) => ({ fields: Object.keys(req.body || {}) }) }), requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), [
     body('bloodGroup').optional({ nullable: true }).custom(isBloodGroup).withMessage('Invalid blood group'),
     body('allergies').optional().isArray({ max: 50 }).withMessage('Allergies must be a list'),
     body('allergies.*').optional().isString().isLength({ max: 200 }),
@@ -169,13 +171,13 @@ router
     body('insuranceInfo').optional().isObject().withMessage('Insurance information must be an object'),
     validate,
   ], updatePatient)
-  .delete(authorize('Admin'), deletePatient);
+  .delete(auditRoute('PATIENT_ARCHIVED', { resourceType: 'Patient', resourceId: fromParam(), patientId: fromParam() }), authorize('Admin'), deletePatient);
 
 // Medical records
-router.get('/:id/medical-records', requirePatientAccess('Admin', 'Doctor', 'Nurse'), getPatientMedicalRecords);
+router.get('/:id/medical-records', auditRoute('MEDICAL_RECORDS_VIEWED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource }), requirePatientAccess('Admin', 'Doctor', 'Nurse'), getPatientMedicalRecords);
 
 // Appointments
-router.get('/:id/appointments', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientAppointments);
+router.get('/:id/appointments', auditRoute('PATIENT_APPOINTMENTS_VIEWED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource }), requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientAppointments);
 
 // Stats
 router.get('/:id/stats', requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Receptionist'), getPatientStats);
@@ -224,6 +226,7 @@ router.post('/:id/lab-report', requirePatientAccess('Doctor', 'Nurse', 'Lab Tech
 // further scoped to their own modality inside the controller.
 router.post(
   '/:id/lab-report/:reportId/attachment',
+  auditRoute('ATTACHMENT_UPLOADED', { resourceType: 'LabReport', resourceId: fromParam('reportId'), patientId: patientFromResource }),
   requirePatientAccess('Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician', CLINICAL_WRITE),
   (req, res, next) => {
     uploadReportAttachment(req, res, (err) => {
@@ -236,6 +239,7 @@ router.post(
 );
 router.get(
   '/:id/lab-report/:reportId/attachment',
+  auditRoute('ATTACHMENT_DOWNLOADED', { resourceType: 'LabReport', resourceId: fromParam('reportId'), patientId: patientFromResource }),
   requirePatientAccess('Admin', 'Doctor', 'Nurse', 'Lab Technician', 'Radiology Technician'),
   downloadLabReportAttachment
 );
@@ -243,7 +247,7 @@ router.get(
 // Generated/record-derived content remains a separate unverified draft until a doctor confirms it.
 // Clinical notes include unreviewed AI/record-derived drafts, so they are not
 // patient-facing until a separate reviewed-note view is designed.
-router.get('/:id/clinical-notes', requirePatientAccess('Admin', 'Doctor', 'Nurse', CLINICAL_WRITE), listClinicalNotes);
+router.get('/:id/clinical-notes', auditRoute('CLINICAL_NOTES_VIEWED', { resourceType: 'Patient', resourceId: patientFromResource, patientId: patientFromResource }), requirePatientAccess('Admin', 'Doctor', 'Nurse', CLINICAL_WRITE), listClinicalNotes);
 router.post('/:id/clinical-notes/drafts', requirePatientAccess('Doctor', 'Nurse', CLINICAL_WRITE), [
   body('title').isString().trim().isLength({ min: 3, max: 200 }),
   body('content').isString().trim().isLength({ min: 10, max: 12000 }),

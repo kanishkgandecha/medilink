@@ -69,6 +69,10 @@
       "description": "Operational analytics (Admin only)."
     },
     {
+      "name": "Audit",
+      "description": "Access and activity audit trail (Admin only)."
+    },
+    {
       "name": "AI",
       "description": "Decision-support tools. Not clinically validated; outputs require human review."
     }
@@ -200,7 +204,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent ACCOUNT_REGISTERED",
         "x-patient-visibility": null,
         "x-rate-limit": "auth",
         "parameters": [],
@@ -350,7 +354,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent LOGIN_SUCCEEDED, LOGIN_FAILED, ACCOUNT_LOCKED, LOGIN_BLOCKED_LOCKED, LOGIN_DENIED_INACTIVE",
         "x-patient-visibility": null,
         "x-rate-limit": "auth",
         "parameters": [],
@@ -471,7 +475,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PASSWORD_RESET_REQUESTED (existing accounts only; response unchanged)",
         "x-patient-visibility": null,
         "x-rate-limit": "auth",
         "parameters": [],
@@ -575,7 +579,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PASSWORD_RESET_COMPLETED",
         "x-patient-visibility": null,
         "x-rate-limit": "auth",
         "parameters": [
@@ -786,7 +790,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent LOGGED_OUT",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -1052,7 +1056,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PASSWORD_CHANGED, PASSWORD_CHANGE_FAILED",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -1315,6 +1319,102 @@
       }
     },
     "/api/auth/avatar": {
+      "get": {
+        "operationId": "getApiAuthAvatar",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Download the signed-in user's own uploaded avatar",
+        "description": "Avatars are private files; there is no public URL.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-handler": "authController.getAvatar",
+        "x-roles": [
+          "any-authenticated"
+        ],
+        "x-owner-access": null,
+        "x-care-scope": false,
+        "x-record-access": null,
+        "x-state-changing": false,
+        "x-audit": null,
+        "x-patient-visibility": null,
+        "x-rate-limit": "api",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "File stream",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "binary"
+                }
+              },
+              "image/gif": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, or inactive-account token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error (generic message and requestId only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "postApiAuthAvatar",
         "tags": [
@@ -1449,7 +1549,7 @@
           ],
           "maxBytes": 2097152,
           "signatureChecked": true,
-          "storage": "public (served under /uploads/avatars without authentication)"
+          "storage": "private (served only to the owner via GET /api/auth/avatar)"
         }
       }
     },
@@ -2490,7 +2590,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent DOCTOR_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -2786,7 +2886,7 @@
         "x-care-scope": false,
         "x-record-access": "requireDoctorAccess: Admin/Receptionist, or the doctor editing their own profile",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent DOCTOR_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -2973,7 +3073,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent DOCTOR_DEACTIVATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -3195,7 +3295,7 @@
         "x-care-scope": false,
         "x-record-access": "requireDoctorAccess (own profile for doctors)",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent DOCTOR_AVAILABILITY_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -3858,7 +3958,7 @@
         "x-care-scope": false,
         "x-record-access": "Modality-filtered",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent DIAGNOSTIC_RECORDS_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -4365,7 +4465,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PATIENT_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -4566,7 +4666,7 @@
         "x-care-scope": true,
         "x-record-access": "requirePatientAccess with owner access and care scope",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent PATIENT_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": "Clinical sub-records only for Admin, care-scoped Doctor/Nurse, and the owner; Receptionist/Pharmacist/Ward Manager receive their summary projection.",
         "x-rate-limit": "api",
         "parameters": [
@@ -4676,7 +4776,7 @@
         "x-care-scope": true,
         "x-record-access": "Owner may update emergencyContact/insuranceInfo only; bloodGroup/allergies by staff only (owner attempt → 403).",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PATIENT_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -4854,7 +4954,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": "ClinicalAuditEvent ARCHIVED",
+        "x-audit": "ClinicalAuditEvent ARCHIVED; AuditEvent PATIENT_ARCHIVED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -5008,7 +5108,7 @@
         "x-care-scope": true,
         "x-record-access": null,
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent MEDICAL_RECORDS_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -5120,7 +5220,7 @@
         "x-care-scope": true,
         "x-record-access": null,
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent PATIENT_APPOINTMENTS_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -6055,7 +6155,7 @@
         "x-care-scope": true,
         "x-record-access": "Staff only; diagnostic staff limited to their modality. Replacing requires replace=true (otherwise 409).",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent ATTACHMENT_UPLOADED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -6263,7 +6363,7 @@
         "x-care-scope": true,
         "x-record-access": "Owner, Admin, care-scoped Doctor/Nurse; diagnostic staff limited to their modality.",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent ATTACHMENT_DOWNLOADED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -6383,7 +6483,7 @@
         "x-care-scope": true,
         "x-record-access": "Staff only — includes unreviewed AI/record-derived drafts, so not patient-facing.",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent CLINICAL_NOTES_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -7346,7 +7446,7 @@
         "x-care-scope": false,
         "x-record-access": "A patient always books for themself (the patient field is ignored/forced).",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent APPOINTMENT_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -7665,7 +7765,7 @@
         "x-care-scope": false,
         "x-record-access": "Admin/Receptionist or the assigned doctor",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent APPOINTMENT_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -7883,7 +7983,7 @@
         "x-care-scope": false,
         "x-record-access": "Admin/Receptionist, the owning patient, or the assigned doctor",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent APPOINTMENT_CANCELLED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -8040,7 +8140,7 @@
         "x-care-scope": false,
         "x-record-access": "Admin/Receptionist or the assigned doctor (patients cannot reschedule)",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent APPOINTMENT_RESCHEDULED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -8974,7 +9074,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BED_ASSIGNED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -9147,7 +9247,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BED_DISCHARGED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -9321,7 +9421,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BED_ASSIGNED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -9500,7 +9600,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BED_DISCHARGED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -10869,7 +10969,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent MEDICINE_REMOVED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -10983,7 +11083,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent MEDICINE_STOCK_ADJUSTED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -11327,7 +11427,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PRESCRIPTION_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -11542,7 +11642,7 @@
         "x-care-scope": false,
         "x-record-access": "requirePrescriptionAccess: Admin/Nurse/Pharmacist, the owning patient, or the prescribing doctor",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent PRESCRIPTION_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -11653,7 +11753,7 @@
         "x-care-scope": false,
         "x-record-access": "Admin or the prescribing doctor",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PRESCRIPTION_CANCELLED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -11772,7 +11872,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PRESCRIPTION_REFILLED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -11938,7 +12038,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PRESCRIPTION_DISPENSED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -12555,7 +12655,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BILL_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -12776,7 +12876,7 @@
         "x-care-scope": false,
         "x-record-access": "requireBillAccess: Admin/Receptionist/Billing Staff, the owning patient, or a pharmacist for Pharmacy bills",
         "x-state-changing": false,
-        "x-audit": null,
+        "x-audit": "AuditEvent BILL_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -12884,7 +12984,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent BILL_DELETED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -13010,7 +13110,7 @@
         "x-care-scope": false,
         "x-record-access": "Owning patient only",
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PATIENT_PAYMENT_RECORDED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -13184,7 +13284,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent PAYMENT_RECORDED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -13366,7 +13466,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent INSURANCE_CLAIM_SUBMITTED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -13531,7 +13631,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent INSURANCE_CLAIM_PROCESSED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -14135,7 +14235,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent STAFF_CREATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [],
@@ -14458,7 +14558,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent STAFF_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -14641,7 +14741,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent STAFF_DEACTIVATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -14750,7 +14850,7 @@
         "x-care-scope": false,
         "x-record-access": null,
         "x-state-changing": true,
-        "x-audit": null,
+        "x-audit": "AuditEvent STAFF_PERFORMANCE_UPDATED (success; 403 recorded as denied)",
         "x-patient-visibility": null,
         "x-rate-limit": "api",
         "parameters": [
@@ -15527,6 +15627,222 @@
                     "success"
                   ],
                   "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, or inactive-account token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (role, ownership, care scope, or modality)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error (generic message and requestId only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit-events": {
+      "get": {
+        "operationId": "getApiAuditEvents",
+        "tags": [
+          "Audit"
+        ],
+        "summary": "Query the access/activity audit trail",
+        "description": "Newest first; default page size 50, max 100. Events contain identifiers, outcome, and allow-listed metadata only — never clinical text or credentials.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-handler": "auditController.getAuditEvents",
+        "x-roles": [
+          "admin"
+        ],
+        "x-owner-access": null,
+        "x-care-scope": false,
+        "x-record-access": null,
+        "x-state-changing": false,
+        "x-audit": "AuditEvent AUDIT_LOG_VIEWED (success; 403 recorded as denied)",
+        "x-patient-visibility": null,
+        "x-rate-limit": "api",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number. Invalid or missing values fall back to 1 (no 400)."
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page size. Invalid values fall back to the default; values above the maximum are clamped (default 10, max 100 unless stated)."
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z_]+$"
+            }
+          },
+          {
+            "name": "actorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "patientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "success",
+                "denied",
+                "failure"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pages": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AuditEvent"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or business-rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
                 }
               }
             }
@@ -16608,7 +16924,7 @@
         "x-care-scope": true,
         "x-record-access": null,
         "x-state-changing": false,
-        "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content)",
+        "x-audit": "AiAuditEvent (metadata only: agent, source, model, degraded, success, duration; no prompt or response content); AuditEvent AI_PATIENT_SUMMARY_VIEWED (success; 403 recorded as denied)",
         "x-patient-visibility": "Patients never see provider, model, or fallback details in the UI; responses carry source metadata (sourceType, requiresHumanReview, limitations) and are decision support only — not a diagnosis.",
         "x-rate-limit": "ai",
         "parameters": [
@@ -17642,6 +17958,78 @@
               },
               "additionalProperties": true
             }
+          }
+        },
+        "additionalProperties": true
+      },
+      "AuditEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "actorRole": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "success",
+              "denied",
+              "failure"
+            ]
+          },
+          "resourceType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resourceId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "patientId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requestId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "actor": {
+            "type": [
+              "object",
+              "null"
+            ]
           }
         },
         "additionalProperties": true

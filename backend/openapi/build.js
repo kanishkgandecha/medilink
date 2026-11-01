@@ -29,6 +29,7 @@ const components = {
     Ward: s.obj({ id: s.str(), _id: s.str(), wardNumber: s.str(), wardName: s.str(), wardType: s.str(), totalBeds: s.int(), availableBeds: s.int(), dailyRate: s.num(), beds: s.arr(s.obj({ id: s.str(), bedNumber: s.str(), isOccupied: s.bool(), patient: s.ref('PatientIdentity') })) }),
     Staff: s.obj({ id: s.str(), _id: s.str(), employeeId: s.str(), designation: s.str(), department: s.str(), isActive: s.bool(), userId: s.ref('User') }),
     ClinicalNote: s.obj({ id: s.str(), title: s.str(), status: s.enum(['Draft', 'Reviewed', 'Amended']), source: s.str(), currentVersion: s.int(), versions: s.arr(s.obj({ version: s.int(), content: s.str(), isAiGenerated: s.bool(), clinicallyConfirmed: s.bool() })) }),
+    AuditEvent: s.obj({ id: s.str(), createdAt: s.dateTime(), actorId: { type: ['string', 'null'] }, actorRole: { type: ['string', 'null'] }, action: s.str(), outcome: s.enum(['success', 'denied', 'failure']), resourceType: { type: ['string', 'null'] }, resourceId: { type: ['string', 'null'] }, patientId: { type: ['string', 'null'] }, requestId: { type: ['string', 'null'] }, metadata: { type: ['object', 'null'] }, actor: { type: ['object', 'null'] } }),
     AiResult: s.obj({ sourceType: s.str(), sourceLabel: s.str(), requiresHumanReview: s.bool(), limitations: s.arr(s.str()), generatedAt: s.str() }),
   },
 };
@@ -61,7 +62,7 @@ function operation(ep) {
     'x-care-scope': Boolean(ep.careScope),
     'x-record-access': ep.record || null,
     'x-state-changing': ep.state === 'write',
-    'x-audit': ep.audit || null,
+    'x-audit': [ep.audit, ep.auditEvent && `AuditEvent ${ep.auditEvent} (success; 403 recorded as denied)`, ep.auditNote && `AuditEvent ${ep.auditNote}`].filter(Boolean).join('; ') || null,
     'x-patient-visibility': ep.visibility || null,
     'x-rate-limit': ep.limiter,
     parameters: [
@@ -110,6 +111,7 @@ function buildSpec() {
     Billing: 'Bills, payments (no payment gateway), and insurance claims.',
     Staff: 'Staff management (Admin only).',
     Reports: 'Operational analytics (Admin only).',
+    Audit: 'Access and activity audit trail (Admin only).',
     AI: 'Decision-support tools. Not clinically validated; outputs require human review.',
   };
   const tags = [...new Set(endpoints.map((ep) => ep.tag))].map((name) => ({ name, description: TAG_DESCRIPTIONS[name] || name }));

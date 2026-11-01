@@ -15,7 +15,8 @@ const {
   logout,
   updateProfile,
   getMyProfile,
-  uploadAvatarImage
+  uploadAvatarImage,
+  getAvatar,
 } = require('../controllers/authController');
 
 // Registration with validation
@@ -82,6 +83,7 @@ router.put('/profile', protect, [
     || /^\/uploads\/avatars\/[\w.-]+$/.test(value)).withMessage('Avatar must be a preset key or an uploaded avatar path'),
   validate,
 ], updateProfile);
+router.get('/avatar', protect, getAvatar);
 router.post('/avatar', protect, (req, res, next) => {
   uploadAvatar(req, res, (err) => {
     if (err) return res.status(400).json({ success: false, message: err.message });

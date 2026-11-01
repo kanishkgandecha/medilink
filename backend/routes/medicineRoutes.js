@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { auditRoute, fromParam, patientFromResource, idOf } = require('../utils/audit');
 
 const MEDICINE_CATEGORIES = ['Analgesic', 'Antibiotic', 'Anti_inflammatory', 'Antidiabetic', 'Antihypertensive', 'Antihistamine',
   'Cardiovascular', 'Gastrointestinal', 'Respiratory', 'Neurological', 'Dermatological', 'Other'];
@@ -60,10 +61,10 @@ router.route('/:id')
     body('isActive').optional().isBoolean().withMessage('isActive must be boolean'),
     validate,
   ], updateMedicine)
-  .delete(authorize('Admin'), deleteMedicine);
+  .delete(auditRoute('MEDICINE_REMOVED', { resourceType: 'Medicine', resourceId: fromParam(), metadata: (req, body) => ({ status: body.deactivated ? 'deactivated' : 'deleted' }) }), authorize('Admin'), deleteMedicine);
 
 // Stock management
-router.put('/:id/stock', authorize('Admin', 'Pharmacist'), [
+router.put('/:id/stock', auditRoute('MEDICINE_STOCK_ADJUSTED', { resourceType: 'Medicine', resourceId: fromParam(), metadata: (req) => ({ operation: req.body.operation, quantity: Number(req.body.quantity) }) }), authorize('Admin', 'Pharmacist'), [
   body('quantity').isInt({ min: 1 }).withMessage('Valid quantity is required'),
   body('operation').isIn(['add', 'reduce', 'set']).withMessage('Valid operation is required'),
   validate

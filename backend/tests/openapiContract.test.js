@@ -15,12 +15,12 @@ const { endpoints } = require('../openapi/catalog');
 
 const BACKEND = path.join(__dirname, '..');
 
-test('the generated OpenAPI 3.1 document is valid and documents 121 operations', () => {
+test('the generated OpenAPI 3.1 document is valid and documents 123 operations', () => {
   const spec = buildSpec();
   assert.deepEqual(validateOpenApi(spec), []);
   const operations = Object.values(spec.paths).reduce((sum, item) => sum + Object.keys(item).length, 0);
-  assert.equal(operations, 121);
-  assert.equal(endpoints.length, 121);
+  assert.equal(operations, 123);
+  assert.equal(endpoints.length, 123);
 });
 
 test('the committed openapi/openapi.json matches the catalog (no silent drift)', () => {
@@ -34,7 +34,7 @@ function liveRoutes() {
   const serverSource = fs.readFileSync(path.join(BACKEND, 'server.js'), 'utf8');
   const requires = Object.fromEntries([...serverSource.matchAll(/const (\w+) = require\('\.\/routes\/(\w+)'\);/g)].map((m) => [m[1], m[2]]));
   const mounts = [...serverSource.matchAll(/app\.use\('(\/api\/[\w-]+)', (\w+)\);/g)].map((m) => ({ prefix: m[1], file: requires[m[2]] }));
-  assert.ok(mounts.length >= 12, 'expected all API routers to be mounted');
+  assert.ok(mounts.length >= 13, 'expected all API routers to be mounted');
 
   const routes = new Set();
   const toOpenApi = (p) => p.replace(/:(\w+)/g, '{$1}').replace(/\/$/, '') || '/';
@@ -59,7 +59,7 @@ test('every live Express route has exactly one spec entry and vice versa', () =>
   const phantom = [...documented].filter((route) => !live.has(route));
   assert.deepEqual(undocumented, [], 'routes missing from openapi/catalog.js');
   assert.deepEqual(phantom, [], 'catalog entries with no backing route');
-  assert.equal(live.size, 121);
+  assert.equal(live.size, 123);
 });
 
 test('state-changing flags match HTTP semantics except documented read-only POSTs', () => {
@@ -111,4 +111,26 @@ test('validator rejects secrets, demo credentials, and internal paths in the doc
     doc.info.description += ` ${value}`;
     assert.ok(validateOpenApi(doc).some((p) => p.includes('forbidden content')), `should reject: ${value.slice(0, 12)}…`);
   }
+});
+
+// Every route carrying audit middleware must be documented with the same
+// AuditEvent action in the catalog, and vice versa.
+test('audited routes and the catalog auditEvent metadata match exactly', () => {
+  const serverSource = fs.readFileSync(path.join(BACKEND, 'server.js'), 'utf8');
+  const requires = Object.fromEntries([...serverSource.matchAll(/const (\w+) = require\('\.\/routes\/(\w+)'\);/g)].map((m) => [m[1], m[2]]));
+  const mounts = [...serverSource.matchAll(/app\.use\('(\/api\/[\w-]+)', (\w+)\);/g)].map((m) => ({ prefix: m[1], file: requires[m[2]] }));
+  const live = new Map();
+  for (const { prefix, file } of mounts) {
+    for (const layer of require(path.join(BACKEND, 'routes', file)).stack) {
+      if (!layer.route) continue;
+      const routePath = (prefix + (layer.route.path === '/' ? '' : layer.route.path)).replace(/:(\w+)/g, '{$1}');
+      for (const method of Object.keys(layer.route.methods)) {
+        const methodActions = layer.route.stack.filter((l) => !l.method || l.method === method).map((l) => l.handle.auditAction).filter(Boolean);
+        if (methodActions.length) live.set(`${method} ${routePath}`, methodActions.join(','));
+      }
+    }
+  }
+  const documented = new Map(endpoints.filter((ep) => ep.auditEvent).map((ep) => [`${ep.method} ${ep.path}`, ep.auditEvent]));
+  assert.deepEqual(Object.fromEntries([...live].sort()), Object.fromEntries([...documented].sort()));
+  assert.ok(live.size >= 40);
 });

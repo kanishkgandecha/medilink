@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { auditRoute, fromParam, patientFromResource, idOf } = require('../utils/audit');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
@@ -18,7 +19,7 @@ router.use(protect);
 
 router.route('/')
   .get(authorize('Admin', 'Doctor', 'Nurse', 'Patient', 'Pharmacist'), prescriptionListQuery, getPrescriptions)
-  .post(authorize('Doctor'), [
+  .post(auditRoute('PRESCRIPTION_CREATED', { resourceType: 'Prescription', resourceId: (req, body) => idOf(body.data), patientId: (req, body) => body.data && (body.data.patientId || idOf(body.data.patient)), metadata: (req) => ({ itemCount: (req.body.medicines || []).length }) }), authorize('Doctor'), [
     body('patient').notEmpty().withMessage('Patient ID is required'),
     body('medicines').isArray({ min: 1, max: 50 }).withMessage('Between 1 and 50 medicines are required'),
     body('medicines.*.medicine').notEmpty().withMessage('Medicine ID is required'),
@@ -32,14 +33,14 @@ router.route('/')
   ], createPrescription);
 
 router.route('/:id')
-  .get(requirePrescriptionAccess('Admin', 'Nurse', 'Pharmacist'), getPrescription);
+  .get(auditRoute('PRESCRIPTION_VIEWED', { resourceType: 'Prescription', resourceId: fromParam(), patientId: (req, body) => body.data && (body.data.patientId || idOf(body.data.patient)) }), requirePrescriptionAccess('Admin', 'Nurse', 'Pharmacist'), getPrescription);
 
-router.put('/:id/cancel', authorize('Doctor', 'Admin'), requirePrescriptionAccess('Admin'), cancelPrescription);
-router.post('/:id/refill', authorize('Pharmacist'), requirePrescriptionAccess('Pharmacist'), [
+router.put('/:id/cancel', auditRoute('PRESCRIPTION_CANCELLED', { resourceType: 'Prescription', resourceId: fromParam() }), authorize('Doctor', 'Admin'), requirePrescriptionAccess('Admin'), cancelPrescription);
+router.post('/:id/refill', auditRoute('PRESCRIPTION_REFILLED', { resourceType: 'Prescription', resourceId: fromParam(), patientId: (req, body) => body.data && (body.data.patientId || idOf(body.data.patient)), metadata: (req, body) => ({ replayed: Boolean(body.replayed) }) }), authorize('Pharmacist'), requirePrescriptionAccess('Pharmacist'), [
   body('idempotencyKey').isUUID().withMessage('A valid idempotency key is required'),
   validate,
 ], refillPrescription);
-router.post('/:id/dispense', authorize('Pharmacist'), requirePrescriptionAccess('Pharmacist'), [
+router.post('/:id/dispense', auditRoute('PRESCRIPTION_DISPENSED', { resourceType: 'Prescription', resourceId: fromParam(), patientId: (req, body) => body.data && (body.data.patientId || idOf(body.data.patient)), metadata: (req, body) => ({ itemCount: (req.body.items || []).length, replayed: Boolean(body.replayed), status: body.data && body.data.status }) }), authorize('Pharmacist'), requirePrescriptionAccess('Pharmacist'), [
   body('idempotencyKey').isUUID().withMessage('A valid idempotency key is required'),
   body('items').isArray({ min: 1, max: 50 }).withMessage('Between 1 and 50 dispense items are required'),
   body('items.*.medicineId').notEmpty().withMessage('Medicine ID is required'),

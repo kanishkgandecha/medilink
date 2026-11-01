@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { auditRoute, fromParam, patientFromResource, idOf } = require('../utils/audit');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { protect, authorize } = require('../middleware/auth');
@@ -26,7 +27,7 @@ router.get('/available-users', authorize('Admin', 'Receptionist'), getAvailableD
 // Main doctor routes
 router.route('/')
   .get(getDoctors)
-  .post(authorize('Admin', 'Receptionist'), [
+  .post(auditRoute('DOCTOR_CREATED', { resourceType: 'Doctor', resourceId: (req, body) => idOf(body.data) }), authorize('Admin', 'Receptionist'), [
     body('specialization').notEmpty().withMessage('Specialization is required'),
     body('consultationFee').optional().isNumeric().withMessage('Consultation fee must be a number'),
     body('experience').optional().isNumeric().withMessage('Experience must be a number'),
@@ -43,7 +44,7 @@ router.route('/')
 // Single doctor routes
 router.route('/:id')
   .get(getDoctor)
-  .put(authorize('Admin', 'Receptionist', 'Doctor'), requireDoctorAccess('Admin', 'Receptionist'), [
+  .put(auditRoute('DOCTOR_UPDATED', { resourceType: 'Doctor', resourceId: fromParam(), metadata: (req) => ({ fields: Object.keys(req.body || {}) }) }), authorize('Admin', 'Receptionist', 'Doctor'), requireDoctorAccess('Admin', 'Receptionist'), [
     body('experience').optional().isInt({ min: 0, max: 80 }),
     body('consultationFee').optional().isFloat({ min: 0, max: 1000000 }),
     body('licenseNumber').optional().trim().isLength({ min: 3, max: 100 }),
@@ -51,11 +52,11 @@ router.route('/:id')
     body('isAvailable').optional().isBoolean(),
     validate,
   ], updateDoctor)
-  .delete(authorize('Admin'), deleteDoctor);
+  .delete(auditRoute('DOCTOR_DEACTIVATED', { resourceType: 'Doctor', resourceId: fromParam() }), authorize('Admin'), deleteDoctor);
 
 // Doctor schedule/availability routes
 router.get('/:id/schedule', getDoctorSchedule);
-router.put('/:id/availability', authorize('Admin', 'Receptionist', 'Doctor'), requireDoctorAccess('Admin', 'Receptionist'), [
+router.put('/:id/availability', auditRoute('DOCTOR_AVAILABILITY_UPDATED', { resourceType: 'Doctor', resourceId: fromParam() }), authorize('Admin', 'Receptionist', 'Doctor'), requireDoctorAccess('Admin', 'Receptionist'), [
   body('availability').isArray().withMessage('Availability must be an array'),
   validate
 ], updateAvailability);

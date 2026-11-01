@@ -37,8 +37,9 @@ const prisma = require('../../config/prisma');
 const { generateToken } = require('../../utils/userHelpers');
 const { REPORT_ATTACHMENT_DIR } = require('../../middleware/upload');
 const { findSensitiveFieldPaths } = require('../../utils/safeUser');
+const { flushAudits } = require('../../utils/audit');
 
-const AVATAR_DIR = path.join(BACKEND, 'uploads', 'avatars');
+const AVATAR_DIR = path.join(BACKEND, 'private-uploads', 'avatars');
 const PDF_BYTES = Buffer.concat([Buffer.from('%PDF-1.4\n', 'ascii'), Buffer.alloc(64, 0)]);
 const PNG_BYTES = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.alloc(32, 0)]);
 
@@ -168,6 +169,14 @@ function createHarness(label) {
     ];
     await Promise.all(files.map((file) => fs.promises.unlink(file).catch(() => {})));
 
+    // Audit rows are written after responses finish: wait for in-flight writes,
+    // then remove rows tied to this run's users/patients.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await flushAudits();
+    const fixturePatients = await prisma.patient.findMany({ where: { userId: { in: tracked.users } }, select: { id: true } });
+    await prisma.auditEvent.deleteMany({ where: { OR: [
+      { actorId: { in: tracked.users } }, { patientId: { in: fixturePatients.map((p) => p.id) } }, { resourceId: { in: tracked.users } },
+    ] } });
     await prisma.clinicalNote.deleteMany({ where: { OR: [{ createdById: { in: tracked.users } }, { patient: { userId: { in: tracked.users } } }] } });
     await prisma.user.deleteMany({ where: { id: { in: tracked.users } } });
     if (tracked.wards.length) await prisma.ward.deleteMany({ where: { id: { in: tracked.wards } } });
@@ -180,7 +189,7 @@ function createHarness(label) {
   };
 
   return {
-    prisma, testDatabase, sentMail, blockedRequests, start, stop, request, upload, tag, tokens,
+    prisma, testDatabase, sentMail, blockedRequests, flushAudits, start, stop, request, upload, tag, tokens,
     createUser, createPatient, createDoctor, createAppointment, createMedicine, createWard, futureDay,
     trackWard, trackMedicine, trackUser, trackFile, findSensitiveFieldPaths, PDF_BYTES, PNG_BYTES, AVATAR_DIR,
   };

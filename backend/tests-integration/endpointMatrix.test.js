@@ -105,6 +105,11 @@ test.before(async () => {
   } })).id;
   F.bill = (await prisma.billing.create({ data: { patientId: F.patient, billType: 'Pharmacy', subtotal: 50, totalAmount: 50, balance: 50, items: { create: [{ description: 'Synthetic item', unitPrice: 50, amount: 50 }] } } })).id;
   F.ward = (await h.createWard()).id;
+  // Every principal gets an uploaded avatar so GET /api/auth/avatar has content.
+  const avatarName = `${require('crypto').randomBytes(16).toString('hex')}.png`;
+  require('fs').writeFileSync(require('path').join(h.AVATAR_DIR, avatarName), h.PNG_BYTES);
+  h.trackFile(require('path').join(h.AVATAR_DIR, avatarName));
+  await prisma.user.updateMany({ where: { id: { in: Object.values(P).map((p) => p.user.id) } }, data: { avatar: `/uploads/avatars/${avatarName}` } });
   F.staff = (await prisma.staff.create({ data: { userId: P.receptionist.user.id, designation: 'Receptionist', department: 'Integration Department', joiningDate: new Date('2024-01-01') } })).id;
 });
 
@@ -113,8 +118,8 @@ test.after(async () => { await h.stop(); });
 const protectedEndpoints = endpoints.filter((ep) => ep.auth === 'jwt');
 
 test('matrix covers every catalogued endpoint', () => {
-  assert.equal(endpoints.length, 121);
-  assert.equal(protectedEndpoints.length, 115);
+  assert.equal(endpoints.length, 123);
+  assert.equal(protectedEndpoints.length, 117);
 });
 
 test('public endpoints are reachable without a token', async () => {

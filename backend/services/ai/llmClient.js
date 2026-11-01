@@ -1,4 +1,5 @@
 'use strict';
+const { redactIdentifiers } = require('./privacy');
 
 /**
  * OpenRouter LLM Client with Resilient Fallback Engine.
@@ -71,7 +72,8 @@ async function callOpenRouter(systemPrompt, userPrompt) {
         max_tokens: 2000,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
+          // Emails and phone-like numbers are redacted before leaving the server.
+          { role: 'user', content: redactIdentifiers(userPrompt) },
         ],
       }),
     });

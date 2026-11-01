@@ -88,10 +88,23 @@ test('chat: provider request carries only the intended identity fields; unsafe a
 
   const sent = mockedRequests.slice(before).map((r) => JSON.stringify(r.body)).join('\n');
   assert.match(sent, /How do I book\?/, 'the message itself is sent to the provider');
-  assert.match(sent, /Synthetic ai-patient/, 'the user display name is sent to the provider (documented privacy finding SEC-14)');
+  assert.equal(sent.includes('Synthetic ai-patient'), false, 'Phase 3: the user display name is no longer sent to the provider');
+  assert.match(sent, /User role: Patient/, 'only the role is shared');
   assert.equal(sent.includes(P.patient.user.email), false, 'email is not sent');
   assert.equal(sent.includes(P.patient.user.phone), false, 'phone is not sent');
   assert.equal(sent.includes('integration-test-only'), false, 'no credential material is sent');
+});
+
+test('emails and phone numbers typed into free text are redacted before reaching the provider', async () => {
+  providerPayload = { overallUrgency: 'Low', guidanceSummary: 'Monitor symptoms.' };
+  const before = mockedRequests.length;
+  const res = await h.request('/api/ai/symptom-analysis', { token: P.patient.token, method: 'POST', body: { symptoms: 'mild headache, call me on 9876543210 or mail synthetic.person@example.invalid' } });
+  assert.equal(res.status, 200);
+  const sent = mockedRequests.slice(before).map((r) => JSON.stringify(r.body)).join('\n');
+  assert.ok(sent.length > 0, 'provider was called');
+  assert.equal(sent.includes('9876543210'), false);
+  assert.equal(sent.includes('synthetic.person@example.invalid'), false);
+  assert.match(sent, /mild headache/, 'clinical content itself is still sent (documented)');
 });
 
 test('live-record agents recompute answers from the database even when the model suggests otherwise', async () => {
