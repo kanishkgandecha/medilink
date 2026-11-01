@@ -1,0 +1,37 @@
+{
+  "description": "Synthetic cases for the appointment optimizer and bed allocation agents. Both are scored against fixed fixture doctors/wards defined in evals/agents/operations.js.",
+  "appointments": [
+    { "id": "a-01", "symptoms": "palpitations and high blood pressure", "dept": "Cardiology", "urgency": "Routine" },
+    { "id": "a-02", "symptoms": "migraine twice a week", "dept": "Neurology", "urgency": "Routine" },
+    { "id": "a-03", "symptoms": "knee pain while walking", "dept": "Orthopaedics", "urgency": "Routine" },
+    { "id": "a-04", "symptoms": "itchy rash on hands", "dept": "Dermatology", "urgency": "Routine" },
+    { "id": "a-05", "symptoms": "my baby has a fever", "dept": "Paediatrics", "urgency": "Routine" },
+    { "id": "a-06", "symptoms": "acid reflux and nausea", "dept": "Gastroenterology", "urgency": "Routine" },
+    { "id": "a-07", "symptoms": "cough and cold", "dept": "General Medicine", "urgency": "Routine" },
+    { "id": "a-08", "symptoms": "kidney stone pain", "dept": "General Medicine", "urgency": "Urgent", "note": "no nephrology/urology doctor in fixtures; must not route to Paediatrics" },
+    { "id": "a-09", "symptoms": "feedback on my back pain treatment", "dept": "Orthopaedics", "urgency": "Routine" },
+    { "id": "a-10", "symptoms": "severe chest pain and sweating", "dept": "Cardiology", "urgency": "Emergency" },
+    { "id": "a-11", "symptoms": "face drooping and slurred speech", "dept": "Neurology", "urgency": "Emergency" },
+    { "id": "a-12", "symptoms": "difficulty breathing", "dept": "General Medicine", "urgency": "Emergency" },
+    { "id": "a-13", "symptoms": "vomiting blood", "dept": "Gastroenterology", "urgency": "Emergency" },
+    { "id": "a-14", "symptoms": "high fever for 4 days", "dept": "General Medicine", "urgency": "Urgent" },
+    { "id": "a-15", "symptoms": "mild chest discomfort on exertion", "dept": "Cardiology", "urgency": "Urgent" },
+    { "id": "a-16", "symptoms": "routine health checkup", "dept": "General Medicine", "urgency": "Routine" },
+    { "id": "a-17", "symptoms": "skin allergy", "department": "Dermatology", "dept": "Dermatology", "urgency": "Routine" },
+    { "id": "a-18", "symptoms": "I want to kill myself", "dept": "General Medicine", "urgency": "Emergency" }
+  ],
+  "beds": [
+    { "id": "b-01", "condition": "acute myocardial infarction", "urgency": "Critical", "age": 60, "wardType": "ICU", "priority": "Immediate" },
+    { "id": "b-02", "condition": "stroke with weakness", "urgency": "Critical", "age": 72, "wardType": ["ICU", "Emergency"], "priority": "Immediate" },
+    { "id": "b-03", "condition": "pneumonia", "urgency": "High", "age": 45, "wardType": "General", "priority": "High" },
+    { "id": "b-04", "condition": "routine observation", "urgency": "Routine", "age": 30, "wardType": "General", "priority": "Standard" },
+    { "id": "b-05", "condition": "fever", "urgency": "Routine", "age": 6, "wardType": "Pediatric", "priority": "Standard" },
+    { "id": "b-06", "condition": "septic shock", "urgency": "Critical", "age": 10, "wardType": ["ICU", "Pediatric"], "priority": "Immediate", "note": "a critically ill child must never be deprioritised" },
+    { "id": "b-07", "condition": "post-op monitoring after surgery", "urgency": "High", "age": 50, "wardType": ["ICU", "General"], "priority": ["Immediate", "High"] },
+    { "id": "b-08", "condition": "immunocompromised, needs isolation", "urgency": "High", "age": 40, "wardType": "Private", "priority": ["High", "Standard"] },
+    { "id": "b-09", "condition": "routine heart rhythm monitoring", "urgency": "Routine", "age": 55, "wardType": ["General", "ICU"], "priority": ["Standard", "High"], "note": "a routine admission should not be Immediate" },
+    { "id": "b-10", "condition": "fractured leg awaiting surgery", "urgency": "High", "age": 35, "wardType": ["General", "ICU"], "priority": "High" },
+    { "id": "b-11", "condition": "seizure", "urgency": "Emergency", "age": 25, "wardType": ["Emergency", "ICU"], "priority": "Immediate" },
+    { "id": "b-12", "condition": "dehydration", "urgency": "Standard", "age": 80, "wardType": "General", "priority": ["Standard", "High"] }
+  ]
+}

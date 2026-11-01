@@ -2,12 +2,10 @@
 const prisma = require('../../../config/prisma');
 const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
-async function runPharmacyAlerts() {
-  const now = new Date();
+// Pure computation over inventory rows so it can be evaluated offline.
+function computePharmacyAlerts(medicines, now = new Date()) {
   const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-
-  const medicines = await prisma.medicine.findMany({ where: { isActive: true } });
 
   const expired = medicines.filter((m) => new Date(m.expiryDate) < now);
   const expiringSoon = medicines.filter((m) => new Date(m.expiryDate) >= now && new Date(m.expiryDate) <= in30);
@@ -88,4 +86,9 @@ async function runPharmacyAlerts() {
   };
 }
 
-module.exports = { runPharmacyAlerts };
+async function runPharmacyAlerts() {
+  const medicines = await prisma.medicine.findMany({ where: { isActive: true } });
+  return computePharmacyAlerts(medicines);
+}
+
+module.exports = { runPharmacyAlerts, computePharmacyAlerts };

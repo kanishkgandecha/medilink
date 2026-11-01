@@ -1,0 +1,50 @@
+{
+  "description": "Synthetic chat-assistant cases. 'intent' is the expected intent; 'route' (optional) is a route that must appear in the actions; 'emergency' cases must return the emergency reply with only the 112 action.",
+  "cases": [
+    { "id": "c-em-01", "message": "my mother is unconscious what do I do", "intent": "emergency", "emergency": true },
+    { "id": "c-em-02", "message": "severe chest pain right now", "intent": "emergency", "emergency": true },
+    { "id": "c-em-03", "message": "I think I'm having a heart attack", "intent": "emergency", "emergency": true },
+    { "id": "c-em-04", "message": "I can't breathe properly", "intent": "emergency", "emergency": true },
+    { "id": "c-em-05", "message": "I don't want to live anymore", "intent": "emergency", "emergency": true },
+    { "id": "c-em-06", "message": "need an ambulance", "intent": "emergency", "emergency": true },
+    { "id": "c-em-07", "message": "my son swallowed bleach", "intent": "emergency", "emergency": true },
+    { "id": "c-em-08", "message": "her face is drooping and she can't speak clearly", "intent": "emergency", "emergency": true },
+
+    { "id": "c-ap-01", "message": "how do I book an appointment", "intent": "appointment", "route": "/appointments" },
+    { "id": "c-ap-02", "message": "I want to see a cardiologist next week", "intent": "appointment", "route": "/appointments" },
+    { "id": "c-ap-03", "message": "can I reschedule my visit to Friday", "intent": "appointment", "route": "/appointments" },
+    { "id": "c-ap-04", "message": "cancel my booking please", "intent": "appointment", "route": "/appointments" },
+    { "id": "c-ap-05", "message": "when is my next appointment", "intent": "appointment", "route": "/appointments" },
+
+    { "id": "c-bi-01", "message": "how much do I owe the hospital", "intent": "billing", "route": "/billing" },
+    { "id": "c-bi-02", "message": "show my unpaid bills", "intent": "billing", "route": "/billing" },
+    { "id": "c-bi-03", "message": "does my insurance cover this", "intent": "billing", "route": "/billing" },
+    { "id": "c-bi-04", "message": "I want a receipt for my last payment", "intent": "billing", "route": "/billing" },
+
+    { "id": "c-rx-01", "message": "where can I see my prescriptions", "intent": "prescription", "route": "/prescriptions" },
+    { "id": "c-rx-02", "message": "I need a refill of my medicines", "intent": "prescription", "route": "/prescriptions" },
+    { "id": "c-rx-03", "message": "which pills did the doctor give me", "intent": "prescription", "route": "/prescriptions" },
+
+    { "id": "c-re-01", "message": "are my blood test results ready", "intent": "reports", "route": "/test-reports" },
+    { "id": "c-re-02", "message": "explain my lab report", "intent": "reports", "route": "/test-reports" },
+    { "id": "c-re-03", "message": "where is my x-ray", "intent": "reports", "route": "/test-reports" },
+
+    { "id": "c-sy-01", "message": "I have a headache and fever", "intent": "symptoms", "route": "/symptom-checker" },
+    { "id": "c-sy-02", "message": "my stomach hurts since yesterday", "intent": "symptoms", "route": "/symptom-checker" },
+    { "id": "c-sy-03", "message": "I'm feeling unwell, what could it be", "intent": "symptoms", "route": "/symptom-checker" },
+    { "id": "c-sy-04", "message": "I have a cough and sore throat", "intent": "symptoms", "route": "/symptom-checker" },
+
+    { "id": "c-na-01", "message": "how do I change my password", "intent": "navigation", "route": "/settings" },
+    { "id": "c-na-02", "message": "update my profile photo", "intent": "navigation", "route": "/profile" },
+    { "id": "c-na-03", "message": "show me the list of doctors", "intent": "navigation", "route": "/doctors" },
+
+    { "id": "c-ge-01", "message": "hello", "intent": "general" },
+    { "id": "c-ge-02", "message": "what can you do", "intent": "general" },
+    { "id": "c-ge-03", "message": "thanks a lot", "intent": "general" },
+    { "id": "c-ge-04", "message": "namaste", "intent": "general" },
+
+    { "id": "c-tr-01", "message": "this is about something else entirely", "intent": "general" },
+    { "id": "c-tr-02", "message": "which procedure is due for my father", "intent": "appointment" },
+    { "id": "c-tr-03", "message": "what is the hospital's visiting time", "intent": "navigation" }
+  ]
+}

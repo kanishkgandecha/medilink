@@ -2,9 +2,7 @@
 const prisma = require('../../../config/prisma');
 const { buildSourceMeta, SOURCE_TYPES } = require('../sourceClassification');
 
-async function runAdminInsights() {
-  const now = new Date();
-  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+async function fetchAdminInsightData(now = new Date()) {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
@@ -49,6 +47,13 @@ async function runAdminInsights() {
       include: { user: { select: { name: true } }, medicalHistory: { where: { isVoided: false, status: { in: ['Active', 'Chronic'] } } } },
     }),
   ]);
+  return { allMedicines, wards, unpaidBillsList, todayApts, thisMonthApts, lastMonthApts, thisMonthBills, lastMonthBills, highRiskPatientsRaw };
+}
+
+// Pure computation over fetched rows so it can be evaluated offline.
+function computeAdminInsights(data, now = new Date()) {
+  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const { allMedicines, wards, unpaidBillsList, todayApts, thisMonthApts, lastMonthApts, thisMonthBills, lastMonthBills, highRiskPatientsRaw } = data;
 
   const expiringMeds = allMedicines
     .filter((m) => new Date(m.expiryDate) >= now && new Date(m.expiryDate) <= in30)
@@ -176,4 +181,9 @@ async function runAdminInsights() {
   };
 }
 
-module.exports = { runAdminInsights };
+async function runAdminInsights() {
+  const now = new Date();
+  return computeAdminInsights(await fetchAdminInsightData(now), now);
+}
+
+module.exports = { runAdminInsights, computeAdminInsights };

@@ -19,7 +19,9 @@
     "test:db:status": "node scripts/test-db.js status",
     "test:db:destroy": "node scripts/test-db.js destroy",
     "openapi:build": "node scripts/build-openapi.js",
-    "openapi:check": "node scripts/build-openapi.js --check"
+    "openapi:check": "node scripts/build-openapi.js --check",
+    "eval:ai": "node evals/run.js",
+    "eval:ai:failures": "node evals/run.js --failures"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
