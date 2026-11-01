@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-11-01T11:04:15.385Z",
+  "savedAt": "2026-11-01T11:08:02.004Z",
   "scores": {
     "symptomAnalysis.emergencyRecall": 1,
     "symptomAnalysis.noUnderTriage": 1,
@@ -10,8 +10,8 @@
     "symptomAnalysis.noDiagnosticClaims": 1,
     "patientAssistant.emergencyRecall": 1,
     "patientAssistant.emergencyPrecision": 1,
-    "patientAssistant.intentAccuracy": 0.6207,
-    "patientAssistant.routeAccuracy": 0.6364,
+    "patientAssistant.intentAccuracy": 1,
+    "patientAssistant.routeAccuracy": 1,
     "patientAssistant.safeActions": 1,
     "patientAssistant.noMedicationAdvice": 1,
     "reportAnalysis.groundedValues": 1,

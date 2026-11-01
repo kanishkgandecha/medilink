@@ -1,50 +1,524 @@
 {
   "description": "Synthetic chat-assistant cases. 'intent' is the expected intent; 'route' (optional) is a route that must appear in the actions; 'emergency' cases must return the emergency reply with only the 112 action.",
   "cases": [
-    { "id": "c-em-01", "message": "my mother is unconscious what do I do", "intent": "emergency", "emergency": true },
-    { "id": "c-em-02", "message": "severe chest pain right now", "intent": "emergency", "emergency": true },
-    { "id": "c-em-03", "message": "I think I'm having a heart attack", "intent": "emergency", "emergency": true },
-    { "id": "c-em-04", "message": "I can't breathe properly", "intent": "emergency", "emergency": true },
-    { "id": "c-em-05", "message": "I don't want to live anymore", "intent": "emergency", "emergency": true },
-    { "id": "c-em-06", "message": "need an ambulance", "intent": "emergency", "emergency": true },
-    { "id": "c-em-07", "message": "my son swallowed bleach", "intent": "emergency", "emergency": true },
-    { "id": "c-em-08", "message": "her face is drooping and she can't speak clearly", "intent": "emergency", "emergency": true },
-
-    { "id": "c-ap-01", "message": "how do I book an appointment", "intent": "appointment", "route": "/appointments" },
-    { "id": "c-ap-02", "message": "I want to see a cardiologist next week", "intent": "appointment", "route": "/appointments" },
-    { "id": "c-ap-03", "message": "can I reschedule my visit to Friday", "intent": "appointment", "route": "/appointments" },
-    { "id": "c-ap-04", "message": "cancel my booking please", "intent": "appointment", "route": "/appointments" },
-    { "id": "c-ap-05", "message": "when is my next appointment", "intent": "appointment", "route": "/appointments" },
-
-    { "id": "c-bi-01", "message": "how much do I owe the hospital", "intent": "billing", "route": "/billing" },
-    { "id": "c-bi-02", "message": "show my unpaid bills", "intent": "billing", "route": "/billing" },
-    { "id": "c-bi-03", "message": "does my insurance cover this", "intent": "billing", "route": "/billing" },
-    { "id": "c-bi-04", "message": "I want a receipt for my last payment", "intent": "billing", "route": "/billing" },
-
-    { "id": "c-rx-01", "message": "where can I see my prescriptions", "intent": "prescription", "route": "/prescriptions" },
-    { "id": "c-rx-02", "message": "I need a refill of my medicines", "intent": "prescription", "route": "/prescriptions" },
-    { "id": "c-rx-03", "message": "which pills did the doctor give me", "intent": "prescription", "route": "/prescriptions" },
-
-    { "id": "c-re-01", "message": "are my blood test results ready", "intent": "reports", "route": "/test-reports" },
-    { "id": "c-re-02", "message": "explain my lab report", "intent": "reports", "route": "/test-reports" },
-    { "id": "c-re-03", "message": "where is my x-ray", "intent": "reports", "route": "/test-reports" },
-
-    { "id": "c-sy-01", "message": "I have a headache and fever", "intent": "symptoms", "route": "/symptom-checker" },
-    { "id": "c-sy-02", "message": "my stomach hurts since yesterday", "intent": "symptoms", "route": "/symptom-checker" },
-    { "id": "c-sy-03", "message": "I'm feeling unwell, what could it be", "intent": "symptoms", "route": "/symptom-checker" },
-    { "id": "c-sy-04", "message": "I have a cough and sore throat", "intent": "symptoms", "route": "/symptom-checker" },
-
-    { "id": "c-na-01", "message": "how do I change my password", "intent": "navigation", "route": "/settings" },
-    { "id": "c-na-02", "message": "update my profile photo", "intent": "navigation", "route": "/profile" },
-    { "id": "c-na-03", "message": "show me the list of doctors", "intent": "navigation", "route": "/doctors" },
-
-    { "id": "c-ge-01", "message": "hello", "intent": "general" },
-    { "id": "c-ge-02", "message": "what can you do", "intent": "general" },
-    { "id": "c-ge-03", "message": "thanks a lot", "intent": "general" },
-    { "id": "c-ge-04", "message": "namaste", "intent": "general" },
-
-    { "id": "c-tr-01", "message": "this is about something else entirely", "intent": "general" },
-    { "id": "c-tr-02", "message": "which procedure is due for my father", "intent": "appointment" },
-    { "id": "c-tr-03", "message": "what is the hospital's visiting time", "intent": "navigation" }
+    {
+      "id": "c-em-01",
+      "message": "my mother is unconscious what do I do",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-02",
+      "message": "severe chest pain right now",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-03",
+      "message": "I think I'm having a heart attack",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-04",
+      "message": "I can't breathe properly",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-05",
+      "message": "I don't want to live anymore",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-06",
+      "message": "need an ambulance",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-07",
+      "message": "my son swallowed bleach",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-em-08",
+      "message": "her face is drooping and she can't speak clearly",
+      "intent": "emergency",
+      "emergency": true
+    },
+    {
+      "id": "c-ap-01",
+      "message": "how do I book an appointment",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "c-ap-02",
+      "message": "I want to see a cardiologist next week",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "c-ap-03",
+      "message": "can I reschedule my visit to Friday",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "c-ap-04",
+      "message": "cancel my booking please",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "c-ap-05",
+      "message": "when is my next appointment",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "c-bi-01",
+      "message": "how much do I owe the hospital",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "c-bi-02",
+      "message": "show my unpaid bills",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "c-bi-03",
+      "message": "does my insurance cover this",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "c-bi-04",
+      "message": "I want a receipt for my last payment",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "c-rx-01",
+      "message": "where can I see my prescriptions",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "c-rx-02",
+      "message": "I need a refill of my medicines",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "c-rx-03",
+      "message": "which pills did the doctor give me",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "c-re-01",
+      "message": "are my blood test results ready",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "c-re-02",
+      "message": "explain my lab report",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "c-re-03",
+      "message": "where is my x-ray",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "c-sy-01",
+      "message": "I have a headache and fever",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "c-sy-02",
+      "message": "my stomach hurts since yesterday",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "c-sy-03",
+      "message": "I'm feeling unwell, what could it be",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "c-sy-04",
+      "message": "I have a cough and sore throat",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "c-na-01",
+      "message": "how do I change my password",
+      "intent": "navigation",
+      "route": "/settings"
+    },
+    {
+      "id": "c-na-02",
+      "message": "update my profile photo",
+      "intent": "navigation",
+      "route": "/profile"
+    },
+    {
+      "id": "c-na-03",
+      "message": "show me the list of doctors",
+      "intent": "navigation",
+      "route": "/doctors"
+    },
+    {
+      "id": "c-ge-01",
+      "message": "hello",
+      "intent": "general"
+    },
+    {
+      "id": "c-ge-02",
+      "message": "what can you do",
+      "intent": "general"
+    },
+    {
+      "id": "c-ge-03",
+      "message": "thanks a lot",
+      "intent": "general"
+    },
+    {
+      "id": "c-ge-04",
+      "message": "namaste",
+      "intent": "general"
+    },
+    {
+      "id": "c-tr-01",
+      "message": "this is about something else entirely",
+      "intent": "general"
+    },
+    {
+      "id": "c-tr-02",
+      "message": "which procedure is due for my father",
+      "intent": "appointment"
+    },
+    {
+      "id": "c-tr-03",
+      "message": "what is the hospital's visiting time",
+      "intent": "navigation"
+    },
+    {
+      "id": "ho-01",
+      "message": "I need to fix a time with the skin doctor",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "ho-02",
+      "message": "is Dr Mehta free tomorrow morning",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "ho-03",
+      "message": "please move my visit to next Monday",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "ho-04",
+      "message": "what's my pending balance",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "ho-05",
+      "message": "can I pay online with UPI",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "ho-06",
+      "message": "I was charged twice",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "ho-07",
+      "message": "is my mediclaim accepted here",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "ho-08",
+      "message": "how many tablets should I take daily",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "ho-09",
+      "message": "show the medicines Dr Shah prescribed",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "ho-10",
+      "message": "has my sugar test come",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "ho-11",
+      "message": "download my CT scan result",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "ho-12",
+      "message": "my throat has been hurting for days",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "ho-13",
+      "message": "I feel dizzy and weak",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "ho-14",
+      "message": "my knee is swollen",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "ho-15",
+      "message": "I forgot my password",
+      "intent": "navigation",
+      "route": "/settings"
+    },
+    {
+      "id": "ho-16",
+      "message": "change my phone number on my account",
+      "intent": "navigation",
+      "route": "/profile"
+    },
+    {
+      "id": "ho-17",
+      "message": "which doctors are available in cardiology",
+      "intent": "navigation",
+      "route": "/doctors"
+    },
+    {
+      "id": "ho-18",
+      "message": "good morning",
+      "intent": "general"
+    },
+    {
+      "id": "ho-19",
+      "message": "ok thank you so much",
+      "intent": "general"
+    },
+    {
+      "id": "ho-20",
+      "message": "who are you",
+      "intent": "general"
+    },
+    {
+      "id": "t-01",
+      "message": "I want to meet the ENT doctor on Saturday",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "t-02",
+      "message": "can I get a slot this evening",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "t-03",
+      "message": "postpone tomorrow's checkup",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "t-04",
+      "message": "what do I have to pay for the surgery",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "t-05",
+      "message": "send me the invoice copy",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "t-06",
+      "message": "is cashless available",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "t-07",
+      "message": "my medicine is finished, what now",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "t-08",
+      "message": "what is this syrup for",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "t-09",
+      "message": "are my scan images uploaded",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "t-10",
+      "message": "I got my reports, what do they mean",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "t-11",
+      "message": "my back hurts badly",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "t-12",
+      "message": "I have loose motions since morning",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "t-13",
+      "message": "update my email",
+      "intent": "navigation",
+      "route": "/profile"
+    },
+    {
+      "id": "t-14",
+      "message": "where is the pharmacy",
+      "intent": "navigation"
+    },
+    {
+      "id": "t-15",
+      "message": "hii",
+      "intent": "general"
+    },
+    {
+      "id": "t-16",
+      "message": "bye",
+      "intent": "general"
+    },
+    {
+      "id": "u-01",
+      "message": "Do you have a gynaecologist on Thursday?",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "u-02",
+      "message": "I'd like an earlier time for my son's vaccination",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "u-03",
+      "message": "drop my 4 pm booking",
+      "intent": "appointment",
+      "route": "/appointments"
+    },
+    {
+      "id": "u-04",
+      "message": "what's the total for my wife's admission",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "u-05",
+      "message": "did my last transaction go through",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "u-06",
+      "message": "will the hospital accept my company health policy",
+      "intent": "billing",
+      "route": "/billing"
+    },
+    {
+      "id": "u-07",
+      "message": "can I take my BP tablet with food",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "u-08",
+      "message": "which antibiotic did they give me",
+      "intent": "prescription",
+      "route": "/prescriptions"
+    },
+    {
+      "id": "u-09",
+      "message": "when will my biopsy come back",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "u-10",
+      "message": "show my ECG",
+      "intent": "reports",
+      "route": "/test-reports"
+    },
+    {
+      "id": "u-11",
+      "message": "my eyes are red and watering",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "u-12",
+      "message": "burning feeling in my chest after meals",
+      "intent": "symptoms",
+      "route": "/symptom-checker"
+    },
+    {
+      "id": "u-13",
+      "message": "turn off SMS alerts",
+      "intent": "navigation",
+      "route": "/settings"
+    },
+    {
+      "id": "u-14",
+      "message": "how do I change my display picture",
+      "intent": "navigation",
+      "route": "/profile"
+    },
+    {
+      "id": "u-15",
+      "message": "hey there",
+      "intent": "general"
+    },
+    {
+      "id": "u-16",
+      "message": "you are very helpful",
+      "intent": "general"
+    }
   ]
 }

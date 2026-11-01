@@ -5,15 +5,31 @@ const { enforceAssistantSafety } = require('../safety');
 const { buildSourceMeta } = require('../sourceClassification');
 const { withEnglish } = require('../language');
 
-const INTENT_MAP = [
-  { intent: 'emergency',    patterns: ['emergency', 'ambulance', 'dying', 'heart attack', 'stroke', 'unconscious', 'can\'t breathe', 'severe chest pain', 'bleeding heavily', '112'] },
-  { intent: 'appointment',  patterns: ['book appointment', 'schedule', 'doctor appointment', 'see a doctor', 'consult', 'appointment'] },
-  { intent: 'billing',      patterns: ['bill', 'payment', 'invoice', 'pay', 'due', 'outstanding', 'fee', 'charge'] },
-  { intent: 'prescription', patterns: ['prescription', 'medicine', 'medication', 'drug', 'tablet', 'dosage', 'refill'] },
-  { intent: 'reports',      patterns: ['test report', 'lab report', 'blood test', 'x-ray', 'mri', 'ct scan', 'report', 'result', 'ultrasound'] },
-  { intent: 'symptoms',     patterns: ['symptom', 'feeling sick', 'not well', 'pain', 'hurt', 'ache', 'unwell', 'check my symptoms', 'what do i have'] },
-  { intent: 'navigation',   patterns: ['where', 'how to', 'find', 'settings', 'profile', 'ward', 'doctor list', 'pharmacy'] },
-  { intent: 'general',      patterns: ['help', 'what can you', 'hello', 'hi', 'hey', 'thanks', 'thank you', 'namaste'] },
+// Topic vocabularies shared by the intent patterns below.
+const TEST_NAMES = /\b(?:biopsy|ecg|ekg|echo(?:cardiogram)?|2d echo|mammogram|pap smear|culture|hba1c|lipid profile|thyroid profile|cbc|sonography|pet scan|endoscopy|colonoscopy|angiography|tmt|dexa|images?)\b/;
+const MEDICINE_TYPES = /\b(?:antibiotics?|painkillers?|pain killers?|(?:bp|sugar|thyroid) (?:tablets?|medicines?)|insulin|vitamins?|supplements?|creams?|antacids?)\b/;
+const BILLING_TERMS = /\b(?:transactions?|total (?:for|amount|bill)|(?:health|insurance|company) policy|coverage|covered|emi|gst|discount|package)\b/;
+const BODY_SYMPTOM = /\b(?:eyes?|ears?|nose|tooth|teeth|gums?|knees?|legs?|arms?|hands?|feet|foot|neck|skin|chest|back|joints?)\b.*\b(?:red|swollen|watering|aching|bleeding|burning|numb|itchy|pain(?:ful)?|sore|stiff)\b/;
+
+// Whole-word patterns per intent. The intent with the most matching patterns
+// wins; ties go to the earlier intent. Word boundaries stop accidental
+// matches such as "hi" in "which" or "fee" in "feeling".
+const INTENT_PATTERNS = [
+  { intent: 'emergency',    patterns: [/\bemergency\b/, /\bambulance\b/, /\bdying\b/, /\bheart attack\b/, /\bstroke\b/, /\bunconscious\b/, /\bcan'?t breathe\b/, /\bsevere chest pain\b/, /\bbleeding heavily\b/, /\b112\b/] },
+  { intent: 'appointment',  patterns: [/\bappointments?\b/, /\bbook(?:ing)?\b/, /\bre-?schedule\b/, /\bschedule\b/, /\bcancel\b/, /\bvisit\b/, /\bconsult(?:ation)?\b/, /\b(?:post|pre)pone\b/, /\bcheck-?ups?\b/, /\bmeet (?:a|the|my|dr)\b/, /\b(?:ent|eye|dental|skin|child|bone) (?:doctor|specialist|clinic)\b/, /\bdoctor (?:on|at|for) (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow)\b/, /\bsee (?:a|the|my) (?:doctor|specialist|\w+(?:ologist|ician|iatrist))\b/, /\b(?:cardiologist|dermatologist|neurologist|pediatrician|paediatrician|orthopedic|gynaecologist|gynecologist|skin doctor|specialist)\b/, /\bprocedure\b/, /\b(?:fix|book|get) a (?:time|slot)\b/, /\bslot\b/, /\b(?:free|available) (?:today|tomorrow|on)\b/, /\bdr\.? \w+ (?:free|available)\b/, /\bvaccinat\w*\b/, /\bvaccines?\b/, /\b(?:an earlier|a later|another) (?:time|date|slot)\b/, /\bopd\b/] },
+  { intent: 'billing',      patterns: [/\bbills?\b/, /\bbilling\b/, /\bpay(?:ment|ments)?\b/, /\binvoices?\b/, /\bowe\b/, /\bdues?\b/, /\boutstanding\b/, /\bfees?\b/, /\bcharged?\b/, /\breceipts?\b/, /\binsurance\b/, /\bmediclaim\b/, /\bclaims?\b/, /\brefund\b/, /\bhow much\b/, /\bbalance\b/, /\bupi\b/, /\bcost\b/, /\bcashless\b/, /\btpa\b/, /\bestimate\b/, /\bprice\b/, /\bpaid\b/, /\bdeposit\b/, BILLING_TERMS] },
+  { intent: 'prescription', patterns: [/\bprescriptions?\b/, /\bprescribed\b/, /\bmedicines?\b/, /\bmedications?\b/, /\bpills?\b/, /\btablets?\b/, /\bdrugs?\b/, /\brefill\b/, /\bdos(?:e|age)\b/, /\bsyrups?\b/, /\bcapsules?\b/, /\binjections?\b/, /\binhalers?\b/, /\bointments?\b/, /\b(?:eye|ear) drops\b/, MEDICINE_TYPES] },
+  { intent: 'reports',      patterns: [/\breports?\b/, /\btest results?\b/, /\bresults?\b/, /\blab\b/, /\bblood test\b/, /\b(?:sugar|thyroid|urine) test\b/, /\bx-?ray\b/, /\bmri\b/, /\bct scan\b/, /\bscan\b/, /\bultrasound\b/, TEST_NAMES] },
+  { intent: 'symptoms',     patterns: [/\bsymptoms?\b/, /\bsick\b/, /\bunwell\b/, /\bnot (?:feeling )?well\b/, /\bpain(?:ful)?\b/, /\bhurt(?:s|ing)?\b/, /\bache\b/, /\bfever\b/, /\bcough\b/, /\bsore\b/, /\bheadache\b/, /\bcold\b/, /\bvomit(?:ing)?\b/, /\bdizzy\b/, /\bweak\b/, /\bswollen\b/, /\brash\b/, /\bwhat (?:could it be|do i have)\b/, /\bstomach\b/, /\bthroat\b/, /\bloose motions?\b/, /\bdiarrh(?:o)?ea\b/, /\bconstipat\w*/, /\bitch(?:ing|y)?\b/, /\bswelling\b/, /\bburning\b/, /\btired\b/, /\bbreath(?:less)?\b/, /\bnausea\b/, /\bbleeding\b/, /\binjur(?:y|ed)\b/, BODY_SYMPTOM] },
+  { intent: 'navigation',   patterns: [/\bpassword\b/, /\bsettings?\b/, /\bprofile\b/, /\bphoto\b/, /\bphone number\b/, /\baccount\b/, /\b(?:list of|all|which) doctors\b/, /\bdoctors? list\b/, /\bwhere (?:is|can i|do i)\b/, /\bhow (?:do|can) i (?:change|update|find)\b/, /\bvisiting (?:time|hours)\b/, /\btimings?\b/, /\bpharmacy\b/, /\bward\b/, /\bemail\b/, /\bnotifications?\b/, /\blog ?out\b/, /\bsign ?out\b/, /\blanguage\b/, /\bdelete my account\b/, /\balerts?\b/, /\bsms\b/, /\breminders?\b/, /\bdisplay picture\b/, /\bprivacy\b/] },
+  { intent: 'general',      patterns: [/\bhelp\b/, /\bwhat can you\b/, /\bwho are you\b/, /^(?:hello|hi|hey|namaste|good (?:morning|afternoon|evening))\b/, /\b(?:hello|namaste)\b/, /\bthanks?\b/, /\bthank you\b/] },
+];
+
+// Navigation requests open the page they ask about.
+const NAVIGATION_ROUTES = [
+  { pattern: /\b(?:password|settings?|notifications?|language|log ?out|sign ?out|alerts?|sms|reminders?|privacy)\b/, action: { label: 'Open Settings', route: '/settings', type: 'navigate' } },
+  { pattern: /\b(?:profile|photo|display picture|phone number|email|account|address)\b/, action: { label: 'Open Profile', route: '/profile', type: 'navigate' } },
+  { pattern: /\bdoctors?\b/, action: { label: 'View Doctors', route: '/doctors', type: 'navigate' } },
 ];
 
 const RESPONSES = {
@@ -70,10 +86,19 @@ const FALLBACK_REPLIES = [
 
 function detectIntent(message) {
   const lower = withEnglish(message).toLowerCase();
-  for (const { intent, patterns } of INTENT_MAP) {
-    if (patterns.some(p => lower.includes(p))) return intent;
+  let best = null;
+  for (const { intent, patterns } of INTENT_PATTERNS) {
+    const score = patterns.filter((p) => p.test(lower)).length;
+    if (intent === 'emergency' && score) return intent;
+    if (score && (!best || score > best.score)) best = { intent, score };
   }
-  return null;
+  return best?.intent || null;
+}
+
+function navigationActions(message) {
+  const lower = withEnglish(message).toLowerCase();
+  const matched = NAVIGATION_ROUTES.filter(({ pattern }) => pattern.test(lower)).map(({ action }) => action);
+  return matched.length ? matched : RESPONSES.navigation.actions;
 }
 
 function mockRespond({ message }) {
@@ -82,14 +107,22 @@ function mockRespond({ message }) {
     return {
       intent,
       ...RESPONSES[intent],
+      ...(intent === 'navigation' ? { actions: navigationActions(message) } : {}),
       followUpQuestions: ['Can I help you with anything else?'],
     };
   }
   return {
     intent: 'general',
     reply: FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)],
-    actions: [{ label: 'Book Appointment', route: '/appointments', type: 'navigate' }],
-    followUpQuestions: ['Would you like to book an appointment?', 'Shall I check your symptoms?'],
+    // When the request is not understood, offer the main pages instead of guessing.
+    actions: [
+      { label: 'Appointments', route: '/appointments', type: 'navigate' },
+      { label: 'Billing', route: '/billing', type: 'navigate' },
+      { label: 'Prescriptions', route: '/prescriptions', type: 'navigate' },
+      { label: 'Test Reports', route: '/test-reports', type: 'navigate' },
+      { label: 'Symptom Checker', route: '/symptom-checker', type: 'navigate' },
+    ],
+    followUpQuestions: ['Which of these do you need help with?'],
     urgent: false,
   };
 }
