@@ -2,30 +2,40 @@ const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 const { logSafeError } = require('../utils/redact');
 
+// Single email transport for the whole backend (password reset and
+// appointment notifications). Configure either SMTP (EMAIL_HOST, EMAIL_PORT,
+// EMAIL_SECURE, EMAIL_USER, EMAIL_PASS) or a nodemailer well-known service
+// (EMAIL_SERVICE + EMAIL_USER + EMAIL_PASS). With neither, email is disabled:
+// notifications are skipped and password-reset emails are reported as failed.
 let transporter = null;
+let transporterKey = null;
+
+const transportOptions = () => {
+  const auth = process.env.EMAIL_USER && process.env.EMAIL_PASS
+    ? { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+    : undefined;
+  if (process.env.EMAIL_HOST) {
+    const port = Number(process.env.EMAIL_PORT) || 587;
+    return { host: process.env.EMAIL_HOST, port, secure: process.env.EMAIL_SECURE === 'true' || port === 465, ...(auth ? { auth } : {}) };
+  }
+  if (auth) return { service: process.env.EMAIL_SERVICE || 'gmail', auth };
+  return null;
+};
+
+const isEmailConfigured = () => transportOptions() !== null;
 
 const getTransporter = () => {
-  if (transporter) return transporter;
-
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE || 'gmail',
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-    });
-  } else {
-    // Ethereal mock transport for dev/testing — no real emails sent
-    transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: { user: 'mock@ethereal.email', pass: 'mock' }
-    });
+  const options = transportOptions();
+  const key = JSON.stringify(options && { ...options, auth: options.auth ? options.auth.user : undefined });
+  if (!transporter || transporterKey !== key) {
+    transporter = nodemailer.createTransport(options);
+    transporterKey = key;
   }
   return transporter;
 };
 
-const isEmailConfigured = () => !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
-
 const HOSPITAL_NAME = process.env.HOSPITAL_NAME || 'MediLink Hospital';
+const senderAddress = () => process.env.EMAIL_FROM || `"${HOSPITAL_NAME}" <${process.env.EMAIL_USER || 'no-reply@localhost'}>`;
 
 const templates = {
   appointmentBooked: ({ patientName, doctorName, department, date, time, appointmentId, type }) => ({
@@ -114,7 +124,7 @@ const sendEmail = async (to, templateName, data) => {
     }
 
     await getTransporter().sendMail({
-      from: `"${HOSPITAL_NAME}" <${process.env.EMAIL_USER}>`,
+      from: senderAddress(),
       to,
       subject,
       html
@@ -122,8 +132,17 @@ const sendEmail = async (to, templateName, data) => {
     return { success: true };
   } catch (err) {
     logSafeError(logger, 'email_delivery_failed', err);
-    return { success: false, reason: err.message };
+    return { success: false, reason: 'delivery_failed' };
   }
 };
 
-module.exports = { sendEmail, isEmailConfigured };
+// Plain email used by the password-reset flow. Throws when email is not
+// configured or delivery fails, so the caller can revoke the reset token.
+const sendRawEmail = async ({ to, subject, text, html }) => {
+  if (!isEmailConfigured()) {
+    throw Object.assign(new Error('Email delivery is not configured'), { code: 'EMAIL_NOT_CONFIGURED' });
+  }
+  await getTransporter().sendMail({ from: senderAddress(), to, subject, text, html });
+};
+
+module.exports = { sendEmail, sendRawEmail, isEmailConfigured };

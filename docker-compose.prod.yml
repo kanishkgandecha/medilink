@@ -28,7 +28,11 @@ services:
       PORT: 5000
       DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB must be set}?schema=public
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set to a random value of at least 32 characters}
-      JWT_EXPIRE: 30d
+      JWT_EXPIRE: ${JWT_EXPIRE:-12h}
+      # CORS allow-list (the backend refuses to start in production without it).
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL must be set to the public frontend origin}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
     depends_on:
       postgres:
         condition: service_healthy

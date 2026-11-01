@@ -15,6 +15,7 @@ import logoLight from '../../assets/logo/logo-icon-bg-light.png'
 import logoDark  from '../../assets/logo/logo-icon-bg-dark.png'
 import { getUserRoleKey, ROLE_LABELS } from '../../config/rolePolicy'
 import useModalA11y from '../../hooks/useModalA11y'
+import { passwordPolicyError, PASSWORD_POLICY_HINT } from '../../utils/passwordPolicy'
 
 // ── Role → nav items ─────────────────────────────────────────────────────────
 const MENUS = {
@@ -211,8 +212,9 @@ const TopNav = () => {
     if (!pwForm.current || !pwForm.next || !pwForm.confirm) {
       toast.error('All fields are required'); return
     }
-    if (pwForm.next.length < 6) {
-      toast.error('New password must be at least 6 characters'); return
+    const policyError = passwordPolicyError(pwForm.next)
+    if (policyError) {
+      toast.error(policyError); return
     }
     if (pwForm.next !== pwForm.confirm) {
       toast.error('Passwords do not match'); return
@@ -551,7 +553,7 @@ const TopNav = () => {
             <div className="px-6 py-5 space-y-4 overflow-y-auto scrollbar-thin">
               {[
                 { key: 'current', label: 'Current Password',    placeholder: 'Enter current password' },
-                { key: 'next',    label: 'New Password',         placeholder: 'At least 6 characters'  },
+                { key: 'next',    label: 'New Password',         placeholder: PASSWORD_POLICY_HINT  },
                 { key: 'confirm', label: 'Confirm New Password', placeholder: 'Re-enter new password'  },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>

@@ -12,6 +12,7 @@ const {
   verifyToken,
   getMe,
   updatePassword,
+  logout,
   updateProfile,
   getMyProfile,
   uploadAvatarImage
@@ -21,7 +22,12 @@ const {
 router.post('/register', [
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  // Same strength rule as password reset and change.
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/[a-z]/).withMessage('Password must contain a lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
+    .matches(/[0-9]/).withMessage('Password must contain a number'),
   body('phone').notEmpty().withMessage('Phone is required'),
   body('dateOfBirth').optional().isISO8601().withMessage('Valid date of birth is required'),
   body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('Gender must be Male, Female, or Other'),
@@ -51,6 +57,7 @@ router.post('/reset-password/:resettoken', [
 
 // Protected routes (require authentication)
 router.get('/verify', protect, verifyToken);
+router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.get('/my-profile', protect, getMyProfile);
 router.put('/update-password', protect, [

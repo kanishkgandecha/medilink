@@ -113,8 +113,8 @@ test.after(async () => { await h.stop(); });
 const protectedEndpoints = endpoints.filter((ep) => ep.auth === 'jwt');
 
 test('matrix covers every catalogued endpoint', () => {
-  assert.equal(endpoints.length, 120);
-  assert.equal(protectedEndpoints.length, 114);
+  assert.equal(endpoints.length, 121);
+  assert.equal(protectedEndpoints.length, 115);
 });
 
 test('public endpoints are reachable without a token', async () => {

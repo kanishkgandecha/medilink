@@ -6,3 +6,4 @@ uploads/*
 !uploads/.gitkeep
 private-uploads
 .env.test
+.test-postgres

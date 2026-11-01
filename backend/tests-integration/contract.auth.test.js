@@ -154,3 +154,87 @@ test('avatar upload: accepted image, spoofed content, wrong type, oversize, and 
   const missing = await h.upload('/api/auth/avatar', { token: principal.token, field: 'avatar', buffer: null });
   assert.equal(missing.status, 400);
 });
+
+// ── Phase 2: session revocation, lockout, password policy, body limit, CORS ──
+test('logout revokes every token issued to the account (all devices)', async () => {
+  const { user } = await h.createUser('logout', 'Patient', null, { password: await bcrypt.hash(STRONG, 10) });
+  const login = async () => (await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: STRONG } })).json.token;
+  const deviceA = await login();
+  const deviceB = await login();
+  assert.equal((await h.request('/api/auth/verify', { token: deviceB })).status, 200);
+  assert.equal((await h.request('/api/auth/logout', { token: deviceA, method: 'POST' })).status, 200);
+  assert.equal((await h.request('/api/auth/verify', { token: deviceA })).status, 401);
+  assert.equal((await h.request('/api/auth/verify', { token: deviceB })).status, 401, 'other devices are signed out too');
+  assert.equal((await h.request('/api/auth/verify', { token: await login() })).status, 200, 'a new login works');
+});
+
+test('password change revokes other sessions; the returned token keeps working', async () => {
+  const { user } = await h.createUser('revoke-change', 'Patient', null, { password: await bcrypt.hash(STRONG, 10) });
+  const old = (await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: STRONG } })).json.token;
+  const changed = await h.request('/api/auth/update-password', { token: old, method: 'PUT', body: { currentPassword: STRONG, newPassword: 'Changed-Pass-2026' } });
+  assert.equal(changed.status, 200);
+  assert.equal((await h.request('/api/auth/verify', { token: old })).status, 401);
+  assert.equal((await h.request('/api/auth/verify', { token: changed.json.token })).status, 200);
+});
+
+test('password reset revokes existing sessions and lifts a lockout', async () => {
+  const { user } = await h.createUser('revoke-reset', 'Patient', null, { password: await bcrypt.hash(STRONG, 10) });
+  const old = (await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: STRONG } })).json.token;
+  await h.prisma.user.update({ where: { id: user.id }, data: { lockedUntil: new Date(Date.now() + 600000) } });
+  await h.request('/api/auth/forgot-password', { method: 'POST', body: { email: user.email } });
+  const raw = h.sentMail.filter((m) => m.to === user.email).pop().text.match(/reset-password\/([a-f0-9]{40})/)[1];
+  assert.equal((await h.request(`/api/auth/reset-password/${raw}`, { method: 'POST', body: { password: 'Reset-Pass-2026' } })).status, 200);
+  assert.equal((await h.request('/api/auth/verify', { token: old })).status, 401);
+  assert.equal((await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: 'Reset-Pass-2026' } })).status, 200, 'lockout lifted');
+});
+
+test('login lockout: 5 wrong passwords lock the account, even for the right password, until it expires', async () => {
+  const { user } = await h.createUser('lockout', 'Patient', null, { password: await bcrypt.hash(STRONG, 10) });
+  const attempt = (password) => h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password } });
+  for (let i = 1; i <= 4; i += 1) assert.equal((await attempt('Wrong-Pass-0000')).status, 401, `attempt ${i}`);
+  const fifth = await attempt('Wrong-Pass-0000');
+  assert.equal(fifth.status, 429);
+  assert.equal(fifth.json.code, 'ACCOUNT_LOCKED');
+  assert.equal((await attempt(STRONG)).status, 429, 'correct password is refused while locked');
+
+  await h.prisma.user.update({ where: { id: user.id }, data: { lockedUntil: new Date(Date.now() - 1000) } });
+  assert.equal((await attempt(STRONG)).status, 200, 'unlocks after expiry');
+  const row = await h.prisma.user.findUnique({ where: { id: user.id }, select: { failedLoginCount: true, lockedUntil: true } });
+  assert.equal(row.failedLoginCount, 0);
+  assert.equal(row.lockedUntil, null);
+});
+
+test('a successful login resets the failure counter', async () => {
+  const { user } = await h.createUser('counter', 'Patient', null, { password: await bcrypt.hash(STRONG, 10) });
+  for (let i = 0; i < 3; i += 1) await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: 'Wrong-Pass-0000' } });
+  assert.equal((await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: STRONG } })).status, 200);
+  for (let i = 0; i < 4; i += 1) assert.equal((await h.request('/api/auth/login', { method: 'POST', body: { email: user.email, password: 'Wrong-Pass-0000' } })).status, 401);
+});
+
+test('registration enforces the same password policy as reset and change', async () => {
+  for (const password of ['short1A', 'nouppercase1', 'NOLOWERCASE1', 'NoDigitsHere']) {
+    const res = await h.request('/api/auth/register', { method: 'POST', body: { name: 'X', email: `integration-auth-${h.tag()}@medilink.invalid`, password, phone: '1' } });
+    assert.equal(res.status, 400, password);
+  }
+});
+
+test('request bodies above 1 MB are rejected with 413', async () => {
+  const res = await h.request('/api/auth/login', { method: 'POST', body: { email: 'x@medilink.invalid', password: 'x'.repeat(1100 * 1024) } });
+  assert.equal(res.status, 413);
+});
+
+test('CORS: local dev origins receive CORS headers; arbitrary origins do not', async () => {
+  const allowed = await h.request('/health', { headers: { Origin: 'http://localhost:3001' } });
+  assert.equal(allowed.headers.get('access-control-allow-origin'), 'http://localhost:3001');
+  const denied = await h.request('/health', { headers: { Origin: 'https://evil.invalid' } });
+  assert.equal(denied.status, 200, 'not turned into a server error');
+  assert.equal(denied.headers.get('access-control-allow-origin'), null);
+});
+
+test('new account-security fields never appear in responses', async () => {
+  const principal = await h.createUser('fields', 'Patient');
+  for (const url of ['/api/auth/me', '/api/auth/verify', '/api/auth/my-profile']) {
+    const res = await h.request(url, { token: principal.token });
+    for (const key of ['tokenVersion', 'failedLoginCount', 'lockedUntil']) assert.equal(JSON.stringify(res.json).includes(`"${key}"`), false, `${url} leaks ${key}`);
+  }
+});

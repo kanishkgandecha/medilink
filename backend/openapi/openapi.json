@@ -298,7 +298,8 @@
                   },
                   "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 8,
+                    "description": "Must contain lowercase, uppercase, and a digit"
                   },
                   "phone": {
                     "type": "string"
@@ -339,7 +340,7 @@
           "Auth"
         ],
         "summary": "Log in and receive a JWT",
-        "description": "Deactivated accounts receive 401.",
+        "description": "Deactivated accounts receive 401. After LOGIN_MAX_FAILED_ATTEMPTS (default 5) wrong passwords the account is locked for LOGIN_LOCK_MINUTES (default 15): 429 with code ACCOUNT_LOCKED.",
         "security": [],
         "x-handler": "authController.login",
         "x-roles": [
@@ -564,7 +565,7 @@
           "Auth"
         ],
         "summary": "Reset a password with a reset token",
-        "description": "Token is single-use and expires after 10 minutes. Invalid or expired tokens return 400.",
+        "description": "Token is single-use and expires after 10 minutes. Invalid or expired tokens return 400. A successful reset revokes all existing sessions and lifts any lockout.",
         "security": [],
         "x-handler": "authController.resetPassword",
         "x-roles": [
@@ -733,6 +734,87 @@
           },
           "404": {
             "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error (generic message and requestId only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "postApiAuthLogout",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign out everywhere (revokes all tokens issued to this account)",
+        "description": "Increments the account token version; every previously issued token then returns 401.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-handler": "authController.logout",
+        "x-roles": [
+          "any-authenticated"
+        ],
+        "x-owner-access": null,
+        "x-care-scope": false,
+        "x-record-access": null,
+        "x-state-changing": true,
+        "x-audit": null,
+        "x-patient-visibility": null,
+        "x-rate-limit": "api",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, or inactive-account token",
             "content": {
               "application/json": {
                 "schema": {
@@ -956,7 +1038,7 @@
           "Auth"
         ],
         "summary": "Change own password",
-        "description": "Previously issued tokens remain valid until expiry (no revocation yet).",
+        "description": "Revokes every other session; the response carries a fresh token.",
         "security": [
           {
             "bearerAuth": []
@@ -16947,7 +17029,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "JWT from /api/auth/login, sent as Authorization: Bearer <token>. Every request re-checks that the account is active."
+        "description": "JWT from /api/auth/login (default lifetime 12h), sent as Authorization: Bearer <token>. Every request re-checks that the account is active and that the token version is current (logout, password change, and reset revoke older tokens)."
       }
     },
     "schemas": {

@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { toast } from 'react-toastify'
 import logoIconBgLight from '../../assets/logo/logo-icon-bg-light.png'
+import { passwordPolicyError } from '../../utils/passwordPolicy'
 
 // ── Animated ECG / heartbeat line ─────────────────────────────────────────────
 const HeartbeatSVG = () => (
@@ -324,7 +325,7 @@ const Register = () => {
   const validateStep2 = () => {
     const e = {}
     if (!formData.password)        e.password        = 'Password is required'
-    else if (formData.password.length < 6) e.password = 'At least 6 characters required'
+    else if (passwordPolicyError(formData.password)) e.password = passwordPolicyError(formData.password)
     if (!formData.confirmPassword) e.confirmPassword = 'Please confirm your password'
     else if (formData.password !== formData.confirmPassword) e.confirmPassword = 'Passwords do not match'
     return e

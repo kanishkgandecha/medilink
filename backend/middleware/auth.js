@@ -18,14 +18,19 @@ exports.protect = asyncHandler(async (req, res, next) => {
     const user = await prisma.user.findFirst({
       where: { OR: [{ id: decoded.id }, { legacyMongoId: decoded.id }] },
       select: { id: true, legacyMongoId: true, name: true, email: true, role: true, subRole: true,
-        phone: true, dateOfBirth: true, gender: true, isActive: true },
+        phone: true, dateOfBirth: true, gender: true, isActive: true, tokenVersion: true },
     });
 
     if (!user || !user.isActive) {
       return res.status(401).json({ message: 'User not found or inactive' });
     }
+    // Tokens issued before the last logout/password change/reset are revoked.
+    if ((decoded.tv || 0) !== (user.tokenVersion || 0)) {
+      return res.status(401).json({ message: 'Session has ended. Please sign in again.' });
+    }
 
-    req.user = { ...user, _id: user.id };
+    const { tokenVersion, ...safeUser } = user;
+    req.user = { ...safeUser, _id: user.id };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Not authorized, token failed' });

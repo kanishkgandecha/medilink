@@ -25,7 +25,9 @@ const path = require('path');
 
 const BACKEND = path.join(__dirname, '..');
 const ENV_TEST = path.join(BACKEND, '.env.test');
-const DATA_DIR = path.resolve(process.env.MEDILINK_TEST_PGDATA || path.join(os.tmpdir(), 'medilink-test-postgres'));
+// Default lives inside backend/ (git- and docker-ignored): OS temp directories
+// are purged periodically, which silently destroys the cluster.
+const DATA_DIR = path.resolve(process.env.MEDILINK_TEST_PGDATA || path.join(BACKEND, '.test-postgres'));
 const PORT = String(process.env.MEDILINK_TEST_PGPORT || '55439');
 const DB_NAME = 'medilink_test';
 const DB_USER = 'medilink_test_owner';

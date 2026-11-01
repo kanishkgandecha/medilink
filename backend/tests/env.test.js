@@ -38,6 +38,7 @@ const prodEnv = (overrides = {}) => ({
   NODE_ENV: 'production',
   DATABASE_URL: 'postgresql://medilink_app:Xq9-synthetic-db-pass@db.invalid:5432/medilink',
   JWT_SECRET: strongSecret(),
+  FRONTEND_URL: 'https://app.example.invalid',
   ...overrides,
 });
 
@@ -86,4 +87,9 @@ test('non-production keeps the length rule but does not apply production-only ch
     JWT_SECRET: 'replace-me-with-a-long-random-value-0001',
   }));
   assert.throws(() => validateEnvironment({ NODE_ENV: 'development', DATABASE_URL: 'postgresql://x/y', JWT_SECRET: 'short' }), /at least 32/);
+});
+
+test('production refuses to start without a configured CORS origin', () => {
+  assertRejectsWithoutLeaking(prodEnv({ FRONTEND_URL: undefined }), /FRONTEND_URL \(or CORS_ORIGINS\)/);
+  assert.doesNotThrow(() => validateEnvironment(prodEnv({ FRONTEND_URL: undefined, CORS_ORIGINS: 'https://a.example.invalid, https://b.example.invalid' })));
 });

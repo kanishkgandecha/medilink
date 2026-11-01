@@ -8,6 +8,11 @@ export const register = async (userData) => {
   return await api.post('/auth/register', userData)
 }
 
+// Revokes every token issued to this account on the server.
+export const logout = async () => {
+  return await api.post('/auth/logout')
+}
+
 export const verifyToken = async () => {
   return await api.get('/auth/verify')
 }

@@ -66,6 +66,11 @@ const validateEnvironment = (env = process.env) => {
     if (dbProblems.length) {
       throw new Error(`Refusing to start in production: DATABASE_URL ${dbProblems.join('; ')}.`);
     }
+    // The CORS allow-list is configuration-only in production.
+    const { configuredOrigins } = require('./cors');
+    if (!configuredOrigins(env).length) {
+      throw new Error('Refusing to start in production: set FRONTEND_URL (or CORS_ORIGINS) to the public frontend origin.');
+    }
   }
 };
 

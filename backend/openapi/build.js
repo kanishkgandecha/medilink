@@ -10,7 +10,7 @@ const STATUS_TEXT = {
 
 const components = {
   securitySchemes: {
-    bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'JWT from /api/auth/login, sent as Authorization: Bearer <token>. Every request re-checks that the account is active.' },
+    bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'JWT from /api/auth/login (default lifetime 12h), sent as Authorization: Bearer <token>. Every request re-checks that the account is active and that the token version is current (logout, password change, and reset revoke older tokens).' },
   },
   schemas: {
     Error: s.obj({ success: { const: false }, message: s.str(), requestId: s.str({ description: 'Present on 5xx responses for log correlation' }), code: s.str() }, ['message']),

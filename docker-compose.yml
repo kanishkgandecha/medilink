@@ -34,7 +34,7 @@ services:
       # JWT_SECRET is intentionally not set here: it comes from ./backend/.env
       # (env_file above). There is no committed fallback; the backend refuses to
       # start without a secret of at least 32 characters.
-      JWT_EXPIRE: 30d
+      JWT_EXPIRE: ${JWT_EXPIRE:-12h}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openai/gpt-4o-mini}
       OPENROUTER_URL: ${OPENROUTER_URL:-https://openrouter.ai/api/v1/chat/completions}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-10000}

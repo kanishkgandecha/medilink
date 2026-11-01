@@ -17,6 +17,9 @@ process.env.NODE_ENV = 'test';
 process.env.OPENROUTER_API_KEY = ''; // blank, not deleted: server.js re-runs dotenv, which would restore a deleted key
 process.env.EMAIL_USER = '';
 process.env.EMAIL_PASS = '';
+// A host makes email "configured"; nodemailer.createTransport is replaced below,
+// so no connection is ever opened and messages are captured in memory.
+process.env.EMAIL_HOST = 'smtp.capture.invalid';
 process.env.API_RATE_LIMIT_MAX = process.env.API_RATE_LIMIT_MAX || '100000';
 
 const { useSafeTestDatabase } = require('./databaseGuard');

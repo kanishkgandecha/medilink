@@ -204,6 +204,12 @@ model User {
   isActive            Boolean   @default(true)
   resetPasswordToken  String?
   resetPasswordExpire DateTime?
+  // Incremented on logout, password change, and password reset; JWTs carry the
+  // version they were issued with and are rejected once it changes.
+  tokenVersion        Int       @default(0)
+  // Per-account brute-force protection (see authController.login).
+  failedLoginCount    Int       @default(0)
+  lockedUntil         DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @default(now()) @updatedAt
 

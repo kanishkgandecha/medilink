@@ -91,6 +91,13 @@ const register = async (req, res, next) => {
   }
 };
 
+// Per-account brute-force protection. After LOGIN_MAX_FAILED_ATTEMPTS wrong
+// passwords the account is locked for LOGIN_LOCK_MINUTES (even for a correct
+// password); a successful login resets the counter.
+const maxFailedAttempts = () => Math.max(3, Number(process.env.LOGIN_MAX_FAILED_ATTEMPTS) || 5);
+const lockMinutes = () => Math.max(1, Number(process.env.LOGIN_LOCK_MINUTES) || 15);
+const LOCKED_MESSAGE = 'Too many failed sign-in attempts. This account is temporarily locked; try again later or reset your password.';
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -106,8 +113,30 @@ const login = async (req, res) => {
       where: { email: email.toLowerCase() },
     });
 
+    if (user && user.lockedUntil && user.lockedUntil > new Date()) {
+      return res.status(429).json({ success: false, code: 'ACCOUNT_LOCKED', message: LOCKED_MESSAGE });
+    }
+
     if (!user || !(await matchPassword(password, user.password))) {
+      if (user) {
+        const failures = (user.failedLoginCount || 0) + 1;
+        const locked = failures >= maxFailedAttempts();
+        await prisma.user.update({
+          where: { id: user.id },
+          data: locked
+            ? { failedLoginCount: 0, lockedUntil: new Date(Date.now() + lockMinutes() * 60 * 1000) }
+            : { failedLoginCount: failures },
+        });
+        if (locked) {
+          logger.warn('account_locked', { userId: user.id, requestId: req.id });
+          return res.status(429).json({ success: false, code: 'ACCOUNT_LOCKED', message: LOCKED_MESSAGE });
+        }
+      }
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    if (user.failedLoginCount || user.lockedUntil) {
+      await prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null } });
     }
 
     if (!user.isActive) {
@@ -173,7 +202,7 @@ const forgotPassword = async (req, res) => {
     try {
       await sendEmail({
         email: user.email,
-        subject: 'Password Reset Request - MediCare HMS',
+        subject: `Password reset — ${process.env.HOSPITAL_NAME || 'MediLink'}`,
         message,
       });
 
@@ -228,6 +257,10 @@ const resetPassword = async (req, res) => {
         password: hashedPassword,
         resetPasswordToken: null,
         resetPasswordExpire: null,
+        // Revoke every existing session and lift any lockout.
+        tokenVersion: { increment: 1 },
+        failedLoginCount: 0,
+        lockedUntil: null,
       },
     });
 
@@ -348,9 +381,10 @@ const updatePassword = async (req, res) => {
     }
 
     const hashedPassword = await hashPassword(req.body.newPassword);
+    // Revokes every other session; the caller receives a fresh token.
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword },
+      data: { password: hashedPassword, tokenVersion: { increment: 1 } },
     });
 
     const token = generateToken(updatedUser);
@@ -366,6 +400,18 @@ const updatePassword = async (req, res) => {
       success: false,
       message: 'Internal server error',
     });
+  }
+};
+
+// Server-side sign-out: increments tokenVersion, which revokes every token
+// issued to this account (all devices).
+const logout = async (req, res) => {
+  try {
+    await prisma.user.update({ where: { id: req.user.id }, data: { tokenVersion: { increment: 1 } } });
+    return res.status(200).json({ success: true, message: 'Signed out' });
+  } catch (err) {
+    logSafeError(logger, 'logout_failed', err, { requestId: req.id });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -520,6 +566,7 @@ module.exports = {
   verifyToken,
   getMe,
   updatePassword,
+  logout,
   updateProfile,
   getMyProfile,
   uploadAvatarImage,

@@ -91,7 +91,9 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Best effort: revoke the session server-side, then always clear locally.
+    try { await authService.logout() } catch { /* offline or already expired */ }
     localStorage.removeItem('token')
     setUser(null)
     toast.info('Logged out successfully')

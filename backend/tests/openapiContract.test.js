@@ -15,12 +15,12 @@ const { endpoints } = require('../openapi/catalog');
 
 const BACKEND = path.join(__dirname, '..');
 
-test('the generated OpenAPI 3.1 document is valid and documents 120 operations', () => {
+test('the generated OpenAPI 3.1 document is valid and documents 121 operations', () => {
   const spec = buildSpec();
   assert.deepEqual(validateOpenApi(spec), []);
   const operations = Object.values(spec.paths).reduce((sum, item) => sum + Object.keys(item).length, 0);
-  assert.equal(operations, 120);
-  assert.equal(endpoints.length, 120);
+  assert.equal(operations, 121);
+  assert.equal(endpoints.length, 121);
 });
 
 test('the committed openapi/openapi.json matches the catalog (no silent drift)', () => {
@@ -59,7 +59,7 @@ test('every live Express route has exactly one spec entry and vice versa', () =>
   const phantom = [...documented].filter((route) => !live.has(route));
   assert.deepEqual(undocumented, [], 'routes missing from openapi/catalog.js');
   assert.deepEqual(phantom, [], 'catalog entries with no backing route');
-  assert.equal(live.size, 120);
+  assert.equal(live.size, 121);
 });
 
 test('state-changing flags match HTTP semantics except documented read-only POSTs', () => {

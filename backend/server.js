@@ -30,32 +30,17 @@ const aiRoutes = require('./routes/aiRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ── CORS ────────────────────────────────────────────────────
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:5173',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'http://127.0.0.1:5173',
-  process.env.FRONTEND_URL,
-  'https://medilinkfinal-git-main-kanishks-projects-810056d9.vercel.app',
-  'https://medilink-oajt.onrender.com',
-].filter(Boolean);
+// ── CORS (configuration-driven; see config/cors.js) ─────────
+const { buildCorsOptions, allowedOrigins: resolveAllowedOrigins } = require('./config/cors');
+const allowedOrigins = resolveAllowedOrigins();
+const corsOptions = buildCorsOptions();
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (process.env.NODE_ENV !== 'production') return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('CORS blocked by server'), false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-};
+// Behind a reverse proxy set TRUST_PROXY (e.g. "1" for one hop) so rate limits
+// and logs use the client address instead of the proxy's.
+if (process.env.TRUST_PROXY) {
+  const hops = Number(process.env.TRUST_PROXY);
+  app.set('trust proxy', Number.isInteger(hops) ? hops : process.env.TRUST_PROXY);
+}
 
 // ── Request ID, safe request logging, response sanitization ─
 // Logs method, route pattern, status, and duration only — never raw URLs,
@@ -68,8 +53,11 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 // ── Body parsers ─────────────────────────────────────────────
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// The largest JSON payload (clinical note / report text) is ~12k characters;
+// files use multipart uploads with their own limits.
+const BODY_LIMIT = process.env.API_BODY_LIMIT || '1mb';
+app.use(express.json({ limit: BODY_LIMIT }));
+app.use(express.urlencoded({ extended: true, limit: BODY_LIMIT }));
 
 // ── Security ─────────────────────────────────────────────────
 app.use(helmet({

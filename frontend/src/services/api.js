@@ -2,11 +2,12 @@ import axios from 'axios'
 
 const isDevelopment = import.meta.env.MODE === 'development'
 
-// Dev  → use Vite proxy (/api → localhost:5001), no CORS issues
-// Prod → full deployed backend URL
+// Dev  → Vite proxy (/api → backend), no CORS issues.
+// Prod → VITE_BACKEND_URL when the API is on another origin; otherwise the
+//        same origin (reverse proxy). No hard-coded third-party host.
 const BASE_URL = isDevelopment
   ? '/api'
-  : `${import.meta.env.VITE_BACKEND_URL || 'https://medilink-g1wy.onrender.com'}/api`
+  : `${(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/api`
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -45,7 +46,9 @@ api.interceptors.response.use(
     if (status === 429) {
       const retryAfter = error.response.headers?.['retry-after']
       const code = error.response.data?.code
-      error.message = code === 'AI_CONCURRENCY_LIMITED'
+      error.message = code === 'ACCOUNT_LOCKED'
+        ? error.response.data.message
+        : code === 'AI_CONCURRENCY_LIMITED'
         ? 'Two AI requests are already running. Wait for one to finish, then retry.'
         : `Request limit reached. ${retryAfter ? `Retry after about ${retryAfter} seconds.` : 'Please wait briefly and retry.'}`
     }

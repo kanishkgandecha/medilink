@@ -22,11 +22,16 @@ const hashPassword = async (password) => {
 /**
  * Generate JWT token for user
  */
+// Default lifetime is deliberately short; override with JWT_EXPIRE.
+const DEFAULT_TOKEN_LIFETIME = '12h';
+
 const generateToken = (user) => {
-  const payload = { id: user.id, role: user.role };
+  // `tv` binds the token to the user's current tokenVersion so logout and
+  // password changes/resets revoke every previously issued token.
+  const payload = { id: user.id, role: user.role, tv: user.tokenVersion || 0 };
   if (user.subRole) payload.subRole = user.subRole;
   return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
+    expiresIn: process.env.JWT_EXPIRE || DEFAULT_TOKEN_LIFETIME,
   });
 };
 
@@ -44,5 +49,6 @@ module.exports = {
   matchPassword,
   hashPassword,
   generateToken,
+  DEFAULT_TOKEN_LIFETIME,
   getResetPasswordToken,
 };

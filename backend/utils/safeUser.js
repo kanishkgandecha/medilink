@@ -12,6 +12,8 @@ const SENSITIVE_FIELD_NAMES = Object.freeze([
   'emailVerificationToken',
   'refreshToken',
   'tokenVersion',
+  'failedLoginCount',
+  'lockedUntil',
 ]);
 
 const SENSITIVE_FIELDS = new Set(SENSITIVE_FIELD_NAMES);

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Activity, Eye, EyeOff, ArrowLeft, Lock, Shield, Zap, CheckCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 import * as authService from '../../services/authService'
+import { passwordPolicyError, PASSWORD_POLICY_HINT } from '../../utils/passwordPolicy'
 
 const LeftPanel = () => (
   <div className="hidden lg:flex flex-col justify-between h-full bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-600 p-10 relative overflow-hidden">
@@ -34,7 +35,7 @@ const LeftPanel = () => (
 
       <div className="space-y-3.5">
         {[
-          { icon: Lock,   text: 'Minimum 6 characters recommended' },
+          { icon: Lock,   text: PASSWORD_POLICY_HINT },
           { icon: Shield, text: 'Secure token-based verification'   },
           { icon: Zap,    text: 'Instant access after reset'        },
         ].map(({ icon: Icon, text }) => (
@@ -104,7 +105,8 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!password) return toast.error('Enter a new password')
-    if (password.length < 6) return toast.error('Password must be at least 6 characters')
+    const policyError = passwordPolicyError(password)
+    if (policyError) return toast.error(policyError)
     if (password !== confirm) return toast.error('Passwords do not match')
     setLoading(true)
     try {
