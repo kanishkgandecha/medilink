@@ -53,6 +53,10 @@
     { "id": "lo-10", "group": "routine", "symptoms": "toothache on the left side", "age": 30, "urgency": "Low", "departments": ["Dental", "General Medicine"] },
     { "id": "lo-11", "group": "routine", "symptoms": "ear pain and feeling of blocked ear", "age": 12, "urgency": "Low", "departments": ["ENT", "General Medicine", "Paediatrics"] },
     { "id": "lo-12", "group": "routine", "symptoms": "feeling tired all the time", "age": 44, "urgency": "Low", "departments": ["General Medicine"] },
+    { "id": "lo-13", "group": "routine", "symptoms": "twisted my ankle, can walk", "age": 26, "urgency": "Low", "departments": ["Orthopaedics"] },
+    { "id": "lo-14", "group": "routine", "symptoms": "wrist pain after a fall on my hand, can move it", "age": 33, "urgency": "Low", "departments": ["Orthopaedics"] },
+    { "id": "lo-15", "group": "routine", "symptoms": "shoulder pain when lifting my arm", "age": 48, "urgency": "Low", "departments": ["Orthopaedics"] },
+    { "id": "lo-16", "group": "routine", "symptoms": "worried about working on a ship next month, feeling a bit tired", "age": 29, "urgency": "Low", "departments": ["General Medicine"] },
 
     { "id": "nf-01", "group": "non-emergency-lookalike", "symptoms": "I had chest pain last year, now fine, want a routine heart checkup", "age": 50, "notEmergency": true },
     { "id": "nf-02", "group": "non-emergency-lookalike", "symptoms": "my friend fainted at a movie last week, I am fine but anxious", "age": 26, "notEmergency": true },

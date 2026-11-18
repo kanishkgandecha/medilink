@@ -1,0 +1,339 @@
+{
+  "code": "te",
+  "name": "Telugu",
+  "scripts": [
+    "Telu",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing; a trailing * marks a word stem (MediLink, 2026-11-18); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "ఎండలో",
+        "ఎండలో పని",
+        "endalo",
+        "enda lo"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "ఛాతీ నొప్పి",
+        "ఛాతి నొప్పి",
+        "గుండె నొప్పి",
+        "chaati noppi",
+        "chathi noppi",
+        "gunde noppi",
+        "ఛాతీ* నొప్పి*",
+        "ఛాతి* నొప్పి*",
+        "గుండె* నొప్పి*"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "చెమటలు",
+        "చెమట పడుతోంది",
+        "chematalu",
+        "chemata padutondi",
+        "చెమట*"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "ఊపిరి ఆడటం లేదు",
+        "ఊపిరి ఆడట్లేదు",
+        "శ్వాస తీసుకోవడం కష్టం",
+        "oopiri aadatam ledu",
+        "upiri adatledu",
+        "swasa kastam"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "ఆయాసం",
+        "aayasam",
+        "ayasam"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "స్పృహ లేదు",
+        "స్పృహ తప్పింది",
+        "స్పృహ కోల్పోయారు",
+        "spruha ledu",
+        "spruha tappindi",
+        "స్పృహ తప్ప*",
+        "స్పృహ కోల్పో*"
+      ]
+    },
+    {
+      "en": "fainting",
+      "phrases": [
+        "సొమ్మసిల్లి పడిపోయారు",
+        "కళ్ళు తిరిగి పడిపోయారు",
+        "sommasilli padipoyaru"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "ఫిట్స్",
+        "మూర్ఛ",
+        "moorcha",
+        "fits vachayi"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "పక్షవాతం",
+        "pakshavatam",
+        "pakshavaatham"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "రక్తం వాంతి",
+        "రక్తపు వాంతి",
+        "రక్త వాంతులు",
+        "raktham vanthi",
+        "rakthapu vanthi"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "రక్తం ఆగడం లేదు",
+        "రక్తం ఆగట్లేదు",
+        "raktham aagadam ledu",
+        "raktham agatledu"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "ఆత్మహత్య",
+        "aatmahatya",
+        "atmahatya"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "చనిపోవాలని ఉంది",
+        "చచ్చిపోవాలని ఉంది",
+        "బతకాలని లేదు",
+        "బ్రతకాలని లేదు",
+        "chanipovalani undi",
+        "bathakalani ledu",
+        "bratakalani ledu"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "విషం తాగాడు",
+        "విషం తాగింది",
+        "విషం తాగారు",
+        "విషం తాగాను",
+        "పురుగుల మందు తాగాడు",
+        "visham tagadu",
+        "visham tagindi",
+        "visham tagaru",
+        "visham tagan",
+        "విషం తాగ*",
+        "పురుగుల మందు తాగ*"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "పాము కాటు",
+        "పాము కరిచింది",
+        "paamu katu",
+        "pamu katu",
+        "pamu karichindi",
+        "పాము కర*",
+        "పాము కాటు*"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "ఎక్కువ జ్వరం",
+        "తీవ్ర జ్వరం",
+        "బాగా జ్వరం",
+        "ekkuva jvaram",
+        "ekkuva jwaram",
+        "baaga jwaram"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "జ్వరం",
+        "jvaram",
+        "jwaram",
+        "జ్వర*"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "తలనొప్పి",
+        "తల నొప్పి",
+        "talanoppi",
+        "thala noppi",
+        "తలనొప్పి*"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "కడుపు నొప్పి",
+        "కడుపునొప్పి",
+        "kadupu noppi",
+        "కడుపు* నొప్పి*"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "వాంతులు",
+        "వాంతి",
+        "vanthulu",
+        "vaantulu",
+        "వాంతు*"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "విరేచనాలు",
+        "virechanalu"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "దగ్గు",
+        "daggu"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "జలుబు",
+        "jalubu"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "కళ్ళు తిరుగుతున్నాయి",
+        "తల తిరుగుతోంది",
+        "kallu thirugutunnayi",
+        "tala tirugutondi"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "నీరసం",
+        "బలహీనత",
+        "neerasam",
+        "neerasanga"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "దురద",
+        "durada"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "నడుము నొప్పి",
+        "వెన్ను నొప్పి",
+        "nadumu noppi",
+        "vennu noppi"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "కీళ్ల నొప్పులు",
+        "కీళ్ళ నొప్పులు",
+        "keella noppulu",
+        "keellu noppulu"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "మూత్రంలో మంట",
+        "మూత్రం పోసేటప్పుడు మంట",
+        "mutram lo manta",
+        "mootramlo manta"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "డాక్టర్ ని కలవాలి",
+        "డాక్టర్ ను కలవాలి",
+        "డాక్టర్ దగ్గరికి వెళ్ళాలి",
+        "doctor ni kalavali"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "బిల్లు ఎంత",
+        "బిల్ ఎంత",
+        "billu entha",
+        "bill entha"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "మందులు",
+        "మందు",
+        "mandulu"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "రిపోర్ట్",
+        "రిపోర్టు"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "నమస్కారం",
+        "namaskaram"
+      ]
+    }
+  ]
+}

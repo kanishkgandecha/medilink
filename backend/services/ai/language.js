@@ -40,9 +40,21 @@ const tokenize = (text) => foldScript(String(text || '').toLowerCase())
 
 const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// A word ending in "*" is a stem: Tamil, Telugu, and Bengali attach case and
+// verb endings to words ("நெஞ்சில்", "குடித்துவிட்டான்"), so "நெஞ்ச*" matches
+// every ending of the word instead of listing each form. A stem's final
+// virama (், ్, ্) is dropped because endings replace it with a vowel sign
+// ("பாரம்" → "பாரமாக").
+const FINAL_VIRAMA = /[்్্]$/u;
+
 function compilePhrase(phrase) {
-  const tokens = tokenize(phrase);
-  const body = tokens.map(escape).join('(?:\\s+\\S+){0,2}?\\s+');
+  const parts = String(phrase).trim().split(/\s+/).flatMap((word) => {
+    const stem = word.endsWith('*');
+    return tokenize(stem ? word.slice(0, -1) : word).map((token, i, all) => (
+      stem && i === all.length - 1 ? `${escape(token.replace(FINAL_VIRAMA, ''))}[\\p{L}\\p{M}]*` : escape(token)
+    ));
+  });
+  const body = parts.join('(?:\\s+\\S+){0,2}?\\s+');
   return new RegExp(`(?<![\\p{L}\\p{M}])${body}(?![\\p{L}\\p{M}])`, 'u');
 }
 

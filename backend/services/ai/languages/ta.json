@@ -1,0 +1,342 @@
+{
+  "code": "ta",
+  "name": "Tamil",
+  "scripts": [
+    "Taml",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing; a trailing * marks a word stem (MediLink, 2026-11-18); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "வெயிலில்",
+        "வெயிலில் வேலை",
+        "veyilil",
+        "veyil la"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "நெஞ்சு வலி",
+        "நெஞ்சுவலி",
+        "நெஞ்சில் வலி",
+        "நெஞ்சு வலிக்கிறது",
+        "nenju vali",
+        "nenjuvali",
+        "nenjil vali",
+        "நெஞ்ச* வலி*",
+        "நெஞ்ச* பாரம்*"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "வியர்வை",
+        "வியர்க்கிறது",
+        "viyarvai",
+        "viyarkuthu",
+        "viyarkudhu",
+        "வியர்*"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "மூச்சு விட முடியவில்லை",
+        "மூச்சு விட முடியல",
+        "மூச்சுத் திணறல்",
+        "மூச்சு திணறல்",
+        "moochu vida mudiyala",
+        "moochu vida mudiyavillai",
+        "moochu thinaral",
+        "மூச்சு* திணற*"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "மூச்சு வாங்குது",
+        "மூச்சு இரைக்கிறது",
+        "moochu vanguthu"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "சுயநினைவு இல்லை",
+        "நினைவு இல்லை",
+        "நினைவு இழந்தார்",
+        "suyaninaivu illai",
+        "ninaivu illai"
+      ]
+    },
+    {
+      "en": "fainting",
+      "phrases": [
+        "மயங்கி விழுந்தார்",
+        "மயங்கி விழுந்தாள்",
+        "மயங்கி விழுந்தான்",
+        "மயக்கம் போட்டு விழுந்தார்",
+        "mayangi vizhunthar",
+        "mayangi vizhundhar"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "வலிப்பு",
+        "valippu"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "பக்கவாதம்",
+        "pakkavatham",
+        "pakkavaatham"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "ரத்த வாந்தி",
+        "இரத்த வாந்தி",
+        "ratha vanthi",
+        "ratha vaanthi",
+        "ரத்த* வாந்தி*"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "ரத்தம் நிற்கவில்லை",
+        "ரத்தம் நிக்கல",
+        "அதிக ரத்தப்போக்கு",
+        "ratham nikkala",
+        "ratham nirkavillai"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "தற்கொலை",
+        "tharkolai",
+        "thatkolai"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "சாக வேண்டும்",
+        "சாகணும்",
+        "சாக போகிறேன்",
+        "வாழ விருப்பம் இல்லை",
+        "வாழ பிடிக்கவில்லை",
+        "saaganum",
+        "saaga venum",
+        "vaazha pidikkala"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "விஷம் குடித்தார்",
+        "விஷம் குடித்தான்",
+        "விஷம் குடித்தாள்",
+        "விஷம் குடிச்சேன்",
+        "விஷம் குடித்தேன்",
+        "visham kudichen",
+        "visham kudichitan",
+        "visham kudithar",
+        "விஷம் குடி*"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "பாம்பு கடித்தது",
+        "பாம்பு கடிச்சுது",
+        "பாம்பு கடி",
+        "paambu kadichiduchu",
+        "pambu kadi",
+        "paambu kadi",
+        "பாம்பு கடி*"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "அதிக காய்ச்சல்",
+        "கடும் காய்ச்சல்",
+        "ரொம்ப காய்ச்சல்",
+        "romba kaichal",
+        "kadum kaichal"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "காய்ச்சல்",
+        "kaichal",
+        "kaaichal",
+        "kaichel",
+        "காய்ச்சல்*"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "தலைவலி",
+        "தலை வலி",
+        "thalaivali",
+        "thalai vali",
+        "தலைவலி*"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "வயிற்று வலி",
+        "வயிறு வலி",
+        "vayiru vali",
+        "vayitru vali",
+        "வயிற்* வலி*"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "வாந்தி",
+        "vaanthi",
+        "vanthi",
+        "வாந்தி*"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "வயிற்றுப்போக்கு",
+        "பேதி",
+        "vayitrupokku",
+        "bedhi"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "இருமல்",
+        "irumal"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "சளி",
+        "ஜலதோஷம்",
+        "jaladosham"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "தலைசுற்றல்",
+        "தலை சுற்றுது",
+        "thalai sutruthu",
+        "thalai suthuthu"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "சோர்வு",
+        "பலவீனம்",
+        "sorvu",
+        "balaveenam"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "அரிப்பு",
+        "arippu"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "முதுகு வலி",
+        "முதுகுவலி",
+        "muthugu vali",
+        "mudhugu vali"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "மூட்டு வலி",
+        "moottu vali",
+        "mootu vali"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "சிறுநீர் எரிச்சல்",
+        "சிறுநீர் கழிக்கும் போது எரிச்சல்",
+        "siruneer erichal"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "டாக்டரை பார்க்க",
+        "மருத்துவரை பார்க்க",
+        "doctor ah paakanum",
+        "doctor paakanum"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "பில் எவ்வளவு",
+        "bill evvalavu",
+        "bill evlo"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "மருந்து",
+        "மாத்திரை",
+        "marunthu",
+        "mathirai"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "ரிப்போர்ட்",
+        "அறிக்கை"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "வணக்கம்",
+        "vanakkam"
+      ]
+    }
+  ]
+}

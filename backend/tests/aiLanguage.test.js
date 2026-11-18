@@ -27,6 +27,15 @@ test('spelling variants in romanised text and Indic scripts are recognised', () 
   assert.deepEqual(recognise('ज़हर खा लिया').terms, ['poisoning']);
 });
 
+test('stems match Tamil, Telugu, and Bengali word endings, including a dropped virama', () => {
+  assert.ok(recognise('தம்பி விஷம் குடித்துவிட்டான்').terms.includes('poisoning'));
+  assert.ok(recognise('நெஞ்சில் பாரமாக இருக்கிறது').terms.includes('chest pain'));
+  assert.ok(recognise('గుండెలో నొప్పి గా ఉంది').terms.includes('chest pain'));
+  assert.ok(recognise('বুকটা খুব ব্যথা করছে').terms.includes('chest pain'));
+  // A stem only extends the end of its own word.
+  assert.deepEqual(recognise('நெஞ்சுக்கு அருகில்').terms, []);
+});
+
 test('the original text is kept and ordinary English matches nothing', () => {
   assert.match(withEnglish('pet dard'), /^pet dard \. stomach pain$/);
   for (const text of ['I tapped my knee, sir', 'call me tomorrow', 'dust allergy', 'the fit is fine']) {

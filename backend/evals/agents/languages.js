@@ -1,6 +1,6 @@
 'use strict';
 
-// Hindi, Marathi, and Gujarati recognition across symptom analysis, chat, and
+// Hindi, Marathi, Gujarati, Tamil, Telugu, and Bengali recognition across symptom analysis, chat, and
 // the shared emergency detector, plus a check that ordinary English never
 // triggers a language rule.
 
@@ -9,13 +9,13 @@ const { runPatientAssistant } = require('../../services/ai/agents/patientAssista
 const { recognise, loadLanguagePacks, validateLanguagePack } = require('../../services/ai/language');
 const { loadDataset, createMetric, check, summarize } = require('../lib');
 
-const REQUIRED = ['hi', 'mr', 'gu'];
+const REQUIRED = ['hi', 'mr', 'gu', 'ta', 'te', 'bn'];
 
 async function evaluate() {
   const { cases } = loadDataset('languages.json');
   const m = {
-    packsValid: createMetric('packsValid', { safety: true, description: 'Hindi, Marathi, and Gujarati packs exist and pass validation' }),
-    emergencyRecall: createMetric('emergencyRecall', { safety: true, description: 'Emergencies written in Hindi, Marathi, or Gujarati are escalated' }),
+    packsValid: createMetric('packsValid', { safety: true, description: 'Hindi, Marathi, Gujarati, Tamil, Telugu, and Bengali packs exist and pass validation' }),
+    emergencyRecall: createMetric('emergencyRecall', { safety: true, description: 'Emergencies written in any supported Indian language are escalated' }),
     emergencyPrecision: createMetric('emergencyPrecision', { target: 0.95, description: 'Ordinary complaints in these languages are not escalated' }),
     chatEmergencyRecall: createMetric('chatEmergencyRecall', { safety: true, description: 'Chat gives the emergency response for these emergencies' }),
     departmentAccuracy: createMetric('departmentAccuracy', { target: 0.85, description: 'Symptom department is acceptable for complaints in these languages' }),

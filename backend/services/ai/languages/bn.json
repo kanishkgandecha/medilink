@@ -1,0 +1,334 @@
+{
+  "code": "bn",
+  "name": "Bengali",
+  "scripts": [
+    "Beng",
+    "Latn"
+  ],
+  "source": "Self-authored common patient phrasing; a trailing * marks a word stem (MediLink, 2026-11-18); requires native-speaker and clinician review before real use",
+  "review": {
+    "clinician": {
+      "status": "pending",
+      "reviewedBy": null
+    },
+    "nativeSpeaker": {
+      "status": "pending",
+      "reviewedBy": null
+    }
+  },
+  "entries": [
+    {
+      "en": "heat exposure",
+      "phrases": [
+        "রোদে",
+        "রোদের মধ্যে",
+        "rode kaj",
+        "roder modhye"
+      ]
+    },
+    {
+      "en": "chest pain",
+      "phrases": [
+        "বুকে ব্যথা",
+        "বুক ব্যথা",
+        "বুকে যন্ত্রণা",
+        "buke betha",
+        "buke batha",
+        "buk betha",
+        "বুক* ব্যথা*",
+        "বুক* যন্ত্রণা*"
+      ]
+    },
+    {
+      "en": "sweating",
+      "phrases": [
+        "ঘাম হচ্ছে",
+        "ঘামছি",
+        "ঘাম",
+        "gham hocche",
+        "ghamchi",
+        "ঘাম*"
+      ]
+    },
+    {
+      "en": "difficulty breathing",
+      "phrases": [
+        "শ্বাস নিতে কষ্ট",
+        "নিঃশ্বাস নিতে পারছি না",
+        "শ্বাস নিতে পারছে না",
+        "shwas nite koshto",
+        "shas nite kosto",
+        "nishwas nite parchi na"
+      ]
+    },
+    {
+      "en": "breathlessness",
+      "phrases": [
+        "শ্বাসকষ্ট",
+        "হাঁপ ধরছে",
+        "shaskosto",
+        "shwaskoshto",
+        "haap dhorche"
+      ]
+    },
+    {
+      "en": "unconscious",
+      "phrases": [
+        "অজ্ঞান",
+        "জ্ঞান নেই",
+        "জ্ঞান হারিয়েছে",
+        "ojnan",
+        "ogyan",
+        "gyan nei",
+        "অজ্ঞান*"
+      ]
+    },
+    {
+      "en": "fainting",
+      "phrases": [
+        "মাথা ঘুরে পড়ে গেছে",
+        "মাথা ঘুরে পড়ে গেল",
+        "matha ghure pore geche"
+      ]
+    },
+    {
+      "en": "seizure",
+      "phrases": [
+        "খিঁচুনি",
+        "khichuni",
+        "khichuni hocche"
+      ]
+    },
+    {
+      "en": "stroke",
+      "phrases": [
+        "পক্ষাঘাত",
+        "স্ট্রোক",
+        "pokkhaghat"
+      ]
+    },
+    {
+      "en": "vomiting blood",
+      "phrases": [
+        "রক্ত বমি",
+        "বমিতে রক্ত",
+        "rokto bomi",
+        "rakta bami"
+      ]
+    },
+    {
+      "en": "heavy bleeding",
+      "phrases": [
+        "রক্ত থামছে না",
+        "খুব রক্তপাত",
+        "rokto thamche na",
+        "khub roktopat"
+      ]
+    },
+    {
+      "en": "suicidal",
+      "phrases": [
+        "আত্মহত্যা",
+        "attohotta",
+        "atmahatya"
+      ]
+    },
+    {
+      "en": "want to die",
+      "phrases": [
+        "মরে যেতে চাই",
+        "মরতে চাই",
+        "বাঁচতে চাই না",
+        "বাঁচার ইচ্ছে নেই",
+        "more jete chai",
+        "morte chai",
+        "bachte chai na"
+      ]
+    },
+    {
+      "en": "poisoning",
+      "phrases": [
+        "বিষ খেয়েছে",
+        "বিষ খেয়েছি",
+        "বিষ খেয়ে ফেলেছে",
+        "bish kheyeche",
+        "bish kheyechi",
+        "bish kheye feleche",
+        "বিষ খে*"
+      ]
+    },
+    {
+      "en": "snake bite",
+      "phrases": [
+        "সাপে কেটেছে",
+        "সাপে কামড়েছে",
+        "সাপের কামড়",
+        "shape keteche",
+        "sape keteche",
+        "saper kamor",
+        "সাপে কাম*",
+        "সাপে কে*"
+      ]
+    },
+    {
+      "en": "high fever",
+      "phrases": [
+        "খুব জ্বর",
+        "প্রচণ্ড জ্বর",
+        "khub jwor",
+        "khub jor",
+        "prochondo jwor"
+      ]
+    },
+    {
+      "en": "fever",
+      "phrases": [
+        "জ্বর",
+        "jwor",
+        "jor hoyeche",
+        "jor esheche",
+        "জ্বর*"
+      ]
+    },
+    {
+      "en": "headache",
+      "phrases": [
+        "মাথা ব্যথা",
+        "মাথাব্যথা",
+        "matha betha",
+        "matha batha",
+        "মাথা* ব্যথা*"
+      ]
+    },
+    {
+      "en": "stomach pain",
+      "phrases": [
+        "পেটে ব্যথা",
+        "পেট ব্যথা",
+        "pete betha",
+        "pet betha",
+        "পেট* ব্যথা*"
+      ]
+    },
+    {
+      "en": "vomiting",
+      "phrases": [
+        "বমি",
+        "bomi",
+        "bomi hocche",
+        "বমি*"
+      ]
+    },
+    {
+      "en": "diarrhoea",
+      "phrases": [
+        "পাতলা পায়খানা",
+        "ডায়রিয়া",
+        "patla paykhana",
+        "patla paikhana"
+      ]
+    },
+    {
+      "en": "cough",
+      "phrases": [
+        "কাশি",
+        "kashi hocche",
+        "kashi hoyeche"
+      ]
+    },
+    {
+      "en": "cold",
+      "phrases": [
+        "সর্দি",
+        "sordi"
+      ]
+    },
+    {
+      "en": "dizziness",
+      "phrases": [
+        "মাথা ঘুরছে",
+        "matha ghurche"
+      ]
+    },
+    {
+      "en": "weakness",
+      "phrases": [
+        "দুর্বল",
+        "দুর্বলতা",
+        "durbol",
+        "durbolota"
+      ]
+    },
+    {
+      "en": "itching",
+      "phrases": [
+        "চুলকানি",
+        "chulkani"
+      ]
+    },
+    {
+      "en": "back pain",
+      "phrases": [
+        "কোমরে ব্যথা",
+        "পিঠে ব্যথা",
+        "komore betha",
+        "pithe betha"
+      ]
+    },
+    {
+      "en": "joint pain",
+      "phrases": [
+        "গাঁটে ব্যথা",
+        "জয়েন্টে ব্যথা",
+        "gaate betha",
+        "joint e betha"
+      ]
+    },
+    {
+      "en": "burning urination",
+      "phrases": [
+        "প্রস্রাবে জ্বালা",
+        "প্রস্রাবে জ্বালাপোড়া",
+        "proshrabe jala",
+        "prosrabe jala"
+      ]
+    },
+    {
+      "en": "appointment",
+      "phrases": [
+        "ডাক্তার দেখাতে চাই",
+        "ডাক্তারের সাথে দেখা করতে চাই",
+        "daktar dekhate chai",
+        "doctor dekhate chai"
+      ]
+    },
+    {
+      "en": "bill",
+      "phrases": [
+        "বিল কত",
+        "bill koto"
+      ]
+    },
+    {
+      "en": "medicine",
+      "phrases": [
+        "ওষুধ",
+        "oshudh",
+        "osudh"
+      ]
+    },
+    {
+      "en": "report",
+      "phrases": [
+        "রিপোর্ট"
+      ]
+    },
+    {
+      "en": "hello",
+      "phrases": [
+        "নমস্কার",
+        "nomoskar"
+      ]
+    }
+  ]
+}

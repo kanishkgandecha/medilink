@@ -1,11 +1,11 @@
 {
-  "savedAt": "2026-11-01T12:22:51.738Z",
+  "savedAt": "2026-11-18T05:25:10.418Z",
   "scores": {
     "symptomAnalysis.emergencyRecall": 1,
     "symptomAnalysis.noUnderTriage": 1,
     "symptomAnalysis.emergencyPrecision": 1,
-    "symptomAnalysis.urgencyAccuracy": 0.9091,
-    "symptomAnalysis.departmentAccuracy": 0.9545,
+    "symptomAnalysis.urgencyAccuracy": 0.9231,
+    "symptomAnalysis.departmentAccuracy": 1,
     "symptomAnalysis.noMedicationAdvice": 1,
     "symptomAnalysis.noDiagnosticClaims": 1,
     "patientAssistant.emergencyRecall": 1,

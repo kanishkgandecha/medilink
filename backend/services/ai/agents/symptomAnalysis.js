@@ -14,15 +14,17 @@ const CONDITIONS = [
   { name: 'Migraine / Headache', keywords: ['headache', 'migraine', 'head pain', 'throbbing', 'light sensitivity', 'noise sensitivity', 'nausea with headache'], urgency: 'Low', speciality: 'Neurologist', department: 'Neurology', advice: ['Rest in dark, quiet room', 'Cold compress on forehead', 'Ibuprofen or paracetamol', 'Track triggers (food, stress, sleep)'], redFlags: ['Sudden thunderclap headache', 'Headache with stiff neck and fever', 'Headache after head injury'] },
   { name: 'Urinary Tract Infection', keywords: ['burning urination', 'frequent urination', 'pelvic pain', 'cloudy urine', 'blood in urine', 'lower back pain', 'urgency urination'], urgency: 'Moderate', speciality: 'General Physician', department: 'General Medicine', advice: ['Drink 2-3 litres of water daily', 'Avoid holding urine', 'Cranberry juice may help mild cases', 'Antibiotics typically needed'], redFlags: ['High fever with UTI symptoms', 'Severe back or flank pain', 'Vomiting with UTI'] },
   { name: 'Allergic Reaction', keywords: ['rash', 'itching', 'hives', 'swelling', 'skin rash', 'allergy', 'sneezing', 'watery eyes', 'red eyes'], urgency: 'Low', speciality: 'Dermatologist', department: 'Dermatology', advice: ['Identify and avoid the trigger', 'Antihistamines (cetirizine) for relief', 'Cool compress for skin rash', 'Avoid scratching'], redFlags: ['Throat swelling', 'Facial swelling', 'Difficulty breathing after exposure'] },
-  { name: 'Musculoskeletal Pain', keywords: ['joint pain', 'knee pain', 'back pain', 'muscle pain', 'sprain', 'stiffness', 'swollen joint', 'arthritis'], urgency: 'Low', speciality: 'Orthopaedic Surgeon', department: 'Orthopaedics', advice: ['RICE: Rest, Ice, Compression, Elevation', 'Avoid strenuous activity', 'Anti-inflammatory (ibuprofen)', 'Physiotherapy may be needed'], redFlags: ['Severe joint deformity', 'Cannot bear weight on joint', 'Fever with joint pain'] },
+  { name: 'Musculoskeletal Pain', keywords: ['joint pain', 'knee pain', 'back pain', 'muscle pain', 'sprain', 'stiffness', 'swollen joint', 'arthritis', 'knee', 'ankle', 'wrist', 'elbow', 'shoulder', 'hip', 'twisted', 'fracture', 'bone'], urgency: 'Low', speciality: 'Orthopaedic Surgeon', department: 'Orthopaedics', advice: ['RICE: Rest, Ice, Compression, Elevation', 'Avoid strenuous activity', 'Anti-inflammatory (ibuprofen)', 'Physiotherapy may be needed'], redFlags: ['Severe joint deformity', 'Cannot bear weight on joint', 'Fever with joint pain'] },
   { name: 'Anxiety / Stress', keywords: ['anxiety', 'panic', 'stress', 'racing heart', 'panic attack', 'nervousness', 'trembling', 'insomnia', 'sleep problem'], urgency: 'Low', speciality: 'General Physician', department: 'General Medicine', advice: ['Practice 4-7-8 breathing', 'Reduce caffeine and screen time', 'Regular exercise and sleep', 'Consider speaking with a therapist'], redFlags: ['Thoughts of self-harm', 'Cannot function daily', 'Symptoms lasting > 2 weeks'] },
 ];
 
 function mockAnalyze(symptoms, age) {
   const tokens = withEnglish(symptoms).toLowerCase();
 
+  // Keywords match at word starts so "hip" never matches "ship" and plurals
+  // ("palpitations") still count; same rule as the appointment optimizer.
   const scored = CONDITIONS.map(c => {
-    const matches = c.keywords.filter(kw => tokens.includes(kw));
+    const matches = c.keywords.filter(kw => new RegExp(`\\b${kw}`).test(tokens));
     return { ...c, score: matches.length };
   }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
 
