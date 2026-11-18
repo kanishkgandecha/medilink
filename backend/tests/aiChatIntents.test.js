@@ -24,3 +24,20 @@ test('requests that are not understood get a menu of the main pages', async () =
   assert.equal(out.intent, 'general');
   assert.deepEqual(out.actions.map((a) => a.route), ['/appointments', '/billing', '/prescriptions', '/test-reports', '/symptom-checker']);
 });
+
+test('model intent variants map to known intents and still get a page link', async () => {
+  const llmClient = require('../services/ai/llmClient');
+  const original = llmClient.callLLM;
+  // Simulates a model reply; the agent module holds its own reference, so patch via a fresh require.
+  delete require.cache[require.resolve('../services/ai/agents/patientAssistant')];
+  llmClient.callLLM = async () => ({ source: 'llm', data: { intent: 'appointments', reply: 'Sure.', actions: [], _source: 'llm' } });
+  try {
+    const { runPatientAssistant: run } = require('../services/ai/agents/patientAssistant');
+    const out = await run({ message: 'drop my 4 pm booking', history: [] });
+    assert.equal(out.intent, 'appointment');
+    assert.deepEqual(out.actions.map((a) => a.route), ['/appointments']);
+  } finally {
+    llmClient.callLLM = original;
+    delete require.cache[require.resolve('../services/ai/agents/patientAssistant')];
+  }
+});

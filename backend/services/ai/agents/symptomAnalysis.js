@@ -1,6 +1,6 @@
 'use strict';
 const { callLLM } = require('../llmClient');
-const { SYMPTOM_ANALYSIS, DISCLAIMER } = require('../promptTemplates');
+const { SYMPTOM_ANALYSIS, DISCLAIMER, DEPARTMENTS } = require('../promptTemplates');
 const { enforceSymptomSafety } = require('../safety');
 const { buildSourceMeta } = require('../sourceClassification');
 const { withEnglish } = require('../language');
@@ -55,6 +55,27 @@ function mockAnalyze(symptoms, age) {
   };
 }
 
+// Model department names mapped to MediLink's departments.
+const DEPARTMENT_ALIASES = [
+  [/\b(?:primary care|general practice|family medicine|internal medicine|general physician|gp)\b/i, 'General Medicine'],
+  [/\borthop(?:a)?edic/i, 'Orthopaedics'],
+  [/\bp(?:a)?ediatric/i, 'Paediatrics'],
+  [/\b(?:dentistry|dental)\b/i, 'Dental'],
+  [/\b(?:mental health|psychiatr|psycholog)/i, 'Psychiatry'],
+  [/\b(?:ear,? nose|otolaryng|ent)\b/i, 'ENT'],
+  [/\b(?:gyn(?:a)?ecolog|obstetric)/i, 'Gynaecology'],
+  [/\b(?:pulmonolog|respiratory|chest medicine)/i, 'Pulmonology'],
+  [/\b(?:ophthalmolog|eye)\b/i, 'Ophthalmology'],
+  [/\bemergency\b/i, 'Emergency'],
+];
+
+function normalizeDepartment(value) {
+  const text = String(value || '').trim();
+  const exact = DEPARTMENTS.find((dept) => dept.toLowerCase() === text.toLowerCase());
+  if (exact) return exact;
+  return DEPARTMENT_ALIASES.find(([pattern]) => pattern.test(text))?.[1] || DEPARTMENTS.find((dept) => text.toLowerCase().includes(dept.toLowerCase())) || 'General Medicine';
+}
+
 async function runSymptomAnalysis({ symptoms, age, gender, locale }) {
   const result = await callLLM(
     SYMPTOM_ANALYSIS.system,
@@ -62,6 +83,10 @@ async function runSymptomAnalysis({ symptoms, age, gender, locale }) {
     () => mockAnalyze(symptoms, age),
   );
   const safe = enforceSymptomSafety(result.data, symptoms, locale);
+  // The Emergency department is only for Critical urgency; otherwise use the
+  // department the rules suggest. Urgency itself is never lowered here.
+  safe.department = normalizeDepartment(safe.department);
+  if (safe.department === 'Emergency' && safe.overallUrgency !== 'Critical') safe.department = mockAnalyze(symptoms, age).department;
   return {
     ...safe,
     ...buildSourceMeta(safe, {

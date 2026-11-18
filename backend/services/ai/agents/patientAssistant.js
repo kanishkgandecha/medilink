@@ -84,6 +84,9 @@ const FALLBACK_REPLIES = [
   'I didn\'t quite catch that. Try asking about your appointments, test reports, prescriptions, or use the Symptom Checker for health questions.',
 ];
 
+// Model intents such as "appointments" or "report" map to the known intents.
+const INTENT_ALIASES = { appointments: 'appointment', bills: 'billing', bill: 'billing', prescriptions: 'prescription', report: 'reports', symptom: 'symptoms', greeting: 'general' };
+
 function detectIntent(message) {
   const lower = withEnglish(message).toLowerCase();
   let best = null;
@@ -133,7 +136,14 @@ async function runPatientAssistant({ message, history, userData, locale }) {
     PATIENT_ASSISTANT.user({ message, history, userData }),
     () => mockRespond({ message }),
   );
+  if (result.data?.intent && !RESPONSES[result.data.intent]) result.data.intent = INTENT_ALIASES[String(result.data.intent).toLowerCase()] || 'general';
   const safe = enforceAssistantSafety(result.data, message, locale);
+  // When the model gives no usable page link, offer the one for its intent
+  // (or the rules' intent), so a reply always leads somewhere.
+  if (!safe.urgent && !safe.actions.length) {
+    const intent = RESPONSES[safe.intent] && safe.intent !== 'general' ? safe.intent : detectIntent(message);
+    safe.actions = intent === 'navigation' ? navigationActions(message) : (RESPONSES[intent]?.actions || []);
+  }
   return {
     ...safe,
     ...buildSourceMeta(safe, {

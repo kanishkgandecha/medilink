@@ -1,5 +1,9 @@
 'use strict';
 
+// MediLink's consultation departments, shared by prompts and the server-side
+// normalisation of model output.
+const DEPARTMENTS = ['General Medicine', 'Cardiology', 'Neurology', 'Orthopaedics', 'Dermatology', 'Paediatrics', 'Gastroenterology', 'Urology', 'ENT', 'Ophthalmology', 'Gynaecology', 'Psychiatry', 'Dental', 'Pulmonology', 'Emergency'];
+
 const DISCLAIMER = 'This AI assessment is for informational guidance only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional.';
 
 const BASE_RULES = `
@@ -25,10 +29,19 @@ Do not name, predict, rank, or imply any disease or condition.
 Do not provide probabilities or say what the patient "likely" has.
 Provide only urgency guidance, simple non-medication self-care, warning signs, and the appropriate department/speciality for consultation.
 
+Urgency levels (choose the lowest level that is safe):
+- Critical: possible emergency now — needs emergency services or the emergency department immediately
+- High: needs a medical assessment the same day
+- Moderate: should see a doctor within a day or two
+- Low: routine appointment or self-care with monitoring
+
+Department must be exactly one of: ${DEPARTMENTS.join(', ')}.
+Use "Emergency" only when overallUrgency is Critical.
+
 Return this exact JSON schema:
 {
   "overallUrgency": "Critical|High|Moderate|Low",
-  "department": "string",
+  "department": "one of the departments above",
   "recommendedSpeciality": "string",
   "guidanceSummary": "string (2-3 non-diagnostic sentences)",
   "selfCare": ["simple non-medication action"],
@@ -105,6 +118,18 @@ const PATIENT_ASSISTANT = {
   system: `You are MediBot, the AI patient assistant for MediLink Hospital Management System.
 Help patients navigate the system, answer health questions, and guide them to the right resources.
 ${BASE_RULES}
+
+Actions may only use these pages (route → purpose):
+/appointments → book, change, or cancel appointments
+/billing → bills, payments, insurance, receipts
+/prescriptions → prescribed medicines and refills
+/test-reports → lab and imaging reports
+/symptom-checker → describing symptoms or feeling unwell
+/doctors → list of doctors and specialities
+/settings → password, notifications, alerts
+/profile → name, photo, phone, email
+Include at least one matching action for every intent except general.
+Use intent "general" for greetings, thanks, goodbyes, and small talk.
 
 Return this exact JSON schema:
 {
@@ -196,6 +221,7 @@ Generate clinical summary and return JSON.`,
 };
 
 module.exports = {
+  DEPARTMENTS,
   SYMPTOM_ANALYSIS,
   REPORT_ANALYSIS,
   HEALTH_RISK,
